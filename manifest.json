@@ -5,8 +5,8 @@
   "description": "Egunero 10 hitz eta 4 aukerako sinonimo-jokoa.",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#f4efe3",
-  "theme_color": "#0f766e",
+  "background_color": "#f4fbfa",
+  "theme_color": "#67c7c3",
   "orientation": "portrait",
   "icons": [
     {
