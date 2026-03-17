@@ -1835,12 +1835,6 @@ const App = () => {
             </>
           )}
 
-          {quiz && (
-            <>
-              <DockButton label="Hasiera" icon={<House className="dock-svg" />} onClick={leaveGame} wide showLabel />
-            </>
-          )}
-
           {summary && (
             <>
               <DockButton label="Hasiera" icon={<House className="dock-svg" />} onClick={leaveGame} showLabel />
