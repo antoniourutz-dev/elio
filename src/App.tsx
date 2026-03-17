@@ -155,6 +155,7 @@ const DockButton = ({
   tone = 'neutral',
   wide = false,
   active = false,
+  showLabel = false,
 }: {
   label: string;
   icon: ReactNode;
@@ -163,21 +164,50 @@ const DockButton = ({
   tone?: 'neutral' | 'primary';
   wide?: boolean;
   active?: boolean;
-}) => (
-  <button
-    type="button"
-    className={clsx('dock-button', `dock-button-${tone}`, {
-      'dock-button-wide': wide,
-      'dock-button-active': active,
-    })}
-    onClick={onClick}
-    disabled={disabled}
-    aria-label={label}
-    title={label}
-  >
-    <span className="dock-button-icon">{icon}</span>
-  </button>
-);
+  showLabel?: boolean;
+}) => {
+  const isLabelVisible = active || showLabel;
+
+  return (
+    <motion.button
+      type="button"
+      layout
+      whileTap={{ scale: 0.97 }}
+      className={clsx('dock-button', `dock-button-${tone}`, {
+        'dock-button-wide': wide,
+        'dock-button-active': active,
+      })}
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+    >
+      <motion.span layout className="dock-button-shell">
+        <motion.span
+          className="dock-button-icon"
+          animate={{ y: isLabelVisible ? -1 : 0, scale: isLabelVisible ? 1.06 : 1 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+        >
+          {icon}
+        </motion.span>
+        <AnimatePresence initial={false}>
+          {isLabelVisible && (
+            <motion.span
+              layout
+              initial={{ opacity: 0, y: 4, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: 4, height: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="dock-button-label"
+            >
+              {label}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.span>
+    </motion.button>
+  );
+};
 
 const SegmentBar = ({
   total,
@@ -902,7 +932,7 @@ const App = () => {
         </div>
       )}
 
-      <div ref={shellRef} className="app-shell">
+      <div ref={shellRef} className={clsx('app-shell', { 'app-shell-locked': Boolean(quiz) })}>
         <div className="ambient-glow ambient-glow-a" />
         <div className="ambient-glow ambient-glow-b" />
 
@@ -1765,6 +1795,7 @@ const App = () => {
                 icon={<House className="dock-svg" />}
                 onClick={() => openMainScreen('home')}
                 active={mainScreen === 'home'}
+                showLabel={mainScreen === 'home'}
               />
               {isTeacher ? (
                 <>
@@ -1773,12 +1804,14 @@ const App = () => {
                     icon={<Shield className="dock-svg" />}
                     onClick={() => openMainScreen('admin')}
                     active={mainScreen === 'admin'}
+                    showLabel={mainScreen === 'admin'}
                   />
                   <DockButton
                     label="Profila"
                     icon={<CircleUserRound className="dock-svg" />}
                     onClick={() => openMainScreen('profile')}
                     active={mainScreen === 'profile'}
+                    showLabel={mainScreen === 'profile'}
                   />
                 </>
               ) : (
@@ -1788,12 +1821,14 @@ const App = () => {
                     icon={<Trophy className="dock-svg" />}
                     onClick={() => openMainScreen('stats')}
                     active={mainScreen === 'stats'}
+                    showLabel={mainScreen === 'stats'}
                   />
                   <DockButton
                     label="Profila"
                     icon={<CircleUserRound className="dock-svg" />}
                     onClick={() => openMainScreen('profile')}
                     active={mainScreen === 'profile'}
+                    showLabel={mainScreen === 'profile'}
                   />
                 </>
               )}
@@ -1802,14 +1837,14 @@ const App = () => {
 
           {quiz && (
             <>
-              <DockButton label="Hasiera" icon={<House className="dock-svg" />} onClick={leaveGame} wide />
+              <DockButton label="Hasiera" icon={<House className="dock-svg" />} onClick={leaveGame} wide showLabel />
             </>
           )}
 
           {summary && (
             <>
-              <DockButton label="Hasiera" icon={<House className="dock-svg" />} onClick={leaveGame} />
-              <DockButton label="Berriz" icon={<RefreshCw className="dock-svg" />} onClick={() => startLevel(summary.level)} />
+              <DockButton label="Hasiera" icon={<House className="dock-svg" />} onClick={leaveGame} showLabel />
+              <DockButton label="Berriz" icon={<RefreshCw className="dock-svg" />} onClick={() => startLevel(summary.level)} showLabel />
               <DockButton
                 label={nextLevel && nextLevelUnlocked ? 'Hurrengoa' : 'Bukatu'}
                 icon={nextLevel && nextLevelUnlocked ? <CirclePlay className="dock-svg" /> : <CheckCircle2 className="dock-svg" />}
@@ -1823,6 +1858,7 @@ const App = () => {
                 }}
                 tone="primary"
                 wide
+                showLabel
               />
             </>
           )}
