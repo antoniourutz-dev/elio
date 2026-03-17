@@ -2282,7 +2282,8 @@ p {
   }
 
   .app-fixed-bottom {
-    padding-bottom: max(env(safe-area-inset-bottom), 2px);
+    padding-bottom: 0;
+    box-shadow: 0 -10px 24px rgba(121, 153, 162, 0.08);
   }
 
   .app-topbar {
@@ -2312,14 +2313,14 @@ p {
   .app-dock {
     width: 100%;
     gap: 8px;
-    padding: 4px 10px 2px;
+    padding: 4px 10px 0;
   }
 
   .dock-button {
-    min-height: 40px;
-    padding: 3px 6px;
+    min-height: 38px;
+    padding: 2px 6px;
     gap: 0;
-    border-radius: 18px;
+    border-radius: 16px;
     flex-direction: column;
   }
 
@@ -2501,11 +2502,11 @@ p {
 
   .app-dock {
     gap: 6px;
-    padding: 3px 8px 1px;
+    padding: 3px 8px 0;
   }
 
   .dock-button {
-    min-height: 36px;
+    min-height: 34px;
     padding: 2px 5px;
     gap: 0;
   }
