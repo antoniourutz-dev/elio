@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="eu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f766e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- iOS PWA meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Lexo" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%230f766e%22/><path d=%22M28 30h44M28 46h44M28 62h28%22 stroke=%22white%22 stroke-width=%228%22 stroke-linecap=%22round%22 opacity=%220.28%22/><circle cx=%2272%22 cy=%2262%22 r=%226%22 fill=%22white%22/></svg>">
+
+    <title>Lexo</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%230f766e%22/><path d=%22M28 30h44M28 46h44M28 62h28%22 stroke=%22white%22 stroke-width=%228%22 stroke-linecap=%22round%22 opacity=%220.28%22/><circle cx=%2272%22 cy=%2262%22 r=%226%22 fill=%22white%22/></svg>">
+    
+    <style>
+      :root {
+        --sat: env(safe-area-inset-top);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+        --sar: env(safe-area-inset-right);
+      }
+      body {
+        font-family: "Avenir Next Rounded", "Trebuchet MS", "Segoe UI", sans-serif;
+        background-color: #f8fafc;
+        margin: 0;
+        padding: 0;
+        height: 100dvh;
+        width: 100vw;
+        overflow: hidden;
+        line-height: 1.4;
+        -webkit-tap-highlight-color: transparent;
+      }
+      button,
+      a,
+      input,
+      textarea,
+      select {
+        touch-action: manipulation;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible {
+        outline: 3px solid #0f766e;
+        outline-offset: 2px;
+      }
+      .safe-pt { padding-top: var(--sat); }
+      .safe-pb { padding-bottom: var(--sab); }
+      .safe-px { padding-left: var(--sal); padding-right: var(--sar); }
+      
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+      }
+      input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 24px;
+        width: 24px;
+        border-radius: 50%;
+        background: #0f766e;
+        cursor: pointer;
+        border: 4px solid white;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      }
+    </style>
+    <script>
+      const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if ('serviceWorker' in navigator && !isLocalhost) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .catch(() => undefined);
+        });
+      }
+    </script>
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+</html>
