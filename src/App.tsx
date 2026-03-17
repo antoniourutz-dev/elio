@@ -172,9 +172,10 @@ const DockButton = ({
     })}
     onClick={onClick}
     disabled={disabled}
+    aria-label={label}
+    title={label}
   >
     <span className="dock-button-icon">{icon}</span>
-    <span className="dock-button-label">{label}</span>
   </button>
 );
 
@@ -306,7 +307,7 @@ const App = () => {
       setActivePlayer(sessionState.player);
       setProgress(sessionState.progress);
       setUiMessage(sessionState.message);
-      setMainScreen(isTeacherPlayer(sessionState.player) ? 'admin' : 'home');
+      setMainScreen('home');
       setIsSessionLoading(false);
     };
 
@@ -656,7 +657,7 @@ const App = () => {
     await refreshBank();
     setQuiz(null);
     setSummary(null);
-    setMainScreen(isTeacherPlayer(result.player) ? 'admin' : 'home');
+    setMainScreen('home');
     setAccessCode('');
     setAccessPassword('');
     setAccessMessage(null);

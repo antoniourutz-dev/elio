@@ -526,7 +526,7 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0;
   min-height: 48px;
   padding: 0 12px;
   border-radius: 22px;
@@ -579,12 +579,6 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.dock-button-label {
-  font-size: 0.9rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
 }
 
 .section-label,
@@ -2324,7 +2318,7 @@ p {
   .dock-button {
     min-height: 40px;
     padding: 3px 6px;
-    gap: 2px;
+    gap: 0;
     border-radius: 18px;
     flex-direction: column;
   }
@@ -2332,11 +2326,6 @@ p {
   .dock-button .dock-svg {
     width: 16px;
     height: 16px;
-  }
-
-  .dock-button-label {
-    font-size: 0.64rem;
-    line-height: 1;
   }
 
   .profile-inline {
@@ -2518,17 +2507,12 @@ p {
   .dock-button {
     min-height: 36px;
     padding: 2px 5px;
-    gap: 2px;
+    gap: 0;
   }
 
   .dock-button .dock-svg {
     width: 15px;
     height: 15px;
-  }
-
-  .dock-button-label {
-    font-size: 0.6rem;
-    line-height: 1;
   }
 
   .admin-level-toggle-grid {
