@@ -886,8 +886,8 @@ const App = () => {
 
             {!quiz && summary && (
               <button className="app-topbar-button" type="button" onClick={leaveGame}>
-                <House className="app-topbar-button-icon" />
-                <span>Mailak</span>
+                <ChevronLeft className="app-topbar-button-icon" />
+                <span>Itzuli</span>
               </button>
             )}
 
@@ -1837,23 +1837,19 @@ const App = () => {
 
           {summary && (
             <>
-              <DockButton label="Hasiera" icon={<House className="dock-svg" />} onClick={leaveGame} showLabel />
               <DockButton label="Berriz" icon={<RefreshCw className="dock-svg" />} onClick={() => startLevel(summary.level)} showLabel />
-              <DockButton
-                label={nextLevel && nextLevelUnlocked ? 'Hurrengoa' : 'Bukatu'}
-                icon={nextLevel && nextLevelUnlocked ? <CirclePlay className="dock-svg" /> : <CheckCircle2 className="dock-svg" />}
-                onClick={() => {
-                  if (nextLevel && nextLevelUnlocked) {
+              {nextLevel && nextLevelUnlocked && (
+                <DockButton
+                  label="Hurrengoa"
+                  icon={<CirclePlay className="dock-svg" />}
+                  onClick={() => {
                     startLevel(nextLevel);
-                    return;
-                  }
-
-                  leaveGame();
-                }}
-                tone="primary"
-                wide
-                showLabel
-              />
+                  }}
+                  tone="primary"
+                  wide
+                  showLabel
+                />
+              )}
             </>
           )}
         </nav>
