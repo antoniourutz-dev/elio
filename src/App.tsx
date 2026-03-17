@@ -249,6 +249,12 @@ const formatPercentage = (value: number): string => `% ${Math.max(0, Math.round(
 const formatMeters = (value: number): string => `${Math.max(0, Math.round(value))} m`;
 const formatMeterProgress = (currentMeters: number, totalMeters: number): string =>
   `${Math.max(0, Math.round(currentMeters))}/${Math.max(0, Math.round(totalMeters))} m`;
+const normalizeSearchTerm = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
 const App = () => {
   const [activePlayer, setActivePlayer] = useState<PlayerIdentity | null>(null);
@@ -280,6 +286,7 @@ const App = () => {
   const [teacherWordForm, setTeacherWordForm] = useState<TeacherWordFormState>(emptyTeacherWordForm);
   const [editingWordId, setEditingWordId] = useState<string | null>(null);
   const [teacherWordSearch, setTeacherWordSearch] = useState('');
+  const [isTeacherWordDirty, setIsTeacherWordDirty] = useState(false);
   const [isSavingWord, setIsSavingWord] = useState(false);
   const [unlockDrafts, setUnlockDrafts] = useState<Record<string, number[]>>({});
   const shellRef = useRef<HTMLDivElement | null>(null);
@@ -545,33 +552,41 @@ const App = () => {
     : bankState.isReady
       ? `${bankState.entries.length} hitz prest`
       : 'Demoko hitzak';
-  const teacherWordQuery = teacherWordSearch.trim().toLowerCase();
+  const teacherWordQuery = normalizeSearchTerm(teacherWordSearch);
   const teacherWordResults = !teacherWordQuery || isDemoMode
     ? []
     : [...bankState.entries]
-        .filter((entry) => (
-          entry.word.toLowerCase().includes(teacherWordQuery)
-          || entry.synonyms.some((synonym) => synonym.toLowerCase().includes(teacherWordQuery))
-        ))
+        .filter((entry) => {
+          const normalizedWord = normalizeSearchTerm(entry.word);
+          const normalizedSynonyms = entry.synonyms.map((synonym) => normalizeSearchTerm(synonym));
+
+          return normalizedWord.includes(teacherWordQuery) || normalizedSynonyms.some((synonym) => synonym.includes(teacherWordQuery));
+        })
         .sort((left, right) => {
-          const leftWord = left.word.toLowerCase();
-          const rightWord = right.word.toLowerCase();
+          const leftWord = normalizeSearchTerm(left.word);
+          const rightWord = normalizeSearchTerm(right.word);
+          const leftSynonyms = left.synonyms.map((synonym) => normalizeSearchTerm(synonym));
+          const rightSynonyms = right.synonyms.map((synonym) => normalizeSearchTerm(synonym));
           const leftRank =
             leftWord === teacherWordQuery
               ? 0
               : leftWord.startsWith(teacherWordQuery)
                 ? 1
-                : left.synonyms.some((synonym) => synonym.toLowerCase() === teacherWordQuery)
+                : leftSynonyms.some((synonym) => synonym === teacherWordQuery)
                   ? 2
-                  : 3;
+                  : leftSynonyms.some((synonym) => synonym.startsWith(teacherWordQuery))
+                    ? 3
+                    : 4;
           const rightRank =
             rightWord === teacherWordQuery
               ? 0
               : rightWord.startsWith(teacherWordQuery)
                 ? 1
-                : right.synonyms.some((synonym) => synonym.toLowerCase() === teacherWordQuery)
+                : rightSynonyms.some((synonym) => synonym === teacherWordQuery)
                   ? 2
-                  : 3;
+                  : rightSynonyms.some((synonym) => synonym.startsWith(teacherWordQuery))
+                    ? 3
+                    : 4;
 
           if (leftRank !== rightRank) return leftRank - rightRank;
 
@@ -609,8 +624,8 @@ const App = () => {
   const teacherDirectMatch = !teacherWordQuery || isDemoMode
     ? null
     : teacherWordResults.find((entry) => (
-      entry.word.toLowerCase() === teacherWordQuery
-      || entry.synonyms.some((synonym) => synonym.toLowerCase() === teacherWordQuery)
+      normalizeSearchTerm(entry.word) === teacherWordQuery
+      || entry.synonyms.some((synonym) => normalizeSearchTerm(synonym) === teacherWordQuery)
     )) ?? null;
 
   useEffect(() => {
@@ -624,7 +639,12 @@ const App = () => {
       if (editingWordId || teacherWordForm.word || teacherWordForm.synonyms || teacherWordForm.levelOrder !== 1) {
         setEditingWordId(null);
         setTeacherWordForm(emptyTeacherWordForm);
+        setIsTeacherWordDirty(false);
       }
+      return;
+    }
+
+    if (isTeacherWordDirty) {
       return;
     }
 
@@ -649,6 +669,7 @@ const App = () => {
 
     if (editingWordId !== null || teacherWordForm.word !== trimmedSearch) {
       setEditingWordId(null);
+      setIsTeacherWordDirty(false);
       setTeacherWordForm((current) => ({
         word: trimmedSearch,
         synonyms: current.word === trimmedSearch && editingWordId === null ? current.synonyms : '',
@@ -664,6 +685,7 @@ const App = () => {
     teacherWordForm.synonyms,
     teacherWordForm.word,
     teacherWordSearch,
+    isTeacherWordDirty,
   ]);
 
   const submitAccess = async (event?: FormEvent<HTMLFormElement>) => {
@@ -719,6 +741,7 @@ const App = () => {
   const startEditingWord = (entry: SynonymEntry) => {
     setEditingWordId(entry.id);
     setTeacherWordSearch(entry.word);
+    setIsTeacherWordDirty(false);
     setTeacherWordForm({
       word: entry.word,
       synonyms: entry.synonyms.join(', '),
@@ -731,6 +754,7 @@ const App = () => {
   const resetTeacherWordForm = () => {
     setEditingWordId(null);
     setTeacherWordSearch('');
+    setIsTeacherWordDirty(false);
     setTeacherWordForm(emptyTeacherWordForm);
   };
 
@@ -758,6 +782,7 @@ const App = () => {
     }
 
     await refreshBank();
+    setIsTeacherWordDirty(false);
     setTeacherWordSearch(teacherWordForm.word.trim());
   };
 
@@ -1493,7 +1518,10 @@ const App = () => {
                                 className="admin-input"
                                 type="search"
                                 value={teacherWordSearch}
-                                onChange={(event: ChangeEvent<HTMLInputElement>) => setTeacherWordSearch(event.target.value)}
+                                onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                                  setIsTeacherWordDirty(false);
+                                  setTeacherWordSearch(event.target.value);
+                                }}
                                 placeholder="Bilatu hitza edo sinonimoa"
                               />
                             </div>
@@ -1560,9 +1588,10 @@ const App = () => {
                                       className="admin-input"
                                       type="text"
                                       value={teacherWordForm.word}
-                                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                                        setTeacherWordForm((current) => ({ ...current, word: event.target.value }))
-                                      }
+                                      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                                        setIsTeacherWordDirty(true);
+                                        setTeacherWordForm((current) => ({ ...current, word: event.target.value }));
+                                      }}
                                       placeholder="Adibidez: maite"
                                     />
                                   </div>
@@ -1574,9 +1603,10 @@ const App = () => {
                                     <textarea
                                       className="admin-textarea"
                                       value={teacherWordForm.synonyms}
-                                      onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-                                        setTeacherWordForm((current) => ({ ...current, synonyms: event.target.value }))
-                                      }
+                                      onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
+                                        setIsTeacherWordDirty(true);
+                                        setTeacherWordForm((current) => ({ ...current, synonyms: event.target.value }));
+                                      }}
                                       placeholder="laket, atsegin, gustuko, gogoko"
                                       rows={5}
                                     />
@@ -1590,9 +1620,10 @@ const App = () => {
                                     <select
                                       className="admin-select"
                                       value={teacherWordForm.levelOrder}
-                                      onChange={(event: ChangeEvent<HTMLSelectElement>) =>
-                                        setTeacherWordForm((current) => ({ ...current, levelOrder: Number(event.target.value) }))
-                                      }
+                                      onChange={(event: ChangeEvent<HTMLSelectElement>) => {
+                                        setIsTeacherWordDirty(true);
+                                        setTeacherWordForm((current) => ({ ...current, levelOrder: Number(event.target.value) }));
+                                      }}
                                     >
                                       {GAME_LEVELS.map((level) => (
                                         <option key={`word-form-${level.id}`} value={level.index}>
