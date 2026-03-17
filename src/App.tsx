@@ -827,7 +827,7 @@ const App = () => {
     }
   };
 
-  const topBarTitle = activePlayer?.code ?? 'Lexo';
+  const topBarTitle = activePlayer?.code ?? 'Elio';
   const topBarSubtitle = quiz
     ? quiz.level.name
     : summary
@@ -915,7 +915,7 @@ const App = () => {
                 className="access-view"
               >
                 <div className="access-band">
-                  <strong>Lexo</strong>
+                  <strong>Elio</strong>
                 </div>
 
                 <div className="access-card access-card-loading">
@@ -936,7 +936,7 @@ const App = () => {
                 className="access-view"
               >
                 <div className="access-band">
-                  <strong>Lexo</strong>
+                  <strong>Elio</strong>
                 </div>
 
                 <motion.form className="access-card" onSubmit={submitAccess}>

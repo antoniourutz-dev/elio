@@ -1,4 +1,4 @@
-# Lexo
+# Elio
 
 Aplicacion React/Vite para alumnado que aprende euskera. La app propone 10 niveles de sinonimia y guarda el progreso de cada jugador en Supabase.
 

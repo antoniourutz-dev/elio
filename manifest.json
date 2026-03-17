@@ -1,7 +1,7 @@
 
 {
-  "name": "Lexo",
-  "short_name": "Lexo",
+  "name": "Elio",
+  "short_name": "Elio",
   "description": "Egunero 10 hitz eta 4 aukerako sinonimo-jokoa.",
   "start_url": ".",
   "display": "standalone",
@@ -10,14 +10,14 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%230f766e%22/><path d=%22M28 30h44M28 46h44M28 62h28%22 stroke=%22white%22 stroke-width=%228%22 stroke-linecap=%22round%22 opacity=%220.28%22/><circle cx=%2272%22 cy=%2262%22 r=%226%22 fill=%22white%22/></svg>",
+      "src": "/elio-icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2225%22 fill=%22%230f766e%22/><path d=%22M28 30h44M28 46h44M28 62h28%22 stroke=%22white%22 stroke-width=%228%22 stroke-linecap=%22round%22 opacity=%220.28%22/><circle cx=%2272%22 cy=%2262%22 r=%226%22 fill=%22white%22/></svg>",
+      "src": "/elio-icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }

@@ -67,7 +67,7 @@ export const SetupScreen = () => {
                     <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 flex-1 text-left">
                             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#181333] uppercase">
-                                Sinonimoen Erronka
+                                Elio
                             </h1>
                         </div>
 
