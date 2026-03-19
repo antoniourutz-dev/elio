@@ -4545,12 +4545,16 @@ p {
   background: linear-gradient(135deg, rgba(142, 81, 202, 0.98), rgba(182, 121, 228, 0.98));
 }
 
+.daily-pill-card-expanded .daily-pill-category,
 .daily-pill-card-collapsed .daily-pill-category,
+.daily-pill-card-expanded .daily-pill-title,
 .daily-pill-card-collapsed .daily-pill-title,
+.daily-pill-card-expanded .daily-pill-toggle-icon,
 .daily-pill-card-collapsed .daily-pill-toggle-icon {
   color: #fff;
 }
 
+.daily-pill-card-expanded .daily-pill-badge,
 .daily-pill-card-collapsed .daily-pill-badge {
   color: rgba(255, 255, 255, 0.86);
   background: rgba(255, 255, 255, 0.14);
