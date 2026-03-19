@@ -2713,16 +2713,64 @@ p {
   .dock-button {
     min-height: 30px;
     padding: 1px 2px 0;
-    border-radius: 0;
+    border-radius: 12px;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      opacity 0.16s ease;
   }
 
   .dock-button .dock-svg {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
   }
 
   .dock-button-label {
-    display: none;
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1px;
+    text-align: center;
+    opacity: 0;
+    overflow: hidden;
+    font-size: 0.42rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    transform: translateY(3px);
+    transition:
+      opacity 0.14s ease,
+      transform 0.18s ease;
+    white-space: nowrap;
+    color: #1f9e8e;
+  }
+
+  .dock-button-shell {
+    position: relative;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+  }
+
+  .dock-button-active {
+    background: rgba(72, 200, 186, 0.12);
+    color: #1f9e8e;
+  }
+
+  .dock-button-active::before {
+    left: 18%;
+    right: 18%;
+    background: #48c8ba;
+  }
+
+  .dock-button-active .dock-button-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .dock-button-active .dock-button-icon {
+    transform: translateY(-3px);
   }
 
   .profile-inline {
@@ -2909,16 +2957,64 @@ p {
   .dock-button {
     min-height: 28px;
     padding: 1px 1px 0;
-    border-radius: 0;
+    border-radius: 11px;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      opacity 0.16s ease;
   }
 
   .dock-button .dock-svg {
-    width: 17px;
-    height: 17px;
+    width: 21px;
+    height: 21px;
   }
 
   .dock-button-label {
-    display: none;
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1px;
+    text-align: center;
+    opacity: 0;
+    overflow: hidden;
+    font-size: 0.4rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    transform: translateY(3px);
+    transition:
+      opacity 0.14s ease,
+      transform 0.18s ease;
+    white-space: nowrap;
+    color: #1f9e8e;
+  }
+
+  .dock-button-shell {
+    position: relative;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+  }
+
+  .dock-button-active {
+    background: rgba(72, 200, 186, 0.12);
+    color: #1f9e8e;
+  }
+
+  .dock-button-active::before {
+    left: 18%;
+    right: 18%;
+    background: #48c8ba;
+  }
+
+  .dock-button-active .dock-button-label {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .dock-button-active .dock-button-icon {
+    transform: translateY(-2px);
   }
 
   .admin-level-toggle-grid {
