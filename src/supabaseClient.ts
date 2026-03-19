@@ -13,6 +13,9 @@ export const gamePlayerResultsTable =
 export const gameFailEventsTable = import.meta.env.VITE_SUPABASE_GAME_FAIL_EVENTS_TABLE || 'game_fail_events';
 export const gameQuestionEventsTable =
   import.meta.env.VITE_SUPABASE_GAME_QUESTION_EVENTS_TABLE || 'game_question_events';
+export const gameWordsTable = 'game_words';
+export const dailyScoresTable = 'daily_scores';
+export const dailyPillsTable = import.meta.env.VITE_SUPABASE_DAILY_PILLS_TABLE || 'eguneko_pildorak';
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl!, supabaseAnonKey!, {

@@ -11,6 +11,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_GAME_PLAYER_RESULTS_TABLE?: string;
   readonly VITE_SUPABASE_GAME_FAIL_EVENTS_TABLE?: string;
   readonly VITE_SUPABASE_GAME_QUESTION_EVENTS_TABLE?: string;
+  readonly VITE_SUPABASE_DAILY_PILLS_TABLE?: string;
 }
 
 interface ImportMeta {

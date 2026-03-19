@@ -1,17 +1,25 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
+import { ErrorBoundary } from './ErrorBoundary.tsx';
+import { validateEnv } from './env.ts';
 import './index.css';
+
+const env = validateEnv();
+if (!env.ok) {
+  console.error('[Elio] Missing required environment variables:', env.missing.join(', '));
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
+  throw new Error('Could not find root element to mount to');
 }
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );

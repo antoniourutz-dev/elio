@@ -3,7 +3,7 @@ returns boolean
 language sql
 stable
 as $$
-  select split_part(coalesce(auth.jwt() ->> 'email', ''), '@', 1) = 'irakasle';
+  select split_part(coalesce(auth.jwt() ->> 'email', ''), '@', 1) in ('irakasle', 'admin');
 $$;
 
 alter table public.player_progress
@@ -166,8 +166,8 @@ begin
     raise exception 'Kodeak letrak, zenbakiak, marratxoa edo azpimarra bakarrik izan ditzake.';
   end if;
 
-  if normalized_code = 'irakasle' then
-    raise exception 'irakasle kodea erreserbatuta dago.';
+  if normalized_code in ('irakasle', 'admin') then
+    raise exception '% kodea erreserbatuta dago.', normalized_code;
   end if;
 
   if normalized_password is null or char_length(normalized_password) < 3 then
@@ -330,8 +330,8 @@ begin
     raise exception 'Ez da jokalaria aurkitu.';
   end if;
 
-  if normalized_code = 'irakasle' and current_player_code <> 'irakasle' then
-    raise exception 'irakasle kodea erreserbatuta dago.';
+  if normalized_code in ('irakasle', 'admin') and current_player_code <> normalized_code then
+    raise exception '% kodea erreserbatuta dago.', normalized_code;
   end if;
 
   if normalized_password is not null and char_length(normalized_password) < 3 then
@@ -413,7 +413,7 @@ begin
     raise exception 'Ez da jokalaria aurkitu.';
   end if;
 
-  if target_player_code = 'irakasle' or target_owner_id = auth.uid() then
+  if target_player_code in ('irakasle', 'admin') or target_owner_id = auth.uid() then
     raise exception 'Administratzailea ezin da ezabatu.';
   end if;
 

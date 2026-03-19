@@ -7,6 +7,21 @@ declare module 'react' {
     (props: P): JSX.Element | null;
   }
 
+  export interface ErrorInfo {
+    componentStack: string | null;
+    digest?: string;
+  }
+
+  export class Component<P = {}, S = {}> {
+    constructor(props: P);
+    props: Readonly<P>;
+    state: Readonly<S>;
+    setState(state: Partial<S> | ((prevState: S, props: P) => Partial<S>)): void;
+    render(): ReactNode;
+    static getDerivedStateFromError?(error: Error): any;
+    componentDidCatch?(error: Error, info: ErrorInfo): void;
+  }
+
   export interface MutableRefObject<T> {
     current: T;
   }
@@ -23,11 +38,21 @@ declare module 'react' {
 
   export interface ChangeEvent<T = Element> extends FormEvent<T> {}
 
+  export interface MouseEvent<T = Element> {
+    stopPropagation(): void;
+    preventDefault(): void;
+    currentTarget: T;
+    target: EventTarget & T;
+  }
+
   export function useState<S>(initialState: S | (() => S)): [S, Dispatch<SetStateAction<S>>];
   export function useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void;
   export function useMemo<T>(factory: () => T, deps: readonly unknown[]): T;
   export function useCallback<T extends (...args: any[]) => any>(callback: T, deps: readonly unknown[]): T;
   export function useRef<T>(initialValue: T): MutableRefObject<T>;
+  export function memo<P extends object>(component: (props: P) => JSX.Element | null): (props: P) => JSX.Element | null;
+  export function lazy<T extends object>(factory: () => Promise<{ default: (props: T) => JSX.Element | null }>): (props: T) => JSX.Element | null;
+  export const Suspense: FC<{ children?: ReactNode; fallback?: ReactNode }>;
 
   const React: {
     StrictMode: FC<{ children?: ReactNode }>;
