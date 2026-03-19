@@ -444,7 +444,7 @@ p {
 }
 
 .app-fixed-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: transparent;
   border-top: none;
   box-shadow: none;
@@ -2655,8 +2655,8 @@ p {
   }
 
   .app-fixed-bottom {
-    padding-bottom: max(env(safe-area-inset-bottom), 8px);
-    box-shadow: 0 -10px 24px rgba(121, 153, 162, 0.08);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: none;
   }
 
   .app-topbar {
