@@ -2721,8 +2721,8 @@ p {
   }
 
   .dock-button .dock-svg {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
   }
 
   .dock-button-label {
@@ -2734,7 +2734,7 @@ p {
     text-align: center;
     opacity: 0;
     overflow: hidden;
-    font-size: 0.42rem;
+    font-size: 0.56rem;
     font-weight: 800;
     letter-spacing: 0.01em;
     line-height: 1;
@@ -2770,7 +2770,7 @@ p {
   }
 
   .dock-button-active .dock-button-icon {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
   }
 
   .profile-inline {
@@ -2965,8 +2965,8 @@ p {
   }
 
   .dock-button .dock-svg {
-    width: 21px;
-    height: 21px;
+    width: 23px;
+    height: 23px;
   }
 
   .dock-button-label {
@@ -2978,7 +2978,7 @@ p {
     text-align: center;
     opacity: 0;
     overflow: hidden;
-    font-size: 0.4rem;
+    font-size: 0.54rem;
     font-weight: 800;
     letter-spacing: 0.01em;
     line-height: 1;
@@ -3014,7 +3014,7 @@ p {
   }
 
   .dock-button-active .dock-button-icon {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
   }
 
   .admin-level-toggle-grid {
