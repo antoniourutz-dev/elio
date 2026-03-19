@@ -442,7 +442,7 @@ p {
 }
 
 .app-fixed-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: 0;
   background: transparent;
   border-top: none;
   box-shadow: none;
@@ -2653,7 +2653,7 @@ p {
   }
 
   .app-fixed-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: 0;
     box-shadow: none;
   }
 
