@@ -2712,8 +2712,8 @@ p {
 
   .dock-button {
     min-height: 30px;
-    padding: 1px 2px 0;
-    border-radius: 12px;
+    padding: 0 2px;
+    border-radius: 0;
     transition:
       background-color 0.18s ease,
       color 0.18s ease,
@@ -2730,15 +2730,15 @@ p {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 1px;
+    bottom: 0;
     text-align: center;
     opacity: 0;
     overflow: hidden;
-    font-size: 0.56rem;
-    font-weight: 800;
+    font-size: 0.48rem;
+    font-weight: 700;
     letter-spacing: 0.01em;
     line-height: 1;
-    transform: translateY(3px);
+    transform: translateY(2px);
     transition:
       opacity 0.14s ease,
       transform 0.18s ease;
@@ -2754,13 +2754,14 @@ p {
   }
 
   .dock-button-active {
-    background: rgba(72, 200, 186, 0.12);
+    background: transparent;
     color: #1f9e8e;
   }
 
   .dock-button-active::before {
-    left: 18%;
-    right: 18%;
+    left: 24%;
+    right: 24%;
+    height: 1.5px;
     background: #48c8ba;
   }
 
@@ -2770,7 +2771,7 @@ p {
   }
 
   .dock-button-active .dock-button-icon {
-    transform: translateY(-4px);
+    transform: translateY(-1px);
   }
 
   .profile-inline {
@@ -2956,8 +2957,8 @@ p {
 
   .dock-button {
     min-height: 28px;
-    padding: 1px 1px 0;
-    border-radius: 11px;
+    padding: 0 1px;
+    border-radius: 0;
     transition:
       background-color 0.18s ease,
       color 0.18s ease,
@@ -2974,15 +2975,15 @@ p {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 1px;
+    bottom: 0;
     text-align: center;
     opacity: 0;
     overflow: hidden;
-    font-size: 0.54rem;
-    font-weight: 800;
+    font-size: 0.46rem;
+    font-weight: 700;
     letter-spacing: 0.01em;
     line-height: 1;
-    transform: translateY(3px);
+    transform: translateY(2px);
     transition:
       opacity 0.14s ease,
       transform 0.18s ease;
@@ -2998,13 +2999,14 @@ p {
   }
 
   .dock-button-active {
-    background: rgba(72, 200, 186, 0.12);
+    background: transparent;
     color: #1f9e8e;
   }
 
   .dock-button-active::before {
-    left: 18%;
-    right: 18%;
+    left: 24%;
+    right: 24%;
+    height: 1.5px;
     background: #48c8ba;
   }
 
@@ -3014,7 +3016,7 @@ p {
   }
 
   .dock-button-active .dock-button-icon {
-    transform: translateY(-3px);
+    transform: translateY(-1px);
   }
 
   .admin-level-toggle-grid {
