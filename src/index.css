@@ -2655,7 +2655,7 @@ p {
   }
 
   .app-fixed-bottom {
-    padding-bottom: 0;
+    padding-bottom: max(env(safe-area-inset-bottom), 8px);
     box-shadow: 0 -10px 24px rgba(121, 153, 162, 0.08);
   }
 
