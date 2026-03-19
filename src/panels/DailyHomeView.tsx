@@ -83,8 +83,6 @@ export const DailyHomeView = memo(function DailyHomeView({
   const myWeeklyOutside = myWeekRankEntry && myWeekRankEntry.rank > 5;
   const weekDays = getWeekDays(dayKey);
   const playedKeys = new Set(weekHistory.map((result) => result.dayKey));
-  const featuredDailyLeader = ranking[0] ?? null;
-  const featuredWeeklyLeader = weeklyRanking[0] ?? null;
 
   useEffect(() => {
     let cancelled = false;
@@ -201,20 +199,8 @@ export const DailyHomeView = memo(function DailyHomeView({
             {!isLoadingData && ranking.length === 0 && (
               <p className="daily-ranking-empty">Oraindik ez dago emaitzarik gaur.</p>
             )}
-            {!isLoadingData && featuredDailyLeader && (
-              <div className="daily-ranking-featured">
-                <div className="daily-ranking-featured-rank">
-                  <RankBadge rank={featuredDailyLeader.rank} />
-                </div>
-                <div className="daily-ranking-featured-copy">
-                  <strong>{featuredDailyLeader.playerCode}</strong>
-                  <span>Gaurko denborarik onena: {formatSeconds(featuredDailyLeader.secondsElapsed)}</span>
-                </div>
-                <div className="daily-ranking-featured-score">{featuredDailyLeader.score} pt</div>
-              </div>
-            )}
             <div className="daily-ranking-list">
-              {top5Daily.slice(featuredDailyLeader ? 1 : 0).map((entry) => (
+              {top5Daily.map((entry) => (
                 <div
                   key={entry.playerCode}
                   className={clsx('daily-ranking-row', {
@@ -248,20 +234,8 @@ export const DailyHomeView = memo(function DailyHomeView({
             {!isLoadingData && weeklyRanking.length === 0 && (
               <p className="daily-ranking-empty">Oraindik ez dago emaitzarik aste honetan.</p>
             )}
-            {!isLoadingData && featuredWeeklyLeader && (
-              <div className="daily-ranking-featured daily-ranking-featured-weekly">
-                <div className="daily-ranking-featured-rank">
-                  <RankBadge rank={featuredWeeklyLeader.rank} />
-                </div>
-                <div className="daily-ranking-featured-copy">
-                  <strong>{featuredWeeklyLeader.playerCode}</strong>
-                  <span>{featuredWeeklyLeader.daysPlayed} eguneko errendimendua</span>
-                </div>
-                <div className="daily-ranking-featured-score">{featuredWeeklyLeader.totalScore} pt</div>
-              </div>
-            )}
             <div className="daily-ranking-list">
-              {top5Weekly.slice(featuredWeeklyLeader ? 1 : 0).map((entry) => (
+              {top5Weekly.map((entry) => (
                 <div
                   key={entry.playerCode}
                   className={clsx('daily-ranking-row daily-ranking-row-weekly', {

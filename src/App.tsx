@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
 import {
+  BookOpen,
   CheckCircle2,
   ChevronLeft,
   CirclePlay,
@@ -649,6 +650,12 @@ const App = () => {
                   </>
                 ) : (
                   <>
+                    <DockButton
+                      label="Ikasi"
+                      icon={<BookOpen className="dock-svg" />}
+                      onClick={goSynonyms}
+                      active={mainScreen === 'synonyms'}
+                    />
                     <DockButton
                       label="Sailkapen"
                       icon={<Trophy className="dock-svg" />}
