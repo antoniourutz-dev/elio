@@ -442,7 +442,7 @@ p {
 }
 
 .app-fixed-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: 0;
   background: rgba(255, 255, 255, 0.97);
   border-top: 1px solid rgba(210, 220, 230, 0.7);
   box-shadow: none;
@@ -2594,7 +2594,7 @@ p {
 
 @media (max-width: 900px) {
   .app-shell {
-    padding: 14px 14px 18px;
+    padding: 14px 14px 8px;
   }
 
   .levels-topbar,
@@ -2672,7 +2672,7 @@ p {
   }
 
   .app-fixed-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: 0;
     box-shadow: none;
   }
 
@@ -3194,7 +3194,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 0 0 2rem;
+  padding: 0;
 }
 
 .daily-hero-card {
@@ -4233,7 +4233,7 @@ p {
 /* Premium home and dock overrides */
 .daily-home-view {
   gap: 1.1rem;
-  padding-bottom: 2.4rem;
+  padding-bottom: 0;
 }
 
 .daily-hero-card {
