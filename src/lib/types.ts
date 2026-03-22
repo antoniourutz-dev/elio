@@ -69,6 +69,7 @@ export interface PlayerIdentity {
   email: string;
   createdAt: string;
   lastLoginAt: string | null;
+  avatarId?: string | null;
 }
 
 export interface PlayerSessionState {

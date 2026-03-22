@@ -156,6 +156,24 @@ p {
   animation: mountain-ring-pulse 2.4s ease-out infinite;
 }
 
+.flip-preserve-3d { transform-style: preserve-3d; }
+.face-hidden       { backface-visibility: hidden; }
+.face-back         { backface-visibility: hidden; transform: rotateY(180deg); }
+
+@keyframes achievement-sheen {
+  0%        { transform: translateX(-120%) skewX(-18deg); }
+  36%, 100% { transform: translateX(240%)  skewX(-18deg); }
+}
+.achievement-card-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  animation: achievement-sheen 3.2s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
 @keyframes submit-sheen {
   0%        { transform: translateX(-180%); }
   38%, 100% { transform: translateX(280%); }

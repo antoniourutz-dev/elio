@@ -67,6 +67,8 @@ interface AppTopBarProps {
   secondaryMetric?: TopBarMetric | null;
   backIcon: ReactNode;
   progressIcon: ReactNode;
+  avatarSrc?: string | null;
+  avatarAlt?: string;
 }
 
 export function AppTopBar({
@@ -80,6 +82,8 @@ export function AppTopBar({
   secondaryMetric,
   backIcon,
   progressIcon,
+  avatarSrc,
+  avatarAlt = 'Jokalariaren avatarra',
 }: AppTopBarProps) {
   const MetricIcon = metric?.icon;
   const SecondaryMetricIcon = secondaryMetric?.icon;
@@ -88,6 +92,11 @@ export function AppTopBar({
     <div className="relative w-full z-[100] pointer-events-auto shrink-0 pt-[max(env(safe-area-inset-top),4px)] bg-[rgba(248,253,255,0.76)] backdrop-blur-[18px] backdrop-saturate-[165%] border-b border-[rgba(209,223,229,0.42)] shadow-[0_1px_12px_rgba(100,140,160,0.05)]">
       <div className="w-[min(var(--page-width),100%)] grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 min-h-[48px] px-[16px] py-1 mx-auto">
         <div className="flex items-center gap-2 min-w-0 self-center">
+          {avatarSrc ? (
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[rgba(77,182,165,0.24)] bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.96),rgba(229,246,242,0.94))] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_4px_12px_rgba(61,160,144,0.16)]">
+              <img src={avatarSrc} alt={avatarAlt} className="h-7 w-7 object-contain" />
+            </span>
+          ) : null}
           {showBackButton ? (
             <TopBarButton onClick={onBack} icon={backIcon} label="Itzuli" />
           ) : (

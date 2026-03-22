@@ -1,5 +1,6 @@
 import { isSupabaseConfigured, playerProgressTable, supabase } from '../supabaseClient';
 import type { PlayerIdentity, GameProgress, LevelRecord, PlayerProgressSyncResult, QuestionMemoryRecord } from './types';
+import { assignAvatarId } from './avatars';
 import {
   GAME_LEVELS,
   STORAGE_KEY,
@@ -202,6 +203,7 @@ export const createAuthPlayerIdentity = (params: {
   email: params.email,
   createdAt: params.createdAt || new Date().toISOString(),
   lastLoginAt: params.lastLoginAt ?? null,
+  avatarId: assignAvatarId(params.userId),
 });
 
 const parseStoredProgress = (parsed: Record<string, unknown>): GameProgress => {

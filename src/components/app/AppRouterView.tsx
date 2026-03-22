@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
-import type { PlayerIdentity } from '../../euskeraLearning';
+import type { GameLevel, PlayerIdentity } from '../../euskeraLearning';
 import { AccessScreen } from '../../panels/AccessScreen';
 import { DailyHomeView } from '../../panels/DailyHomeView';
 import { LoadingPanel, SessionLoadingView } from '../shared/AppLoaders';
@@ -23,6 +23,7 @@ const ProfileView = lazyNamed(() => import('../../panels/ProfileView'), 'Profile
 const QuizView = lazyNamed(() => import('../../panels/QuizView'), 'QuizView');
 const StatsView = lazyNamed(() => import('../../panels/StatsView'), 'StatsView');
 const SummaryView = lazyNamed(() => import('../../panels/SummaryView'), 'SummaryView');
+const StudyFlashcardsView = lazyNamed(() => import('../../panels/StudyFlashcardsView'), 'StudyFlashcardsView');
 
 const Page = ({ children, pageKey }: { children: ReactNode; pageKey: string }) => (
   <motion.section
@@ -45,6 +46,9 @@ interface AppRouterViewProps {
   main: MainViewModel;
   dailyGame: DailyGameViewModel;
   synonymGame: SynonymGameViewModel;
+  studyLevel: GameLevel | null;
+  onStudyLevel: (level: GameLevel) => void;
+  onCloseStudy: () => void;
 }
 
 export function AppRouterView({
@@ -55,6 +59,9 @@ export function AppRouterView({
   main,
   dailyGame,
   synonymGame,
+  studyLevel,
+  onStudyLevel,
+  onCloseStudy,
 }: AppRouterViewProps) {
   const { session: dailySession, elapsedSeconds, onAnswer: onAnswerDailyQuestion, onSolve: onSolveDailyQuestion, onAdvance: onAdvanceDailyQuestion } = dailyGame;
   const { quiz, currentQuestion, currentAnswer, quizAdvanceLabel, summary, summaryErrors, onAnswer: onAnswerCurrentQuestion, onAdvance: onAdvanceQuiz } =
@@ -146,14 +153,27 @@ export function AppRouterView({
               </Suspense>
             )}
 
-            {mainScreen === 'profile' && (
+            {mainScreen === 'profile' && !studyLevel && (
               <Suspense fallback={<LoadingPanel />}>
                 <ProfileView
                   activePlayer={activePlayer}
-                  bankState={main.bankState}
                   weekHistory={main.weekHistory}
                   isLoadingData={main.isLoadingData}
+                  progress={main.progress}
+                  entries={main.bankState.entries}
+                  onStudyLevel={onStudyLevel}
                   onLogout={main.onLogout}
+                />
+              </Suspense>
+            )}
+
+            {mainScreen === 'profile' && studyLevel && (
+              <Suspense fallback={<LoadingPanel />}>
+                <StudyFlashcardsView
+                  playerId={activePlayer.userId}
+                  level={studyLevel}
+                  entries={main.bankState.entries}
+                  onClose={onCloseStudy}
                 />
               </Suspense>
             )}

@@ -67,9 +67,7 @@ export function resolveTopBarState({
         ? `${summary.level.name} emaitza`
         : mainScreen === 'admin'
           ? 'Kudeaketa'
-          : mainScreen === 'synonyms'
-            ? 'Esploratu Gailurrak'
-            : null;
+          : null;
 
   if (dailySession) {
     return {

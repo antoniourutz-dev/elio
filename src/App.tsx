@@ -10,6 +10,7 @@ import {
   isLevelUnlocked,
   LEVELS_TOTAL,
 } from './euskeraLearning';
+import type { GameLevel } from './euskeraLearning';
 import type { MainScreen } from './components/app/appChrome';
 import { AppRouterView } from './components/app/AppRouterView';
 import { ConfirmModal } from './components/ConfirmModal';
@@ -21,11 +22,13 @@ import { useDailyGame } from './hooks/useDailyGame';
 import { useAppScreenModel } from './hooks/useAppScreenModel';
 import { useSynonymBank } from './hooks/useSynonymBank';
 import { useSynonymGame } from './hooks/useSynonymGame';
+import { getAvatarForPlayer } from './lib/avatars';
 
 const App = () => {
   const [uiMessage, setUiMessage] = useState<string | null>(null);
   const [mainScreen, setMainScreen] = useState<MainScreen>('daily');
   const [isDailyExitWarningOpen, setIsDailyExitWarningOpen] = useState(false);
+  const [studyLevel, setStudyLevel] = useState<GameLevel | null>(null);
   const shellRef = useRef<HTMLDivElement | null>(null);
 
   const handleLoginSuccess = useCallback(() => {
@@ -177,6 +180,7 @@ const App = () => {
   const nextLevel = summary && summary.level.index < LEVELS_TOTAL ? GAME_LEVELS[summary.level.index] : null;
   const nextLevelUnlocked = nextLevel ? isLevelUnlocked(progress, nextLevel.index, bankState.entries) : false;
   const isTeacher = isTeacherPlayer(activePlayer);
+  const topBarAvatar = useMemo(() => (activePlayer ? getAvatarForPlayer(activePlayer) : null), [activePlayer]);
   const screenModel = useAppScreenModel({
     activePlayer,
     mainScreen,
@@ -255,6 +259,8 @@ const App = () => {
           secondaryMetric={screenModel.topBar.secondaryMetric}
           backIcon={<ChevronLeft />}
           progressIcon={<Mountain />}
+          avatarSrc={topBarAvatar?.src ?? null}
+          avatarAlt={topBarAvatar?.label}
         />
       )}
 
@@ -267,6 +273,9 @@ const App = () => {
           main={screenModel.main}
           dailyGame={screenModel.dailyGame}
           synonymGame={screenModel.synonymGame}
+          studyLevel={studyLevel}
+          onStudyLevel={setStudyLevel}
+          onCloseStudy={() => setStudyLevel(null)}
         />
       </AppShell>
 

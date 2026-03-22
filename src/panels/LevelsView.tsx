@@ -231,37 +231,43 @@ export const LevelsView = memo(function LevelsView({
         </div>
       )}
 
-      <div className="grid gap-3">
+      <div className="grid gap-2.5">
         <p className="text-[0.82rem] font-extrabold tracking-[0.22em] uppercase text-[#a5afbb]">Hurrengo erronkak</p>
 
-        <div className="grid gap-1.5">
+        <div className="grid gap-1">
           {upcomingLevels.map(({ level, unlocked }) => (
             <button
               key={level.id}
               type="button"
               className={clsx(
-                'flex items-center gap-4 w-full rounded-[22px] px-3 py-3 text-left transition-colors duration-150',
-                unlocked ? 'bg-[rgba(255,255,255,0.84)] border border-[rgba(216,226,241,0.76)] hover:bg-white' : 'bg-transparent'
+                'flex items-center gap-3 w-full rounded-[18px] px-3 py-2.5 text-left transition-[background,box-shadow] duration-150',
+                unlocked
+                  ? 'bg-[rgba(255,255,255,0.88)] border border-[rgba(216,226,241,0.76)] hover:bg-white hover:shadow-[0_4px_12px_rgba(100,140,160,0.08)]'
+                  : 'bg-[rgba(243,246,250,0.7)] border border-[rgba(220,228,238,0.4)]'
               )}
               onClick={() => unlocked && onStartLevel(level)}
               disabled={!unlocked}
             >
               <span
                 className={clsx(
-                  'inline-flex items-center justify-center shrink-0 w-[40px] h-[40px] rounded-full',
-                  unlocked ? 'bg-[rgba(95,200,189,0.12)] text-[#2f8f86]' : 'bg-[rgba(236,241,247,0.9)] text-[#b2bcc8]'
+                  'inline-flex items-center justify-center shrink-0 w-9 h-9 rounded-full',
+                  unlocked ? 'bg-[rgba(95,200,189,0.12)] text-[#2f8f86]' : 'bg-[rgba(225,231,240,0.8)] text-[#c4cdd8]'
                 )}
               >
-                {unlocked ? <Mountain className="w-5 h-5" /> : <Lock className="w-4.5 h-4.5" />}
+                {unlocked ? <Mountain className="w-[1.1rem] h-[1.1rem]" /> : <Lock className="w-[0.9rem] h-[0.9rem]" />}
               </span>
 
-              <span className="grid gap-0.5 min-w-0 flex-1">
-                <strong className={clsx('font-display text-[1.15rem] leading-none tracking-[-0.04em]', unlocked ? 'text-[#334250]' : 'text-[#a8b3c0]')}>
-                  {level.name}
-                </strong>
-              </span>
+              <strong className={clsx(
+                'flex-1 min-w-0 font-display text-[1.05rem] leading-none tracking-[-0.04em] truncate',
+                unlocked ? 'text-[#334250]' : 'text-[#b8c5d0]'
+              )}>
+                {level.name}
+              </strong>
 
-              <span className={clsx('shrink-0 text-[0.82rem] font-extrabold tracking-[0.04em]', unlocked ? 'text-[#84a6b1]' : 'text-[#bcc7d4]')}>
+              <span className={clsx(
+                'shrink-0 text-[0.78rem] font-bold tabular-nums transition-[filter] duration-300',
+                unlocked ? 'text-[#84a6b1]' : 'text-[#b8c5d0] blur-[4px] select-none'
+              )}>
                 {formatMeters(level.elevationMeters)}
               </span>
             </button>
