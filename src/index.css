@@ -143,6 +143,19 @@ p {
 .streak-icon-flicker         { animation: streak-flicker 2.5s ease-in-out infinite; }
 .streak-icon-flicker-intense { animation: streak-flicker-intense 1.6s ease-in-out infinite; }
 
+@keyframes mountain-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+@keyframes mountain-ring-pulse {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  100% { transform: scale(1.85); opacity: 0; }
+}
+
+.mountain-ring-pulse {
+  animation: mountain-ring-pulse 2.4s ease-out infinite;
+}
+
 @keyframes submit-sheen {
   0%        { transform: translateX(-180%); }
   38%, 100% { transform: translateX(280%); }

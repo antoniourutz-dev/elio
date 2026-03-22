@@ -1,18 +1,77 @@
-<svg width="512" height="192" viewBox="0 0 512 192" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g opacity="0.98">
-    <path d="M0 134C28 120 57 111 90 108C125 105 155 109 184 119C212 129 237 130 264 122C291 114 319 103 351 102C393 101 434 117 512 152V192H0V134Z" fill="#EEF3FB"/>
-    <path d="M0 149C31 132 63 123 98 122C133 121 160 130 188 141C214 151 240 154 267 150C298 145 330 132 367 133C410 133 453 149 512 176V192H0V149Z" fill="#E2EAF7"/>
-    <path d="M120 192L213 115C230 101 244 95 258 95C273 95 286 102 300 117L374 192H120Z" fill="#C9D8EE"/>
-    <path d="M187 192L279 54C286 44 296 39 307 39C318 39 328 44 335 54L430 192H187Z" fill="#B9CBE6"/>
-    <path d="M247 192L330 54C337 44 347 40 356 40C365 40 375 45 382 55L468 192H247Z" fill="#ADC1E0"/>
-    <path d="M307 39L282 100L321 82L307 39Z" fill="#F3F7FD"/>
-    <path d="M307 39L332 84L355 92L335 54L307 39Z" fill="#DDE7F6"/>
-    <path d="M225 124L188 159L219 149L225 124Z" fill="#DDE7F6"/>
-    <path d="M370 128L406 171L380 161L370 128Z" fill="#D5E1F3"/>
-    <path d="M0 168C39 150 72 144 105 147C137 150 165 160 192 171C219 182 246 188 277 190C313 191 348 185 384 177C421 169 463 169 512 182V192H0V168Z" fill="#AFC4E2"/>
-    <path d="M0 186C34 178 67 175 98 177C134 180 164 187 191 192H0V186Z" fill="#A4BADB"/>
-    <path d="M292 192C334 179 374 170 416 169C452 168 483 174 512 186V192H292Z" fill="#A4BADB"/>
-    <path d="M0 146C39 117 76 102 118 100C156 97 186 107 214 121" stroke="#F7FAFF" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
-    <path d="M387 110C409 101 431 100 456 106C475 111 494 120 512 133" stroke="#F7FAFF" stroke-width="10" stroke-linecap="round" opacity="0.45"/>
+<svg width="600" height="220" viewBox="0 0 600 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sky -->
+  <rect width="600" height="220" fill="#e8f2ec"/>
+
+  <!-- Sun -->
+  <circle cx="300" cy="90" r="64" fill="#f0f7f2" opacity="0.9"/>
+
+  <!-- Mountain layer 4 (farthest, lightest) -->
+  <path d="M0 130 L60 75 L110 105 L170 50 L230 90 L290 40 L350 80 L410 55 L470 95 L530 60 L600 100 L600 220 L0 220Z" fill="#b8d4c0" opacity="0.6"/>
+
+  <!-- Mountain layer 3 -->
+  <path d="M0 150 L50 100 L100 125 L160 70 L220 108 L280 65 L340 100 L400 72 L460 108 L520 78 L600 115 L600 220 L0 220Z" fill="#9ec4ad" opacity="0.75"/>
+
+  <!-- Mountain layer 2 -->
+  <path d="M0 168 L40 128 L90 152 L150 105 L210 138 L260 92 L310 128 L370 100 L430 135 L490 108 L550 140 L600 120 L600 220 L0 220Z" fill="#7dab92" opacity="0.85"/>
+
+  <!-- Snow caps layer 2 -->
+  <path d="M260 92 L275 110 L290 98 L310 128 L260 92Z" fill="#d8eedd" opacity="0.7"/>
+  <path d="M150 105 L165 122 L178 112 L210 138 L150 105Z" fill="#d8eedd" opacity="0.6"/>
+
+  <!-- Mountain layer 1 (closest, darkest) -->
+  <path d="M0 185 L30 155 L70 172 L120 140 L170 165 L220 148 L270 170 L330 145 L390 168 L450 150 L510 172 L560 155 L600 168 L600 220 L0 220Z" fill="#5a9478" opacity="0.9"/>
+
+  <!-- Ground -->
+  <path d="M0 200 Q100 188 200 195 Q300 202 400 192 Q500 182 600 196 L600 220 L0 220Z" fill="#4a8068"/>
+
+  <!-- Trees left -->
+  <g fill="#3d6b58" opacity="0.95">
+    <polygon points="18,200 28,168 38,200"/>
+    <polygon points="14,200 26,158 38,200"/>
+    <rect x="25" y="197" width="4" height="8"/>
+
+    <polygon points="48,200 60,172 72,200"/>
+    <polygon points="44,200 59,162 74,200"/>
+    <rect x="56" y="197" width="4" height="8"/>
+
+    <polygon points="82,200 92,178 102,200"/>
+    <polygon points="79,200 91,170 103,200"/>
+    <rect x="88" y="197" width="4" height="8"/>
+  </g>
+
+  <!-- Trees center -->
+  <g fill="#3d6b58" opacity="0.95">
+    <polygon points="268,200 282,162 296,200"/>
+    <polygon points="264,200 281,152 298,200"/>
+    <rect x="278" y="197" width="5" height="9"/>
+
+    <polygon points="302,200 314,170 326,200"/>
+    <polygon points="298,200 313,162 328,200"/>
+    <rect x="310" y="197" width="4" height="8"/>
+  </g>
+
+  <!-- Trees right -->
+  <g fill="#3d6b58" opacity="0.95">
+    <polygon points="468,200 480,168 492,200"/>
+    <polygon points="464,200 479,158 494,200"/>
+    <rect x="476" y="197" width="4" height="8"/>
+
+    <polygon points="508,200 520,172 532,200"/>
+    <polygon points="504,200 519,164 534,200"/>
+    <rect x="516" y="197" width="4" height="8"/>
+
+    <polygon points="548,200 558,178 568,200"/>
+    <polygon points="545,200 557,170 569,200"/>
+    <rect x="554" y="197" width="4" height="8"/>
+  </g>
+
+  <!-- Birds -->
+  <g fill="#4a6a5a" opacity="0.5">
+    <path d="M80 40 Q84 36 88 40 Q92 36 96 40" stroke="#4a6a5a" stroke-width="1.5" fill="none"/>
+    <path d="M160 25 Q163 22 166 25 Q169 22 172 25" stroke="#4a6a5a" stroke-width="1.5" fill="none"/>
+    <path d="M420 32 Q423 29 426 32 Q429 29 432 32" stroke="#4a6a5a" stroke-width="1.5" fill="none"/>
+    <path d="M500 48 Q504 44 508 48 Q512 44 516 48" stroke="#4a6a5a" stroke-width="1.5" fill="none"/>
+    <path d="M350 18 Q353 15 356 18 Q359 15 362 18" stroke="#4a6a5a" stroke-width="1.5" fill="none"/>
+    <path d="M230 55 Q233 52 236 55 Q239 52 242 55" stroke="#4a6a5a" stroke-width="1.5" fill="none"/>
   </g>
 </svg>

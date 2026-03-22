@@ -68,7 +68,7 @@ export function resolveTopBarState({
         : mainScreen === 'admin'
           ? 'Kudeaketa'
           : mainScreen === 'synonyms'
-            ? 'Sinonimoak'
+            ? 'Esploratu Gailurrak'
             : null;
 
   if (dailySession) {

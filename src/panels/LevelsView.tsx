@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, type CSSProperties } from 'react';
 import clsx from 'clsx';
 import { CheckCircle2, ChevronRight, Lock, Mountain, RefreshCw } from 'lucide-react';
 import {
@@ -105,24 +105,10 @@ export const LevelsView = memo(function LevelsView({
 
   return (
     <section className="grid gap-5 p-[20px] rounded-[32px] bg-gradient-to-b from-[rgba(255,255,255,0.98)] to-[rgba(248,252,255,0.97)]">
-      <div className="grid gap-1">
-        <h2
-          className="text-[clamp(2.05rem,5vw,3.15rem)] leading-[0.84] tracking-[-0.085em] text-[#223748]"
-          style={{ fontFamily: 'var(--font-editorial)' }}
-        >
-          Esploratu
-          <br />
-          Gailurrak
-        </h2>
-        <p className="max-w-[18rem] text-[0.98rem] leading-[1.55] font-medium text-[#6f8191]">
-          Zure maisutasun-bidea hemen hasten da.
-        </p>
-      </div>
-
       {currentLevel && (
         <button
           type="button"
-          className="group relative grid gap-4 w-full rounded-[30px] border border-[rgba(118,199,178,0.38)] bg-[linear-gradient(180deg,rgba(246,255,251,0.99),rgba(232,247,240,0.97))] px-5 py-5 text-left shadow-[0_22px_52px_rgba(78,160,141,0.16)] overflow-hidden transition-[transform,box-shadow,border-color,filter] duration-200 hover:-translate-y-[2px] hover:border-[rgba(77,182,165,0.58)] hover:shadow-[0_26px_58px_rgba(78,160,141,0.2)] hover:saturate-[1.04]"
+          className="group relative grid gap-4 w-full rounded-[30px] border-2 border-[rgba(77,182,165,0.7)] bg-[linear-gradient(180deg,rgba(246,255,251,0.99),rgba(232,247,240,0.97))] px-5 py-5 text-left shadow-[0_0_0_4px_rgba(77,182,165,0.12),0_22px_52px_rgba(78,160,141,0.22)] overflow-hidden transition-[transform,box-shadow,border-color,filter] duration-200 hover:-translate-y-[2px] hover:border-[rgba(77,182,165,0.9)] hover:shadow-[0_0_0_5px_rgba(77,182,165,0.16),0_26px_58px_rgba(78,160,141,0.26)] hover:saturate-[1.04]"
           onClick={() => onStartLevel(currentLevel.level)}
           disabled={!currentLevel.unlocked}
         >
@@ -131,43 +117,70 @@ export const LevelsView = memo(function LevelsView({
           <div className="absolute pointer-events-none left-[-36px] bottom-[-44px] w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,rgba(201,226,123,0.16),transparent_68%)]" />
 
           <div className="flex items-start gap-4">
-            <span
-              className={clsx(
-                'inline-flex items-center justify-center shrink-0 w-[62px] h-[62px] rounded-full shadow-[0_12px_24px_rgba(66,140,130,0.16)]',
-                currentLevel.completed ? 'bg-[linear-gradient(135deg,#7fd4ac,#b7df81)] text-white' : 'bg-[linear-gradient(135deg,#4db6a5,#89cf95)] text-white'
+            <span className="relative shrink-0 flex items-center justify-center w-[62px] h-[62px]">
+              {!currentLevel.completed && (
+                <span className="mountain-ring-pulse absolute inset-0 rounded-full bg-[rgba(29,139,127,0.45)]" />
               )}
-            >
-              {currentLevel.completed ? <CheckCircle2 className="w-7 h-7" /> : <Mountain className="w-7 h-7" />}
+              <span
+                className={clsx(
+                  'relative inline-flex items-center justify-center w-full h-full rounded-full shadow-[0_2px_0_rgba(255,255,255,0.5)_inset,0_-1px_0_rgba(0,0,0,0.08)_inset,0_14px_28px_rgba(66,140,130,0.22)]',
+                  currentLevel.completed
+                    ? 'bg-[linear-gradient(145deg,#7fd4ac,#b7df81)]'
+                    : 'bg-[linear-gradient(145deg,#5cc4b2,#3da090)]'
+                )}
+              >
+                {currentLevel.completed
+                  ? <CheckCircle2 className="w-7 h-7 text-white drop-shadow-sm" />
+                  : <Mountain className="w-7 h-7 text-white drop-shadow-sm" />}
+              </span>
             </span>
 
-            <div className="grid gap-1.5 min-w-0">
-              <div className="flex items-center gap-3 flex-wrap">
-                <strong className="font-display text-[1.6rem] leading-none tracking-[-0.05em] text-[#223748]">
+            <div className="grid gap-2 min-w-0 flex-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <strong className="font-display text-[1.6rem] leading-none tracking-[-0.05em] text-[#1a2e3b]">
                   {currentLevel.level.name}
                 </strong>
-                <span className="inline-flex items-center rounded-full border border-[rgba(77,182,165,0.18)] bg-[linear-gradient(180deg,rgba(118,220,199,0.28),rgba(100,206,183,0.2))] px-3 py-[0.26rem] text-[0.72rem] font-black uppercase tracking-[0.1em] text-[#1d8b7f] shadow-[0_6px_14px_rgba(77,182,165,0.12)]">
-                  {currentLevel.completed ? 'Gainditzeko prest' : 'Martxan'}
-                </span>
+                {!currentLevel.completed && (
+                  <span className="relative flex h-[7px] w-[7px] shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4db6a5] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-[7px] w-[7px] bg-[#1d8b7f]" />
+                  </span>
+                )}
               </div>
-              <p className="text-[1rem] font-medium leading-[1.45] text-[#6d7f91]">
-                {formatMeters(currentLevel.climbedMeters)} / {formatMeters(currentLevel.level.elevationMeters)}
+              <p className="text-[0.84rem] font-semibold text-[#7a9aab] leading-none">
+                {currentLevel.remainingMeters > 0
+                  ? `${formatMeters(currentLevel.remainingMeters)} falta dira gailurrera`
+                  : 'Gailurra lortu duzu'}
               </p>
             </div>
           </div>
 
-          <div className="grid gap-2">
-            <div className="h-3 rounded-full bg-[#dce3ea] overflow-hidden">
+          <div className="grid gap-3">
+            <div className="grid gap-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[0.78rem] font-bold tracking-[0.06em] uppercase text-[#8aabb8]">Aurrerapena</span>
+                <span className="text-[0.82rem] font-extrabold text-[#14857e]">
+                  % {Math.round(currentLevel.levelPercentage)}
+                </span>
+              </div>
               <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#14857e,#4db6a5,#b7df81)] transition-[width] duration-500"
-                style={{ width: `${Math.max(currentLevel.levelPercentage, 4)}%` }}
-              />
+                className="h-[10px] rounded-full bg-[rgba(180,205,215,0.35)] overflow-hidden shadow-[inset_0_1px_3px_rgba(0,0,0,0.08)]"
+                style={{ '--progress-w': `${Math.max(currentLevel.levelPercentage, 4)}%` } as CSSProperties}
+              >
+                <div className="h-full w-[var(--progress-w)] rounded-full bg-[linear-gradient(90deg,#0e7a74,#4db6a5,#a8d96e)] shadow-[0_1px_4px_rgba(77,182,165,0.4)] transition-[width] duration-500" />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[0.82rem] font-bold text-[#7a9aab]">
+                  {formatMeters(currentLevel.climbedMeters)}
+                </span>
+                <span className="text-[0.82rem] font-bold text-[#7a9aab]">
+                  {formatMeters(currentLevel.level.elevationMeters)}
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-[0.95rem] font-extrabold tracking-[-0.02em] text-[#14857e]">
-                {formatMeters(currentLevel.climbedMeters)} / {formatMeters(currentLevel.level.elevationMeters)}
-              </span>
-              <span className="inline-flex items-center gap-1 text-[0.96rem] font-extrabold text-[#2d7f8f]">
+            <div className="flex justify-end">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#1d8b7f,#4db6a5)] px-5 py-2 text-[0.88rem] font-extrabold text-white shadow-[0_6px_18px_rgba(29,139,127,0.35)] transition-[transform,shadow] duration-150 group-hover:shadow-[0_8px_22px_rgba(29,139,127,0.45)]">
                 Jarraitu
                 <ChevronRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-[2px]" />
               </span>
