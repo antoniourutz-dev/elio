@@ -11,7 +11,7 @@ export interface SpellingDailyQuestion {
   type: 'spelling';
   id: string;
   displayText: string;
-  correctAnswer: 'ZUZEN' | 'OKERRA';
+  correctAnswer: 'ZUZEN' | 'OKER';
 }
 
 export interface SynonymDailyQuestion {
@@ -22,14 +22,34 @@ export interface SynonymDailyQuestion {
   options: string[];
 }
 
-export type DailyQuestion = SpellingDailyQuestion | SynonymDailyQuestion;
+export interface EroglificoEntry {
+  id: number | string;
+  imagePath: string;
+  clue: string;
+  solution: string;
+  normalizedSolution?: string;
+  alternativeAnswers?: string[];
+  active?: boolean;
+}
+
+export interface EroglificoDailyQuestion {
+  type: 'eroglifico';
+  id: string;
+  imageUrl: string;
+  clue: string;
+  correctAnswer: string;
+  acceptedAnswers: string[];
+}
+
+export type DailyQuestion = SpellingDailyQuestion | SynonymDailyQuestion | EroglificoDailyQuestion;
 
 export interface DailyAnswer {
   questionId: string;
-  questionType: 'spelling' | 'synonym';
+  questionType: 'spelling' | 'synonym' | 'eroglifico';
   selectedAnswer: string;
   correctAnswer: string;
   isCorrect: boolean;
+  wasSolved?: boolean;
 }
 
 export interface DailyGameSession {
@@ -41,11 +61,12 @@ export interface DailyGameSession {
 }
 
 export interface DailyStoredAnswer {
-  type: 'spelling' | 'synonym';
+  type: 'spelling' | 'synonym' | 'eroglifico';
   word: string;
   selected: string;
   correct: string;
   isCorrect: boolean;
+  wasSolved?: boolean;
 }
 
 export interface DailyResult {

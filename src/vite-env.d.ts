@@ -12,6 +12,9 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_GAME_FAIL_EVENTS_TABLE?: string;
   readonly VITE_SUPABASE_GAME_QUESTION_EVENTS_TABLE?: string;
   readonly VITE_SUPABASE_DAILY_PILLS_TABLE?: string;
+  readonly VITE_SUPABASE_EROGLIFIKOAK_TABLE?: string;
+  readonly VITE_SUPABASE_EROGLIFIKOAK_BUCKET?: string;
+  readonly VITE_SUPABASE_EROGLIFIKOAK_BASE_URL?: string;
 }
 
 interface ImportMeta {

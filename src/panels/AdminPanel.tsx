@@ -50,6 +50,15 @@ interface TeacherPlayerDraftState {
 const emptyTeacherWordForm: TeacherWordFormState = { word: '', synonyms: '', levelOrder: 1 };
 const emptyTeacherPlayerDraft: TeacherPlayerDraftState = { playerCode: '', password: '' };
 
+const adminFieldShellClass =
+  'flex items-center gap-2.5 min-h-[56px] px-3.5 rounded-[20px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] transition-all duration-150 focus-within:border-[rgba(107,184,217,0.38)] focus-within:bg-[rgba(252,254,255,0.98)] focus-within:shadow-[0_0_0_3px_rgba(107,184,217,0.08)]';
+
+const adminStretchFieldShellClass =
+  'flex items-stretch gap-2.5 p-3 rounded-[20px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] transition-all duration-150 focus-within:border-[rgba(107,184,217,0.38)] focus-within:bg-[rgba(252,254,255,0.98)] focus-within:shadow-[0_0_0_3px_rgba(107,184,217,0.08)]';
+
+const adminFieldInputClass =
+  'w-full min-w-0 appearance-none rounded-none border-0! bg-transparent outline-none! shadow-none! ring-0! text-[#203143] text-[0.98rem] font-extrabold caret-[#6bb8d9] focus:border-0! focus:outline-none! focus:shadow-none! focus:ring-0!';
+
 const normalizeSearchTerm = (value: string): string =>
   value
     .trim()
@@ -419,45 +428,66 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
 
   return (
     <>
-      <div className="home-note" role="status" aria-live="polite" aria-atomic="true">
+      <div
+        className={clsx(
+          'p-4 rounded-[1.2rem] border text-[#4b677d] text-[0.95rem] font-bold shadow-[0_14px_34px_rgba(120,146,168,0.1)] leading-snug transition-opacity duration-150',
+          teacherMessage ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 p-0 border-0 shadow-none',
+          teacherMessage?.includes('Errorea') || teacherMessage?.includes('ezin da')
+            ? 'bg-gradient-to-br from-[#fff9e9]/98 to-[#fff5d6]/98 border-[#e0bc66]/40 text-[#8d6b20]'
+            : 'bg-gradient-to-br from-[#f7fbfe]/98 to-[#edf5fa]/98 border-[#c1d9e9]/70'
+        )}
+        role="status"
+        aria-live="polite" 
+        aria-atomic="true"
+      >
         {teacherMessage ?? ''}
       </div>
 
-      <section className="admin-panel">
-        <div className="panel-head">
+      <section className="grid gap-[18px] p-6 rounded-[32px] border border-[rgba(209,223,229,0.92)] bg-gradient-to-b from-[rgba(255,255,255,0.98)] to-[rgba(248,252,255,0.97)] shadow-[0_20px_60px_rgba(100,140,160,0.13),0_4px_16px_rgba(100,140,160,0.07)]">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="section-label">Kudeaketa</p>
-            <h2>Irakaslearen panela</h2>
+            <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Kudeaketa</p>
+            <h2 className="font-display text-[clamp(2rem,4vw,2.8rem)] leading-[0.96] tracking-[-0.05em] text-[#203143]">Irakaslearen panela</h2>
           </div>
 
-          <div className="admin-switch">
+          <div className="inline-flex items-center gap-2.5 flex-wrap">
             <button
               type="button"
-              className={clsx('admin-switch-button', { 'admin-switch-button-active': adminSection === 'words' })}
+              className={clsx(
+                'inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] font-extrabold cursor-pointer transition-all duration-150',
+                adminSection === 'words' 
+                  ? 'border-[rgba(95,200,189,0.28)] bg-[rgba(232,248,244,0.96)] text-[#203143] shadow-[0_8px_28px_rgba(107,148,165,0.1)]' 
+                  : 'border-[rgba(216,226,241,0.92)] bg-[rgba(247,249,255,0.88)] text-[#7a8d9d]'
+              )}
               onClick={() => setAdminSection('words')}
             >
-              <BookOpen className="admin-switch-icon" />
+              <BookOpen className="w-[18px] h-[18px]" />
               <span>Hitzak</span>
             </button>
             <button
               type="button"
-              className={clsx('admin-switch-button', { 'admin-switch-button-active': adminSection === 'players' })}
+              className={clsx(
+                'inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] font-extrabold cursor-pointer transition-all duration-150',
+                adminSection === 'players'
+                  ? 'border-[rgba(95,200,189,0.28)] bg-[rgba(232,248,244,0.96)] text-[#203143] shadow-[0_8px_28px_rgba(107,148,165,0.1)]'
+                  : 'border-[rgba(216,226,241,0.92)] bg-[rgba(247,249,255,0.88)] text-[#7a8d9d]'
+              )}
               onClick={() => setAdminSection('players')}
             >
-              <Users className="admin-switch-icon" />
+              <Users className="w-[18px] h-[18px]" />
               <span>Jokalariak</span>
             </button>
           </div>
         </div>
 
         {adminSection === 'players' && (
-          <section className="admin-card admin-card-wide">
-            <div className="admin-card-head">
+          <section className="grid gap-[18px] p-5 rounded-[28px] border border-[rgba(216,226,241,0.92)] bg-[rgba(255,255,255,0.96)] shadow-[0_8px_28px_rgba(107,148,165,0.1)] w-full">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="section-label">
+                <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">
                   {adminPlayersView === 'list' ? 'Aurrerapena' : adminPlayersView === 'detail' ? 'Jokalaria' : 'Jokalari berria'}
                 </p>
-                <h3>
+                <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[#203143]">
                   {adminPlayersView === 'list'
                     ? 'Jokalari guztiak'
                     : adminPlayersView === 'detail'
@@ -469,7 +499,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
               {adminPlayersView !== 'list' && (
                 <button
                   type="button"
-                  className="admin-secondary-button admin-panel-action"
+                  className="flex-shrink-0 inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[#203143] cursor-pointer transition-transform hover:-translate-y-0.5"
                   onClick={() => {
                     setAdminPlayersView('list');
                     setSelectedTeacherPlayerId(null);
@@ -478,7 +508,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     setNewPlayerPassword('');
                   }}
                 >
-                  <ChevronLeft className="admin-button-icon" />
+                  <ChevronLeft className="w-[18px] h-[18px]" />
                   <span>Jokalariak</span>
                 </button>
               )}
@@ -486,26 +516,26 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
 
             {adminPlayersView === 'list' && (
               <>
-                <span className="admin-muted-pill">
+                <span className="inline-flex items-center justify-center min-h-[38px] px-3.5 rounded-full bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] text-[0.82rem] font-bold">
                   {isTeacherPlayersLoading ? 'Kargatzen...' : `${teacherPlayers.length} jokalari`}
                 </span>
 
-                {isTeacherPlayersLoading && <div className="admin-empty-state">Jokalariak kargatzen ari dira.</div>}
+                {isTeacherPlayersLoading && <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">Jokalariak kargatzen ari dira.</div>}
 
                 {!isTeacherPlayersLoading && teacherPlayers.length === 0 && (
-                  <div className="admin-empty-state">Ez dago jokalaririk oraindik.</div>
+                  <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">Ez dago jokalaririk oraindik.</div>
                 )}
 
                 {!isTeacherPlayersLoading && teacherPlayers.length > 0 && (
-                  <div className="admin-player-list">
+                  <div className="grid gap-3.5">
                     {teacherPlayers.map((player) => (
                       <button
                         key={player.ownerId}
                         type="button"
-                        className="admin-player-list-button admin-player-list-button-plain"
+                        className="grid w-full p-[16px_18px] rounded-[22px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] text-left transition-all duration-150 hover:-translate-y-0.5 hover:border-[rgba(102,131,255,0.28)] focus:border-[rgba(63,105,210,0.22)]"
                         onClick={() => selectTeacherPlayer(player)}
                       >
-                        <strong>{player.playerCode}</strong>
+                        <strong className="block font-display text-[1.14rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">{player.playerCode}</strong>
                       </button>
                     ))}
                   </div>
@@ -513,40 +543,40 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
 
                 <button
                   type="button"
-                  className="admin-primary-button admin-panel-action"
+                  className="flex-shrink-0 inline-flex items-center justify-center gap-2.5 min-h-[52px] px-[18px] rounded-full font-black text-white bg-gradient-to-br from-[#69b7da] via-[#62cdbf] to-[#dce97f] shadow-[0_18px_36px_rgba(103,201,190,0.18)] cursor-pointer transition-transform hover:-translate-y-0.5"
                   onClick={() => setAdminPlayersView('create')}
                 >
-                  <PlusCircle className="admin-button-icon" />
+                  <PlusCircle className="w-[18px] h-[18px]" />
                   <span>Jokalari berria</span>
                 </button>
               </>
             )}
 
             {adminPlayersView === 'detail' && selectedTeacherPlayer && (
-              <article className="admin-player-card admin-player-detail-card">
-                <div className="admin-player-top">
+              <article className="grid gap-3.5 p-5 rounded-[24px] border border-[rgba(216,226,241,0.92)] bg-[rgba(255,255,255,0.98)] shadow-[0_6px_20px_rgba(107,148,165,0.09)]">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <strong>{selectedTeacherPlayer.playerCode}</strong>
-                    <span>{selectedTeacherPlayer.currentLevelName} unean</span>
+                    <strong className="block font-display text-[1.3rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">{selectedTeacherPlayer.playerCode}</strong>
+                    <span className="text-[#7a8d9d] text-[0.92rem] font-bold">{selectedTeacherPlayer.currentLevelName} unean</span>
                   </div>
-                  <span className="admin-player-date">Eguneratua {formatAdminDate(selectedTeacherPlayer.updatedAt)}</span>
+                  <span className="text-[0.78rem] font-bold text-[#7a8d9d] opacity-80 uppercase">Eguneratua {formatAdminDate(selectedTeacherPlayer.updatedAt)}</span>
                 </div>
 
-                <div className="admin-player-stats">
-                  <span>{selectedTeacherPlayer.totalGamesPlayed} partida</span>
-                  <span>{selectedTeacherPlayer.consecutivePlayDays} egun jarraian</span>
-                  <span>{selectedTeacherPlayerLearnedWords} hitz ikasita</span>
-                  <span>{selectedTeacherPlayerUnitStatus}</span>
-                  <span>{selectedTeacherPlayerAccuracy}% asmatuta</span>
+                <div className="flex flex-wrap gap-2.5">
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayer.totalGamesPlayed} partida</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayer.consecutivePlayDays} egun jarraian</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayerLearnedWords} hitz ikasita</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayerUnitStatus}</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayerAccuracy}% asmatuta</span>
                 </div>
 
-                <div className="admin-player-detail-grid">
-                  <label className="admin-field">
-                    <span>Erabiltzailea</span>
-                    <div className="admin-input-shell">
-                      <CircleUserRound className="admin-input-icon" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <label className="grid gap-2.5">
+                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
+                    <div className={adminFieldShellClass}>
+                      <CircleUserRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <input
-                        className="admin-input"
+                        className={adminFieldInputClass}
                         type="text"
                         value={teacherPlayerDraft.playerCode}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -557,12 +587,12 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     </div>
                   </label>
 
-                  <label className="admin-field admin-field-span-2">
-                    <span>Pasahitz berria</span>
-                    <div className="admin-input-shell">
-                      <KeyRound className="admin-input-icon" />
+                  <label className="grid gap-2.5 md:col-span-2">
+                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Pasahitz berria</span>
+                    <div className={adminFieldShellClass}>
+                      <KeyRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <input
-                        className="admin-input"
+                        className={adminFieldInputClass}
                         type="text"
                         value={teacherPlayerDraft.password}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -574,10 +604,10 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   </label>
                 </div>
 
-                <div className="admin-player-actions admin-player-actions-detail">
-                  <div className="admin-inline-field admin-inline-field-wide">
-                    <span>Mendiak eskuz zabaldu</span>
-                    <div className="admin-level-toggle-grid">
+                <div className="grid grid-cols-1 gap-3.5 mt-2">
+                  <div className="grid gap-2.5">
+                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Mendiak eskuz zabaldu</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                       {GAME_LEVELS.map((level) => {
                         const forcedLevels = unlockDrafts[selectedTeacherPlayer.ownerId] ?? selectedTeacherPlayer.forcedUnlockLevels;
                         const isAlwaysUnlocked = level.index === 1;
@@ -588,22 +618,24 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                           <button
                             key={`unlock-${selectedTeacherPlayer.ownerId}-${level.id}`}
                             type="button"
-                            className={clsx('admin-level-toggle', {
-                              'admin-level-toggle-active': isActive,
-                              'admin-level-toggle-static': isAlwaysUnlocked,
-                            })}
+                            className={clsx(
+                              'flex items-center justify-between min-h-[42px] px-2.5 rounded-[16px] border text-[0.78rem] font-extrabold transition-all duration-150',
+                              isActive 
+                                ? 'border-[rgba(95,200,189,0.4)] bg-gradient-to-br from-[#66c9c1] to-[#9ad3a9] text-white shadow-[0_14px_28px_rgba(112,205,182,0.16)]' 
+                                : 'border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] text-[#7a8d9d] hover:border-[rgba(95,200,189,0.38)]'
+                            )}
                             disabled={isAlwaysUnlocked || isSavingUnlocks}
                             aria-pressed={isAlwaysUnlocked ? undefined : isActive}
                             onClick={() => void toggleForcedUnlockForPlayer(selectedTeacherPlayer, level.index)}
                           >
-                            <span className="admin-level-toggle-label">{level.name}</span>
-                            <span className="admin-level-toggle-indicator" aria-hidden="true">
+                            <span className="truncate">{level.name}</span>
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/20 shrink-0">
                               {isAlwaysUnlocked ? (
-                                <Mountain className="admin-level-toggle-icon" />
+                                <Mountain className="w-3.5 h-3.5" />
                               ) : isActive ? (
-                                <CheckCircle2 className="admin-level-toggle-icon" />
+                                <CheckCircle2 className="w-3.5 h-3.5" />
                               ) : (
-                                <Lock className="admin-level-toggle-icon" />
+                                <Lock className="w-3.5 h-3.5" />
                               )}
                             </span>
                           </button>
@@ -611,34 +643,36 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                       })}
                     </div>
                   </div>
+                </div>
 
+                <div className="flex flex-wrap gap-3 mt-4">
                   <button
                     type="button"
-                    className="admin-primary-button"
+                    className="flex-1 inline-flex items-center justify-center gap-2.5 min-h-[52px] px-[18px] rounded-full font-black text-white bg-gradient-to-br from-[#69b7da] via-[#62cdbf] to-[#dce97f] shadow-[0_18px_36px_rgba(103,201,190,0.18)] cursor-pointer transition-transform hover:-translate-y-0.5"
                     onClick={() => void saveTeacherPlayerAccessChanges(selectedTeacherPlayer)}
                     disabled={isSavingTeacherPlayer}
                   >
-                    <Save className="admin-button-icon" />
+                    <Save className="w-[18px] h-[18px]" />
                     <span>{isSavingTeacherPlayer ? 'Gordetzen...' : 'Datuak gorde'}</span>
                   </button>
 
                   <button
                     type="button"
-                    className="admin-secondary-button admin-secondary-button-danger"
+                    className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[#efc2bb] bg-[#fff0ee] text-[#b7594d] cursor-pointer transition-transform hover:-translate-y-0.5"
                     onClick={() => void resetTeacherPlayer(selectedTeacherPlayer)}
                   >
-                    <RotateCcw className="admin-button-icon" />
+                    <RotateCcw className="w-[18px] h-[18px]" />
                     <span>Datuak garbitu</span>
                   </button>
 
                   {selectedTeacherPlayer.playerCode !== ADMIN_PLAYER_CODE && (
                     <button
                       type="button"
-                      className="admin-secondary-button admin-secondary-button-danger"
+                      className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[#efc2bb] bg-[#fff0ee] text-[#b7594d] cursor-pointer transition-transform hover:-translate-y-0.5"
                       onClick={() => void deleteTeacherPlayer(selectedTeacherPlayer)}
                       disabled={isDeletingTeacherPlayer}
                     >
-                      <Trash2 className="admin-button-icon" />
+                      <Trash2 className="w-[18px] h-[18px]" />
                       <span>{isDeletingTeacherPlayer ? 'Ezabatzen...' : 'Jokalaria ezabatu'}</span>
                     </button>
                   )}
@@ -647,13 +681,13 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
             )}
 
             {adminPlayersView === 'create' && (
-              <form className="admin-player-create-form" onSubmit={(e: FormEvent<HTMLFormElement>) => void submitTeacherPlayer(e)}>
-                <label className="admin-field">
-                  <span>Erabiltzailea</span>
-                  <div className="admin-input-shell">
-                    <CircleUserRound className="admin-input-icon" />
+              <form className="grid gap-[18px]" onSubmit={(e: FormEvent<HTMLFormElement>) => void submitTeacherPlayer(e)}>
+                <label className="grid gap-2.5">
+                  <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
+                  <div className={adminFieldShellClass}>
+                    <CircleUserRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                     <input
-                      className="admin-input"
+                      className={adminFieldInputClass}
                       type="text"
                       value={newPlayerCode}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => setNewPlayerCode(event.target.value.toLowerCase())}
@@ -662,12 +696,12 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   </div>
                 </label>
 
-                <label className="admin-field">
-                  <span>Pasahitza</span>
-                  <div className="admin-input-shell">
-                    <KeyRound className="admin-input-icon" />
+                <label className="grid gap-2.5">
+                  <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Pasahitza</span>
+                  <div className={adminFieldShellClass}>
+                    <KeyRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                     <input
-                      className="admin-input"
+                      className={adminFieldInputClass}
                       type="text"
                       value={newPlayerPassword}
                       onChange={(event: ChangeEvent<HTMLInputElement>) => setNewPlayerPassword(event.target.value)}
@@ -676,8 +710,12 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   </div>
                 </label>
 
-                <button className="admin-primary-button" type="submit" disabled={isCreatingPlayer}>
-                  <Save className="admin-button-icon" />
+                <button 
+                  className="flex-shrink-0 inline-flex items-center justify-center gap-2.5 min-h-[52px] px-[18px] rounded-full font-black text-white bg-gradient-to-br from-[#69b7da] via-[#62cdbf] to-[#dce97f] shadow-[0_18px_36px_rgba(103,201,190,0.18)] cursor-pointer transition-transform hover:-translate-y-0.5 disabled:opacity-70" 
+                  type="submit" 
+                  disabled={isCreatingPlayer}
+                >
+                  <Save className="w-[18px] h-[18px]" />
                   <span>{isCreatingPlayer ? 'Sortzen...' : 'Gorde jokalaria'}</span>
                 </button>
               </form>
@@ -686,18 +724,18 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
         )}
 
         {adminSection === 'words' && (
-          <section className="admin-card admin-card-wide admin-card-search-only">
-            <div className="admin-card-head">
+          <section className="grid gap-[18px] p-5 rounded-[28px] border border-[rgba(216,226,241,0.92)] bg-[rgba(255,255,255,0.96)] shadow-[0_8px_28px_rgba(107,148,165,0.1)] w-full max-w-[min(860px,100%)]">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="section-label">Sinonimoak</p>
-                <h3>Bilatu, editatu edo gehitu</h3>
+                <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Sinonimoak</p>
+                <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[#203143]">Bilatu, editatu edo gehitu</h3>
               </div>
             </div>
 
-            <div className="admin-word-section">
-              <div className="admin-search-shell">
+            <div className="grid gap-[18px]">
+              <div className={adminFieldShellClass}>
                 <input
-                  className="admin-input"
+                  className={adminFieldInputClass}
                   type="search"
                   value={teacherWordSearch}
                   onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -709,59 +747,63 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
               </div>
 
               {isDemoMode && (
-                <div className="admin-empty-state">
+                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">
                   Demoko hitzak bakarrik daude ikusgai. Taula erreala erabilgarri dagoenean hemen agertuko dira benetako sarrerak.
                 </div>
               )}
 
               {!isDemoMode && teacherWordQuery.length === 0 && (
-                <div className="admin-empty-state">
+                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">
                   Idatzi hitz bat edo sinonimo bat. Aurkitzen bada editatu ahal izango duzu; bestela, sarrera berria sortuko da.
                 </div>
               )}
 
               {!isDemoMode && teacherWordQuery.length > 0 && teacherWordResults.length > 0 && !teacherDirectMatch && (
-                <div className="admin-word-list">
+                <div className="grid gap-3.5">
                   {teacherWordResults.map((entry) => (
-                    <article key={entry.id} className="admin-word-card">
-                      <div className="admin-word-top">
+                    <article key={entry.id} className="grid gap-3.5 p-[18px] rounded-[24px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)]">
+                      <div className="flex items-start justify-between gap-3">
                         <div>
-                          <strong>{entry.word}</strong>
-                          <span>{GAME_LEVELS[(entry.levelOrder ?? 1) - 1]?.name ?? 'Mailarik gabe'}</span>
+                          <strong className="block font-display text-[1.28rem] leading-[1.05] tracking-[-0.04em] text-[#203143]">{entry.word}</strong>
+                          <span className="text-[#7a8d9d] text-[0.92rem] font-bold">{GAME_LEVELS[(entry.levelOrder ?? 1) - 1]?.name ?? 'Mailarik gabe'}</span>
                         </div>
 
-                        <button type="button" className="admin-inline-button" onClick={() => startEditingWord(entry)}>
-                          <PencilLine className="admin-button-icon" />
+                        <button 
+                          type="button" 
+                          className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] border border-[rgba(216,226,241,0.92)] bg-white/96 text-[#203143] font-extrabold cursor-pointer transition-transform hover:-translate-y-0.5" 
+                          onClick={() => startEditingWord(entry)}
+                        >
+                          <PencilLine className="w-[18px] h-[18px]" />
                           <span>Editatu</span>
                         </button>
                       </div>
 
-                      <p className="admin-word-synonyms">{entry.synonyms.join(', ')}</p>
+                      <p className="text-[#7a8d9d] text-[0.92rem] font-bold leading-relaxed">{entry.synonyms.join(', ')}</p>
                     </article>
                   ))}
                 </div>
               )}
 
               {!isDemoMode && teacherWordQuery.length > 0 && teacherWordResults.length === 0 && (
-                <div className="admin-empty-state">Ez da hitz hori aurkitu. Azpiko formularioan zuzenean sor dezakezu.</div>
+                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">Ez da hitz hori aurkitu. Azpiko formularioan zuzenean sor dezakezu.</div>
               )}
 
               {!isDemoMode && teacherWordQuery.length > 0 && (
-                <form className="admin-word-editor" onSubmit={(e: FormEvent<HTMLFormElement>) => void submitTeacherWord(e)}>
-                  <div className="admin-card-head admin-word-editor-head">
+                <form className="grid gap-[18px] pt-4.5 border-t border-[rgba(216,226,241,0.92)]" onSubmit={(e: FormEvent<HTMLFormElement>) => void submitTeacherWord(e)}>
+                  <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="section-label">{editingWordId ? 'Editatzen' : 'Sarrera berria'}</p>
-                      <h3>{editingWordId ? 'Hitza eguneratu' : 'Hitza gehitu'}</h3>
+                      <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">{editingWordId ? 'Editatzen' : 'Sarrera berria'}</p>
+                      <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[#203143]">{editingWordId ? 'Hitza eguneratu' : 'Hitza gehitu'}</h3>
                     </div>
-                    <span className="admin-muted-pill">{editingWordId ? 'Badago' : 'Berria'}</span>
+                    <span className="inline-flex items-center justify-center min-h-[38px] px-3.5 rounded-full bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] text-[0.82rem] font-bold">{editingWordId ? 'Badago' : 'Berria'}</span>
                   </div>
 
-                  <label className="admin-field">
-                    <span>Hitza</span>
-                    <div className="admin-input-shell">
-                      <BookOpen className="admin-input-icon" />
+                  <label className="grid gap-2.5">
+                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Hitza</span>
+                    <div className={adminFieldShellClass}>
+                      <BookOpen className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <input
-                        className="admin-input"
+                        className={adminFieldInputClass}
                         type="text"
                         value={teacherWordForm.word}
                         onChange={(event: ChangeEvent<HTMLInputElement>) => {
@@ -773,11 +815,11 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     </div>
                   </label>
 
-                  <label className="admin-field">
-                    <span>Sinonimoak</span>
-                    <div className="admin-textarea-shell">
+                  <label className="grid gap-2.5">
+                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Sinonimoak</span>
+                    <div className={adminStretchFieldShellClass}>
                       <textarea
-                        className="admin-textarea"
+                        className="w-full border-0 bg-transparent outline-none text-[#203143] text-[0.98rem] font-extrabold resize-vertical leading-relaxed caret-[#6bb8d9]"
                         value={teacherWordForm.synonyms}
                         onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
                           setIsTeacherWordDirty(true);
@@ -789,12 +831,12 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     </div>
                   </label>
 
-                  <label className="admin-field">
-                    <span>Maila</span>
-                    <div className="admin-select-shell">
-                      <Mountain className="admin-input-icon" />
+                  <label className="grid gap-2.5">
+                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Maila</span>
+                    <div className={adminFieldShellClass}>
+                      <Mountain className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <select
-                        className="admin-select"
+                        className="w-full border-0 bg-transparent outline-none text-[#203143] text-[0.98rem] font-extrabold appearance-none cursor-pointer"
                         value={teacherWordForm.levelOrder}
                         onChange={(event: ChangeEvent<HTMLSelectElement>) => {
                           setIsTeacherWordDirty(true);
@@ -810,14 +852,22 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     </div>
                   </label>
 
-                  <div className="admin-form-actions">
-                    <button className="admin-primary-button" type="submit" disabled={isSavingWord}>
-                      {editingWordId ? <Save className="admin-button-icon" /> : <PlusCircle className="admin-button-icon" />}
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    <button 
+                      className="flex-1 inline-flex items-center justify-center gap-2.5 min-h-[52px] px-[18px] rounded-full font-black text-white bg-gradient-to-br from-[#69b7da] via-[#62cdbf] to-[#dce97f] shadow-[0_18px_36px_rgba(103,201,190,0.18)] cursor-pointer transition-transform hover:-translate-y-0.5 disabled:opacity-70" 
+                      type="submit" 
+                      disabled={isSavingWord}
+                    >
+                      {editingWordId ? <Save className="w-[18px] h-[18px]" /> : <PlusCircle className="w-[18px] h-[18px]" />}
                       <span>{isSavingWord ? 'Gordetzen...' : editingWordId ? 'Aldaketak gorde' : 'Hitza sortu'}</span>
                     </button>
 
-                    <button className="admin-secondary-button" type="button" onClick={resetTeacherWordForm}>
-                      <RotateCcw className="admin-button-icon" />
+                    <button 
+                      className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[#203143] cursor-pointer transition-transform hover:-translate-y-0.5" 
+                      type="button" 
+                      onClick={resetTeacherWordForm}
+                    >
+                      <RotateCcw className="w-[18px] h-[18px]" />
                       <span>Garbitu</span>
                     </button>
                   </div>

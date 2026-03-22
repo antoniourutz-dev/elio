@@ -1,4 +1,18 @@
-import { GAME_LEVELS, PLAYER_EMAIL_DOMAIN, WORD_FIELDS, SYNONYM_FIELDS, DIFFICULTY_FIELDS, THEME_FIELDS, TRANSLATION_FIELDS, EXAMPLE_FIELDS, TAG_FIELDS, ACTIVE_FIELDS, ID_FIELDS, LEVEL_ORDER_FIELDS } from './constants';
+import {
+  GAME_LEVELS,
+  LEVEL_TARGET_QUESTION_COUNTS,
+  PLAYER_EMAIL_DOMAIN,
+  WORD_FIELDS,
+  SYNONYM_FIELDS,
+  DIFFICULTY_FIELDS,
+  THEME_FIELDS,
+  TRANSLATION_FIELDS,
+  EXAMPLE_FIELDS,
+  TAG_FIELDS,
+  ACTIVE_FIELDS,
+  ID_FIELDS,
+  LEVEL_ORDER_FIELDS,
+} from './constants';
 import { getFirstValue, parseSynonyms, toStringValue, uniqueNonEmptyStrings } from '../wordUtils';
 import type { SynonymEntry } from './types';
 
@@ -96,7 +110,7 @@ export const parseDifficulty = (value: unknown): number | null => {
 
 export const parseLevelOrder = (value: unknown): number | null => {
   const parsed = parseNumberValue(value);
-  if (!parsed || !Number.isInteger(parsed) || parsed < 1 || parsed > GAME_LEVELS.length) {
+  if (!parsed || !Number.isInteger(parsed) || parsed < 1) {
     return null;
   }
   return parsed;
@@ -146,6 +160,38 @@ export const sortEntries = (entries: SynonymEntry[]): SynonymEntry[] =>
   });
 
 export const buildEntryTerms = (entry: SynonymEntry): string[] => uniqueNonEmptyStrings([entry.word, ...entry.synonyms]);
+
+export const redistributeEntriesByQuestionTargets = (entries: SynonymEntry[]): SynonymEntry[] => {
+  if (entries.length === 0) return [];
+
+  const sortedEntries = sortEntries(entries);
+  const totalLevels = GAME_LEVELS.length;
+  let currentLevelIndex = 0;
+  let currentLevelQuestions = 0;
+
+  return sortedEntries.map((entry, entryIndex) => {
+    const contribution = buildEntryTerms(entry).length;
+    const target = LEVEL_TARGET_QUESTION_COUNTS[currentLevelIndex] ?? LEVEL_TARGET_QUESTION_COUNTS.at(-1) ?? contribution;
+    const remainingEntries = sortedEntries.length - entryIndex;
+    const remainingLevels = totalLevels - currentLevelIndex;
+    const wouldOvershoot = currentLevelQuestions + contribution > target;
+    const currentDistance = Math.abs(target - currentLevelQuestions);
+    const nextDistance = Math.abs(target - (currentLevelQuestions + contribution));
+    const canAdvance = currentLevelIndex < totalLevels - 1 && remainingEntries > remainingLevels;
+
+    if (canAdvance && currentLevelQuestions > 0 && (currentLevelQuestions >= target || (wouldOvershoot && currentDistance <= nextDistance))) {
+      currentLevelIndex += 1;
+      currentLevelQuestions = 0;
+    }
+
+    currentLevelQuestions += contribution;
+
+    return {
+      ...entry,
+      levelOrder: currentLevelIndex + 1,
+    };
+  });
+};
 
 export const parsePlayerCodeFromEmail = (email: string | null | undefined): string | null => {
   if (!email) return null;

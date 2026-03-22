@@ -16,6 +16,11 @@ export const gameQuestionEventsTable =
 export const gameWordsTable = 'game_words';
 export const dailyScoresTable = 'daily_scores';
 export const dailyPillsTable = import.meta.env.VITE_SUPABASE_DAILY_PILLS_TABLE || 'eguneko_pildorak';
+export const dailyHieroglyphsTable = import.meta.env.VITE_SUPABASE_EROGLIFIKOAK_TABLE || 'eroglifikoak';
+export const dailyHieroglyphsBucket = import.meta.env.VITE_SUPABASE_EROGLIFIKOAK_BUCKET || 'eroglificos';
+export const dailyHieroglyphsBaseUrl =
+  import.meta.env.VITE_SUPABASE_EROGLIFIKOAK_BASE_URL ||
+  (supabaseUrl ? `${supabaseUrl}/storage/v1/object/public/${dailyHieroglyphsBucket}` : '');
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl!, supabaseAnonKey!, {

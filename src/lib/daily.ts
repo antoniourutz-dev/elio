@@ -17,9 +17,19 @@
 // CREATE POLICY "Players can update own scores" ON daily_scores FOR UPDATE USING (auth.uid() = owner_id);
 // CREATE POLICY "All players can view ranking" ON daily_scores FOR SELECT USING (true);
 
-import { supabase, gameWordsTable, dailyScoresTable } from '../supabaseClient';
+import { supabase, gameWordsTable, dailyScoresTable, dailyHieroglyphsTable, dailyHieroglyphsBaseUrl } from '../supabaseClient';
 import type { SynonymEntry } from './types';
-import type { GameWord, SpellingDailyQuestion, SynonymDailyQuestion, DailyQuestion, DailyAnswer, DailyResult, DailyRankingEntry } from '../appTypes';
+import type {
+  GameWord,
+  SpellingDailyQuestion,
+  SynonymDailyQuestion,
+  EroglificoDailyQuestion,
+  EroglificoEntry,
+  DailyQuestion,
+  DailyAnswer,
+  DailyResult,
+  DailyRankingEntry,
+} from '../appTypes';
 import { uniqueNonEmptyStrings } from '../wordUtils';
 import { buildEntryTerms, buildLocalDayKey, normalizeTextKey } from './parsing';
 import { SUPERADMIN_PLAYER_CODE } from './constants';
@@ -69,17 +79,81 @@ export async function loadGameWords(): Promise<GameWord[]> {
   return data as GameWord[];
 }
 
+function normalizeHieroglyphText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function resolveHieroglyphImageUrl(path: string): string {
+  const trimmed = path.trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('/')) return trimmed;
+  const base = dailyHieroglyphsBaseUrl.replace(/\/$/, '');
+  return base ? `${base}/${trimmed.replace(/^\/+/, '')}` : trimmed;
+}
+
+function parseHieroglyphRow(row: Record<string, unknown>): EroglificoEntry | null {
+  const rawImage =
+    normalizeHieroglyphText(row.image_name) ||
+    normalizeHieroglyphText(row.image_url) ||
+    normalizeHieroglyphText(row.image_path) ||
+    normalizeHieroglyphText(row.filename) ||
+    normalizeHieroglyphText(row.image) ||
+    normalizeHieroglyphText(row.fitxategia);
+  const clue =
+    normalizeHieroglyphText(row.clue) ||
+    normalizeHieroglyphText(row.question) ||
+    normalizeHieroglyphText(row.pista) ||
+    normalizeHieroglyphText(row.galdera);
+  const solution =
+    normalizeHieroglyphText(row.answer) ||
+    normalizeHieroglyphText(row.answer_text) ||
+    normalizeHieroglyphText(row.answer_value) ||
+    normalizeHieroglyphText(row.solution) ||
+    normalizeHieroglyphText(row.word) ||
+    normalizeHieroglyphText(row.erantzuna);
+  const normalizedSolution =
+    normalizeHieroglyphText(row.answer_normalized) ||
+    normalizeHieroglyphText(row.solution_normalized) ||
+    normalizeTextKey(solution);
+  const active = typeof row.active === 'boolean' ? row.active : typeof row.aktibo === 'boolean' ? row.aktibo : true;
+  const alternativeAnswers = Array.isArray(row.alternative_answers)
+    ? uniqueNonEmptyStrings((row.alternative_answers as unknown[]).map((item) => normalizeHieroglyphText(item)))
+    : [];
+
+  if (!rawImage || !clue || !solution || !active) return null;
+
+  return {
+    id: (row.id as number | string | undefined) ?? rawImage,
+    imagePath: rawImage,
+    clue,
+    solution,
+    normalizedSolution,
+    alternativeAnswers,
+    active,
+  };
+}
+
+export async function loadDailyHieroglyphs(): Promise<EroglificoEntry[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase.from(dailyHieroglyphsTable).select('*').order('id', { ascending: true });
+  if (error || !data) return [];
+  return (data as Record<string, unknown>[]).map(parseHieroglyphRow).filter((entry): entry is EroglificoEntry => Boolean(entry));
+}
+
 // ── Build Daily Game ─────────────────────────────────────────
 
 const DAILY_SPELLING_COUNT = 5;
 const DAILY_SYNONYM_COUNT = 5;
+const DAILY_HIEROGLYPH_COUNT = 2;
+const DAILY_TOTAL_QUESTIONS = DAILY_SPELLING_COUNT + DAILY_SYNONYM_COUNT + DAILY_HIEROGLYPH_COUNT;
 
 function buildSpellingQuestion(word: GameWord): SpellingDailyQuestion {
   return {
     type: 'spelling',
     id: `spell-${word.id}`,
     displayText: word.text,
-    correctAnswer: word.egoera ? 'ZUZEN' : 'OKERRA',
+    correctAnswer: word.egoera ? 'ZUZEN' : 'OKER',
   };
 }
 
@@ -114,10 +188,30 @@ function buildSynonymQuestion(
   };
 }
 
+function buildHieroglyphQuestion(entry: EroglificoEntry): EroglificoDailyQuestion | null {
+  const imageUrl = resolveHieroglyphImageUrl(entry.imagePath);
+  if (!imageUrl) return null;
+  const acceptedAnswers = uniqueNonEmptyStrings([
+    entry.solution,
+    entry.normalizedSolution ?? '',
+    ...(entry.alternativeAnswers ?? []),
+  ]).map((item) => normalizeTextKey(item));
+
+  return {
+    type: 'eroglifico',
+    id: `ero-${entry.id}`,
+    imageUrl,
+    clue: entry.clue,
+    correctAnswer: entry.solution,
+    acceptedAnswers,
+  };
+}
+
 export function buildDailyGame(
   dayKey: string,
   gameWords: GameWord[],
-  synonymEntries: SynonymEntry[]
+  synonymEntries: SynonymEntry[],
+  hieroglyphs: EroglificoEntry[]
 ): DailyQuestion[] {
   const seed = fnv1a(dayKey);
   const rng = makeLcg(seed);
@@ -133,6 +227,11 @@ export function buildDailyGame(
     if (q) synonymQuestions.push(q);
   }
 
+  const hieroglyphQuestions: EroglificoDailyQuestion[] = shuffleWithRng(hieroglyphs, rng)
+    .slice(0, DAILY_HIEROGLYPH_COUNT)
+    .map(buildHieroglyphQuestion)
+    .filter((question): question is EroglificoDailyQuestion => Boolean(question));
+
   // Interleave: spelling, synonym, spelling, synonym, ...
   const questions: DailyQuestion[] = [];
   const paired = Math.min(spellingQuestions.length, synonymQuestions.length);
@@ -143,7 +242,16 @@ export function buildDailyGame(
   questions.push(...spellingQuestions.slice(paired));
   questions.push(...synonymQuestions.slice(paired));
 
-  return questions;
+  if (hieroglyphQuestions.length > 0) {
+    const firstInsertAt = Math.min(4, questions.length);
+    questions.splice(firstInsertAt, 0, hieroglyphQuestions[0]);
+    if (hieroglyphQuestions[1]) {
+      const secondInsertAt = Math.min(9, questions.length);
+      questions.splice(secondInsertAt, 0, hieroglyphQuestions[1]);
+    }
+  }
+
+  return questions.slice(0, DAILY_TOTAL_QUESTIONS);
 }
 
 // ── Scoring ──────────────────────────────────────────────────

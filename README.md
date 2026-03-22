@@ -19,6 +19,9 @@ Aplicacion React/Vite para alumnado que aprende euskera. La app propone 10 nivel
    - `VITE_SUPABASE_SYNONYMS_TABLE=synonym_groups`
    - `VITE_SUPABASE_PLAYER_PROGRESS_TABLE=player_progress`
    - `VITE_SUPABASE_DAILY_PILLS_TABLE=eguneko_pildorak`
+   - `VITE_SUPABASE_EROGLIFIKOAK_TABLE=eroglifikoak`
+   - `VITE_SUPABASE_EROGLIFIKOAK_BUCKET=eroglificos`
+   - `VITE_SUPABASE_EROGLIFIKOAK_BASE_URL=https://.../storage/v1/object/public/eroglificos`
    - `VITE_SUPABASE_PLAYER_EMAIL_DOMAIN=lexiko.app`
 3. En Supabase:
    - Mantén tu tabla `synonym_groups`.

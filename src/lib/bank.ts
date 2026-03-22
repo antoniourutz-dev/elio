@@ -1,6 +1,6 @@
 import { isSupabaseConfigured, supabase, synonymsTable } from '../supabaseClient';
 import type { SynonymEntry, BankLoadSuccess, BankLoadFailure } from './types';
-import { normalizeSynonymRow } from './parsing';
+import { normalizeSynonymRow, redistributeEntriesByQuestionTargets } from './parsing';
 
 const DEMO_SYNONYM_BANK: SynonymEntry[] = [
   { id: 'demo-1', word: 'maite', synonyms: ['laket', 'atsegin', 'gogoko'], difficulty: 1, theme: 'sentimenduak', translation: 'maitatua', example: 'Lagun maite bat dut.', tags: ['demo'], levelOrder: 1 },
@@ -29,7 +29,7 @@ export const loadSynonymBank = async (): Promise<BankLoadSuccess | BankLoadFailu
   if (!isSupabaseConfigured || !supabase) {
     return {
       ok: true,
-      entries: DEMO_SYNONYM_BANK,
+      entries: redistributeEntriesByQuestionTargets(DEMO_SYNONYM_BANK),
       message: 'Supabase ez dago prest. Demoko hitzekin kargatu da jokoa.',
     };
   }
@@ -39,19 +39,21 @@ export const loadSynonymBank = async (): Promise<BankLoadSuccess | BankLoadFailu
   if (error) {
     return {
       ok: true,
-      entries: DEMO_SYNONYM_BANK,
+      entries: redistributeEntriesByQuestionTargets(DEMO_SYNONYM_BANK),
       message: `Ezin izan da ${synonymsTable} taula irakurri: ${error.message}. Demoko hitzak erabili dira.`,
     };
   }
 
-  const entries = (data ?? [])
+  const entries = redistributeEntriesByQuestionTargets(
+    (data ?? [])
     .map((row, index) => normalizeSynonymRow(row as Record<string, unknown>, index))
-    .filter((entry): entry is SynonymEntry => entry !== null);
+    .filter((entry): entry is SynonymEntry => entry !== null)
+  );
 
   if (entries.length === 0) {
     return {
       ok: true,
-      entries: DEMO_SYNONYM_BANK,
+      entries: redistributeEntriesByQuestionTargets(DEMO_SYNONYM_BANK),
       message: `${synonymsTable} taulak ez du sinonimo baliozkorik eman. Demoko hitzak erabili dira.`,
     };
   }

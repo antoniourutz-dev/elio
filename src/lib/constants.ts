@@ -17,17 +17,19 @@ export const LEVEL_ORDER_FIELDS = ['group_number', 'group_num', 'exercise_order'
 export const QUESTIONS_PER_LEVEL = 10;
 export const LEVEL_PASS_SCORE = 70;
 
+export const LEVEL_TARGET_QUESTION_COUNTS = [56, 71, 96, 114, 141, 142, 153, 157, 162, 164] as const;
+
 const LEVEL_MOUNTAINS = [
-  { name: 'Aitxuri', elevationMeters: 1551 },
-  { name: 'Aizkorri', elevationMeters: 1528 },
-  { name: 'Gorbea', elevationMeters: 1482 },
+  { name: 'Jaizkibel', elevationMeters: 543 },
+  { name: 'Pagasarri', elevationMeters: 671 },
+  { name: 'Larhun', elevationMeters: 905 },
+  { name: 'Ernio', elevationMeters: 1075 },
   { name: 'Anboto', elevationMeters: 1331 },
   { name: 'Txindoki', elevationMeters: 1346 },
   { name: 'Aratz', elevationMeters: 1445 },
-  { name: 'Ernio', elevationMeters: 1075 },
-  { name: 'Larhun', elevationMeters: 905 },
-  { name: 'Pagasarri', elevationMeters: 671 },
-  { name: 'Jaizkibel', elevationMeters: 543 },
+  { name: 'Gorbea', elevationMeters: 1482 },
+  { name: 'Aizkorri', elevationMeters: 1528 },
+  { name: 'Aitxuri', elevationMeters: 1551 },
 ] as const;
 
 export const ADMIN_PLAYER_CODE = 'irakasle';

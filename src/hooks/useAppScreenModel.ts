@@ -1,0 +1,233 @@
+import { useMemo } from 'react';
+import type { AppScreenModel, BuildAppScreenModelArgs, UseAppScreenModelArgs } from '../components/app/appScreenModelTypes';
+import { useAppDock } from './useAppDock';
+import { useAppTopBar } from './useAppTopBar';
+
+export function buildAppScreenModel({
+  isSessionLoading,
+  access,
+  main,
+  dailyGame,
+  synonymGame,
+  topBar,
+  dock,
+}: BuildAppScreenModelArgs): AppScreenModel {
+  return {
+    isSessionLoading,
+    access,
+    main,
+    dailyGame,
+    synonymGame,
+    topBar,
+    dock,
+  };
+}
+
+export function useAppScreenModel({
+  activePlayer,
+  mainScreen,
+  isSessionLoading,
+  dailySessionProgress,
+  dailyElapsed,
+  accessCode,
+  setAccessCode,
+  accessPassword,
+  setAccessPassword,
+  accessMessage,
+  isPasswordVisible,
+  togglePasswordVisibility,
+  isSubmittingAccess,
+  submitAccess,
+  dayKey,
+  dailySession,
+  dailyResult,
+  canStartDailyGame,
+  ranking,
+  weeklyRanking,
+  weekHistory,
+  myRankEntry,
+  myWeekRankEntry,
+  elapsedSeconds,
+  isLoadingData,
+  bankState,
+  progress,
+  currentTargetLevel,
+  homeNotice,
+  isDemoMode,
+  uiMessage,
+  isTeacher,
+  quiz,
+  currentQuestion,
+  currentAnswer,
+  quizAdvanceLabel,
+  summary,
+  summaryErrors,
+  completedLevels,
+  totalLevels,
+  consecutivePlayDays,
+  streakTone,
+  currentSessionMeters,
+  nextLevel: _nextLevel,
+  nextLevelUnlocked: _nextLevelUnlocked,
+  startDailyGame,
+  answerDailyQuestion,
+  solveDailyQuestion,
+  advanceDailyQuestion,
+  startLevel,
+  refreshBank,
+  scrollTop,
+  logoutPlayer,
+  answerCurrentQuestion,
+  advanceQuiz,
+  goHome,
+  goSynonyms,
+  goStats,
+  goAdmin,
+  goProfile,
+}: UseAppScreenModelArgs): AppScreenModel {
+  const topBar = useAppTopBar({
+    playerCode: activePlayer?.code,
+    mainScreen,
+    dailySession: Boolean(dailySession),
+    dailySessionProgress,
+    dailyElapsed,
+    quiz,
+    summary,
+    completedLevels,
+    totalLevels,
+    consecutivePlayDays,
+    streakTone,
+    currentSessionMeters,
+  });
+
+  const dock = useAppDock({
+    isTeacher,
+    mainScreen,
+    dailySession: Boolean(dailySession),
+    quiz,
+    summary,
+    onHome: goHome,
+    onSynonyms: goSynonyms,
+    onStats: goStats,
+    onAdmin: goAdmin,
+    onProfile: goProfile,
+    onRetryLevel: () => {
+      if (summary) startLevel(summary.level);
+    },
+  });
+
+  const access = useMemo(
+    () => ({
+      code: accessCode,
+      password: accessPassword,
+      message: accessMessage,
+      isPasswordVisible,
+      isSubmitting: isSubmittingAccess,
+      onCodeChange: setAccessCode,
+      onPasswordChange: setAccessPassword,
+      onPasswordVisibilityToggle: togglePasswordVisibility,
+      onSubmit: submitAccess,
+    }),
+    [
+      accessCode,
+      accessPassword,
+      accessMessage,
+      isPasswordVisible,
+      isSubmittingAccess,
+      setAccessCode,
+      setAccessPassword,
+      togglePasswordVisibility,
+      submitAccess,
+    ]
+  );
+
+  const main = useMemo(
+    () => ({
+      dayKey,
+      dailyResult,
+      canStartDailyGame,
+      ranking,
+      weeklyRanking,
+      weekHistory,
+      myRankEntry,
+      myWeekRankEntry,
+      isLoadingData,
+      bankState,
+      progress,
+      currentTargetLevel,
+      homeNotice,
+      isDemoMode,
+      uiMessage,
+      isTeacher,
+      onStartDailyGame: startDailyGame,
+      onGoSynonyms: goSynonyms,
+      onStartLevel: startLevel,
+      onRefreshBank: refreshBank,
+      onScrollTop: scrollTop,
+      onLogout: logoutPlayer,
+    }),
+    [
+      dayKey,
+      dailyResult,
+      canStartDailyGame,
+      ranking,
+      weeklyRanking,
+      weekHistory,
+      myRankEntry,
+      myWeekRankEntry,
+      isLoadingData,
+      bankState,
+      progress,
+      currentTargetLevel,
+      homeNotice,
+      isDemoMode,
+      uiMessage,
+      isTeacher,
+      startDailyGame,
+      goSynonyms,
+      startLevel,
+      refreshBank,
+      scrollTop,
+      logoutPlayer,
+    ]
+  );
+
+  const dailyGame = useMemo(
+    () => ({
+      session: dailySession,
+      elapsedSeconds,
+      onAnswer: answerDailyQuestion,
+      onSolve: solveDailyQuestion,
+      onAdvance: advanceDailyQuestion,
+    }),
+    [dailySession, elapsedSeconds, answerDailyQuestion, solveDailyQuestion, advanceDailyQuestion]
+  );
+
+  const synonymGame = useMemo(
+    () => ({
+      quiz,
+      currentQuestion,
+      currentAnswer,
+      quizAdvanceLabel,
+      summary,
+      summaryErrors,
+      onAnswer: answerCurrentQuestion,
+      onAdvance: advanceQuiz,
+    }),
+    [quiz, currentQuestion, currentAnswer, quizAdvanceLabel, summary, summaryErrors, answerCurrentQuestion, advanceQuiz]
+  );
+
+  return useMemo(
+    () =>
+      buildAppScreenModel({
+        isSessionLoading,
+        access,
+        main,
+        dailyGame,
+        synonymGame,
+        topBar,
+        dock,
+      }),
+    [isSessionLoading, access, main, dailyGame, synonymGame, topBar, dock]
+  );
+}

@@ -26,6 +26,26 @@ create policy game_words_teacher_all
   using (public.is_irakasle())
   with check (public.is_irakasle());
 
+-- ── 1.b. eroglifikoak: activar RLS + política de lectura ─────
+-- La tabla contiene los eroglíficos del reto diario.
+
+alter table public.eroglifikoak enable row level security;
+
+drop policy if exists eroglifikoak_select_authenticated on public.eroglifikoak;
+create policy eroglifikoak_select_authenticated
+  on public.eroglifikoak
+  for select
+  to authenticated
+  using (true);
+
+drop policy if exists eroglifikoak_teacher_all on public.eroglifikoak;
+create policy eroglifikoak_teacher_all
+  on public.eroglifikoak
+  for all
+  to authenticated
+  using (public.is_irakasle())
+  with check (public.is_irakasle());
+
 -- ── 2. daily_scores: tabla de puntuaciones diarias ───────────
 -- Una fila por jugador por día (UNIQUE owner_id + day_key).
 -- El ranking es público: cualquier jugador autenticado puede
