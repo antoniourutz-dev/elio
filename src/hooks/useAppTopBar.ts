@@ -11,6 +11,7 @@ interface UseAppTopBarArgs {
   dailySessionProgress: string | null;
   dailyElapsed: string | null;
   quiz: ActiveQuiz | null;
+  quizProgress: string | null;
   summary: LevelSummary | null;
   completedLevels: number;
   totalLevels: number;
@@ -26,6 +27,7 @@ export function useAppTopBar({
   dailySessionProgress,
   dailyElapsed,
   quiz,
+  quizProgress,
   summary,
   completedLevels,
   totalLevels,
@@ -39,6 +41,7 @@ export function useAppTopBar({
         mainScreen,
         dailySession,
         quiz,
+        quizProgress,
         summary,
         completedLevels,
         totalLevels,
@@ -51,6 +54,7 @@ export function useAppTopBar({
       mainScreen,
       dailySession,
       quiz,
+      quizProgress,
       summary,
       completedLevels,
       totalLevels,

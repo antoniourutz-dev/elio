@@ -101,11 +101,21 @@ export function AppTopBar({
         </div>
 
         <div className="flex items-center justify-end gap-2 min-w-0 self-center">
-          {metric && MetricIcon && (
-            <TopBarChip variant={metric.variant} streakTone={metric.streakTone} icon={<MetricIcon />} label={metric.label} />
+          {metric && (
+            <TopBarChip
+              variant={metric.variant}
+              streakTone={metric.streakTone}
+              icon={MetricIcon ? <MetricIcon /> : undefined}
+              label={metric.label}
+            />
           )}
-          {secondaryMetric && SecondaryMetricIcon && (
-            <TopBarChip variant={secondaryMetric.variant} streakTone={secondaryMetric.streakTone} icon={<SecondaryMetricIcon />} label={secondaryMetric.label} />
+          {secondaryMetric && (
+            <TopBarChip
+              variant={secondaryMetric.variant}
+              streakTone={secondaryMetric.streakTone}
+              icon={SecondaryMetricIcon ? <SecondaryMetricIcon /> : undefined}
+              label={secondaryMetric.label}
+            />
           )}
         </div>
       </div>

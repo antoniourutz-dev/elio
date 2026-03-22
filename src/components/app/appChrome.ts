@@ -7,7 +7,7 @@ export type MainScreen = 'daily' | 'synonyms' | 'stats' | 'profile' | 'admin';
 type TopBarMetricVariant = 'default' | 'success' | 'streak';
 
 export interface TopBarMetric {
-  icon: LucideIcon;
+  icon?: LucideIcon;
   label: string;
   variant: TopBarMetricVariant;
   streakTone?: string;
@@ -36,6 +36,7 @@ interface ResolveTopBarStateArgs {
   mainScreen: MainScreen;
   dailySession: boolean;
   quiz: ActiveQuiz | null;
+  quizProgress?: string | null;
   summary: LevelSummary | null;
   completedLevels: number;
   totalLevels: number;
@@ -49,6 +50,7 @@ export function resolveTopBarState({
   mainScreen,
   dailySession,
   quiz,
+  quizProgress,
   summary,
   completedLevels,
   totalLevels,
@@ -82,7 +84,7 @@ export function resolveTopBarState({
     return {
       subtitle,
       showBackButton: true,
-      metric: { icon: Mountain, label: currentSessionMeters, variant: 'success' },
+      metric: { label: quizProgress ?? currentSessionMeters, variant: 'success' },
       secondaryMetric: null,
     };
   }

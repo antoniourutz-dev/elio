@@ -147,6 +147,7 @@ const App = () => {
   const currentCorrectCount = quiz ? quiz.answers.filter((answer) => answer.isCorrect).length : 0;
   const currentSessionMeters = quiz ? getLevelMetersForProgress(quiz.level, currentCorrectCount, quiz.levelTotalQuestions) : 0;
   const quizAdvanceLabel = quiz ? (quiz.currentIndex === quiz.questions.length - 1 ? 'Amaitu' : 'Hurrengoa') : 'Hurrengoa';
+  const quizProgress = quiz ? `${quiz.currentIndex + 1}/${quiz.questions.length}` : null;
   const currentTargetLevel = unlockedLevels.at(-1)?.index ?? 1;
   const canStartDailyGame = bankState.entries.length >= 5 && gameWords.length >= 5 && hieroglyphs.length >= 2;
   const dailySessionProgress = dailySession ? `${dailySession.currentIndex + 1}/${dailySession.questions.length}` : null;
@@ -182,6 +183,7 @@ const App = () => {
     isSessionLoading,
     dailySessionProgress,
     dailyElapsed: dailyElapsedLabel,
+    quizProgress,
     accessCode,
     setAccessCode,
     accessPassword,
@@ -268,7 +270,7 @@ const App = () => {
         />
       </AppShell>
 
-      {activePlayer && (
+      {activePlayer && screenModel.dock.items.length > 0 && (
         <AppBottomDock>
           {screenModel.dock.items.map((item) => {
             const Icon = item.icon;

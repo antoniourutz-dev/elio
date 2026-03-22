@@ -102,6 +102,7 @@ export interface UseAppScreenModelArgs {
   isSessionLoading: boolean;
   dailySessionProgress: string | null;
   dailyElapsed: string | null;
+  quizProgress: string | null;
   accessCode: string;
   setAccessCode: (value: string) => void;
   accessPassword: string;

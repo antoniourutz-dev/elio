@@ -46,14 +46,10 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
       transition={{ delay: 0.04 }}
       className="grid w-full h-full gap-3 p-[18px] rounded-[36px] max-w-[600px] mx-auto content-start auto-rows-min"
     >
-      <div className="flex items-center gap-3 justify-start">
-        <span className="inline-flex items-center justify-center gap-2 min-h-[36px] px-[13px] rounded-full text-[0.82rem] font-black tracking-[-0.02em] bg-gradient-to-br from-[#58c2c0] via-[#7fd3ac] to-[#cfe07e] text-white shadow-[0_4px_14px_rgba(95,200,180,0.2)]">
-          {quiz.currentIndex + 1}/{quiz.questions.length}
-        </span>
+      <div className="flex items-center justify-start">
         <SegmentBar total={quiz.questions.length} answers={quiz.answers} currentIndex={quiz.currentIndex} />
       </div>
 
-      <div className="text-[#35b1d4] tracking-[0.18em] font-bold text-[0.76rem] uppercase ml-1">Hitza</div>
       <div className="min-h-[108px] p-5 rounded-[28px] bg-gradient-to-b from-white to-[rgba(248,251,253,0.96)] border border-[rgba(216,226,241,0.75)] grid place-items-center shadow-[0_8px_24px_rgba(107,148,165,0.09),inset_0_1px_0_white]">
         <div className="text-center font-display text-[clamp(2rem,8vw,2.9rem)] font-bold tracking-[-0.05em] text-[#223748]" aria-live="polite" aria-atomic="true">
           {currentQuestion.word}
@@ -75,9 +71,10 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
               className={clsx(
                 'flex items-center gap-3 w-full min-h-[60px] px-4 rounded-[20px] border-[1.5px] border-[#e1e5ee] bg-white text-[#223748] text-left transition-all duration-150 cursor-pointer outline-none font-extrabold shadow-[0_4px_14px_rgba(107,148,165,0.04)]',
                 !isAnswered && 'hover:-translate-y-[1px] hover:border-[rgba(107,184,217,0.4)] hover:bg-[#f2f8fd] hover:shadow-[0_10px_20px_rgba(107,184,217,0.1)] active:translate-y-0',
-                isCorrectAnswered && 'border-[#5fc7a1] border-2 bg-[linear-gradient(180deg,#ebfbf3,#d7f8e8)] shadow-[0_14px_24px_rgba(95,200,160,0.16)] animate-[answer-celebrate_0.4s_cubic-bezier(0.34,1.56,0.64,1)_both]',
-                isWrongAnswered && 'border-[#e08f82] border-2 bg-[linear-gradient(180deg,#fff4f1,#fdebe6)] shadow-[0_10px_18px_rgba(217,134,122,0.11)]',
-                isSelected && !isAnswered && 'border-[#9bdcc1] bg-[#e5f9f0]',
+                isCorrectAnswered &&
+                  'border-[#37b788] border-2 bg-[linear-gradient(180deg,#dffaf0,#bff0d7)] text-[#173a33] shadow-[0_16px_30px_rgba(55,183,136,0.24)] ring-1 ring-[rgba(55,183,136,0.22)] animate-[answer-celebrate_0.4s_cubic-bezier(0.34,1.56,0.64,1)_both]',
+                isWrongAnswered && 'border-[#db7768] border-2 bg-[linear-gradient(180deg,#fff0ec,#f9d8d0)] text-[#5b241d] shadow-[0_12px_24px_rgba(217,134,122,0.16)]',
+                isSelected && !isAnswered && 'border-[#55c59b] bg-[linear-gradient(180deg,#e2fbf0,#c8f3dd)] text-[#173a33] shadow-[0_12px_24px_rgba(85,197,155,0.18)]',
                 isAnswered && !isSelected && !isCorrectAtThisOption && 'opacity-55 grayscale-[0.15]',
                 isAnswered && 'cursor-default'
               )}
@@ -88,13 +85,14 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
                 className={clsx(
                   'shrink-0 w-[30px] h-[30px] rounded-full grid place-items-center text-[0.82rem] font-black transition-colors duration-150',
                   !isAnswered && 'bg-[#edf2f4] text-[#95a1ae]',
-                  isCorrectAnswered && 'bg-[#5fc7a1] text-white',
-                  isWrongAnswered && 'bg-[#e4998b] text-white'
+                  isCorrectAnswered && 'bg-[#2fb483] text-white',
+                  isWrongAnswered && 'bg-[#dd7f70] text-white',
+                  isSelected && !isAnswered && 'bg-[#43bf90] text-white'
                 )}
               >
                 {OPTION_LABELS[index] ?? index + 1}
               </span>
-              <span className="flex-1 text-[1rem] tracking-tight leading-[1.3]">{option}</span>
+              <span className="flex-1 text-[1.05rem] font-black tracking-[-0.02em] leading-[1.25]">{option}</span>
             </button>
           );
         })}

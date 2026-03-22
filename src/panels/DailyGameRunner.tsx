@@ -118,8 +118,9 @@ export const DailyGameRunner = memo(function DailyGameRunner({
                     option === 'ZUZEN'
                       ? 'border-[#81d8b6] bg-[rgba(235,250,244,0.6)] text-[#2ba074] hover:-translate-y-[1px] hover:bg-[rgba(215,248,232,0.9)] hover:border-[#5dc09f] hover:shadow-[0_10px_18px_rgba(95,200,160,0.12)] active:translate-y-0'
                       : 'border-[#f4bac0] bg-[rgba(255,244,242,0.6)] text-[#d05060] hover:-translate-y-[1px] hover:bg-[rgba(253,235,230,0.9)] hover:border-[#cc7a70] hover:shadow-[0_10px_18px_rgba(183,89,77,0.1)] active:translate-y-0',
-                    isCorrectAnswered && 'bg-[linear-gradient(180deg,#ebfbf3,#d7f8e8)] border-[#6fcba8] border-2 scale-100 shadow-[0_12px_22px_rgba(95,200,160,0.15)]',
-                    isWrongAnswered && 'bg-[linear-gradient(180deg,#fff4f1,#fdebe6)] border-[#d9867a] border-2 shadow-[0_10px_18px_rgba(183,89,77,0.1)]',
+                    isCorrectAnswered &&
+                      'bg-[linear-gradient(180deg,#dffaf0,#bff0d7)] border-[#37b788] border-2 scale-100 text-[#173a33] shadow-[0_16px_30px_rgba(55,183,136,0.24)] ring-1 ring-[rgba(55,183,136,0.22)]',
+                    isWrongAnswered && 'bg-[linear-gradient(180deg,#fff0ec,#f9d8d0)] border-[#db7768] border-2 text-[#5b241d] shadow-[0_12px_24px_rgba(183,89,77,0.16)]',
                     isAnswered && !isSelected && !isCorrectAtThisOption && 'opacity-60 grayscale-[0.35]',
                     isAnswered && 'cursor-default'
                   )}
@@ -129,7 +130,7 @@ export const DailyGameRunner = memo(function DailyGameRunner({
                   <span className={clsx('transition-opacity duration-200', isAnswered ? 'opacity-100' : 'opacity-45')}>
                     {option === 'ZUZEN' ? <CheckCircle2 className="w-[1.8rem] h-[1.8rem]" /> : <XCircle className="w-[1.8rem] h-[1.8rem]" />}
                   </span>
-                  <span className="text-[1.42rem] leading-none tracking-tight">{option}</span>
+                  <span className="text-[1.42rem] font-black leading-none tracking-[-0.03em]">{option}</span>
                 </button>
               );
             })}
@@ -167,8 +168,9 @@ export const DailyGameRunner = memo(function DailyGameRunner({
                   className={clsx(
                     'flex items-center gap-3 w-full min-h-[60px] px-4 rounded-[20px] border-[1.5px] border-[#e1e5ee] bg-white text-[#223748] text-left transition-all duration-150 cursor-pointer outline-none font-extrabold shadow-[0_4px_14px_rgba(107,148,165,0.04)]',
                     !isAnswered && 'hover:-translate-y-[1px] hover:border-[rgba(107,184,217,0.4)] hover:bg-[#f2f8fd] hover:shadow-[0_10px_20px_rgba(107,184,217,0.1)] active:translate-y-0',
-                    isCorrectAnswered && 'border-[#6fcba8] border-2 bg-[linear-gradient(180deg,#ebfbf3,#d7f8e8)] shadow-[0_12px_22px_rgba(95,200,160,0.15)] animate-[answer-celebrate_0.4s_cubic-bezier(0.34,1.56,0.64,1)_both]',
-                    isWrongAnswered && 'border-[#d9867a] border-2 bg-[linear-gradient(180deg,#fff4f1,#fdebe6)] shadow-[0_10px_18px_rgba(217,134,122,0.11)]',
+                    isCorrectAnswered &&
+                      'border-[#37b788] border-2 bg-[linear-gradient(180deg,#dffaf0,#bff0d7)] text-[#173a33] shadow-[0_16px_30px_rgba(55,183,136,0.24)] ring-1 ring-[rgba(55,183,136,0.22)] animate-[answer-celebrate_0.4s_cubic-bezier(0.34,1.56,0.64,1)_both]',
+                    isWrongAnswered && 'border-[#db7768] border-2 bg-[linear-gradient(180deg,#fff0ec,#f9d8d0)] text-[#5b241d] shadow-[0_12px_24px_rgba(217,134,122,0.16)]',
                     isAnswered && !isSelected && !isCorrectAtThisOption && 'opacity-55 grayscale-[0.15]',
                     isAnswered && 'cursor-default'
                   )}
@@ -179,13 +181,13 @@ export const DailyGameRunner = memo(function DailyGameRunner({
                     className={clsx(
                       'shrink-0 w-[30px] h-[30px] rounded-full grid place-items-center text-[0.82rem] font-black',
                       !isAnswered && 'bg-[#edf2f4] text-[#95a1ae]',
-                      isCorrectAnswered && 'bg-[#5fc7a1] text-white',
-                      isWrongAnswered && 'bg-[#e4998b] text-white'
+                      isCorrectAnswered && 'bg-[#2fb483] text-white',
+                      isWrongAnswered && 'bg-[#dd7f70] text-white'
                     )}
                   >
                     {OPTION_LABELS[index] ?? index + 1}
                   </span>
-                  <span className="flex-1 text-[1rem] tracking-tight leading-[1.3]">{option}</span>
+                  <span className="flex-1 text-[1.05rem] font-black tracking-[-0.02em] leading-[1.25]">{option}</span>
                 </button>
               );
             })}
