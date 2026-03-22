@@ -109,7 +109,11 @@ const App = () => {
   }, []);
 
   const goHome = useCallback(() => openMainScreen('daily'), [openMainScreen]);
-  const goSynonyms = useCallback(() => openMainScreen('synonyms'), [openMainScreen]);
+  const goSynonyms = useCallback(() => {
+    leaveGame();
+    setStudyLevel(null);
+    openMainScreen('synonyms');
+  }, [leaveGame, openMainScreen]);
   const goStats = useCallback(() => openMainScreen('stats'), [openMainScreen]);
   const goAdmin = useCallback(() => openMainScreen('admin'), [openMainScreen]);
   const goProfile = useCallback(() => openMainScreen('profile'), [openMainScreen]);
