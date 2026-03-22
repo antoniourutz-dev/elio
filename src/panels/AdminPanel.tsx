@@ -32,6 +32,18 @@ import {
 import type { PlayerIdentity, SynonymEntry, TeacherPlayerOverview } from '../euskeraLearning';
 import type { BankState } from '../appTypes';
 import { formatAdminDate } from '../formatters';
+import {
+  loadTeacherWordHistory,
+  recordTeacherWordHistoryItem,
+  saveTeacherWordHistory,
+  type TeacherWordHistoryItem,
+} from '../lib/teacherWordHistory';
+import {
+  loadTeacherPlayerHistory,
+  recordTeacherPlayerHistoryItem,
+  saveTeacherPlayerHistory,
+  type TeacherPlayerHistoryItem,
+} from '../lib/teacherPlayerHistory';
 
 type AdminSection = 'players' | 'words';
 type AdminPlayersView = 'list' | 'detail' | 'create';
@@ -95,6 +107,8 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
   const [teacherWordSearch, setTeacherWordSearch] = useState('');
   const [isTeacherWordDirty, setIsTeacherWordDirty] = useState(false);
   const [isSavingWord, setIsSavingWord] = useState(false);
+  const [teacherWordHistory, setTeacherWordHistory] = useState<TeacherWordHistoryItem[]>(() => loadTeacherWordHistory());
+  const [teacherPlayerHistory, setTeacherPlayerHistory] = useState<TeacherPlayerHistoryItem[]>(() => loadTeacherPlayerHistory());
   const [pendingDeletePlayer, setPendingDeletePlayer] = useState<TeacherPlayerOverview | null>(null);
 
   const refreshTeacherPlayers = async (entries: SynonymEntry[]) => {
@@ -195,6 +209,20 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
     );
   }, [teacherWordQuery, isDemoMode, teacherWordResults]);
 
+  const recentTeacherWordHistory = useMemo(() => teacherWordHistory.slice(0, 2), [teacherWordHistory]);
+  const recentTeacherPlayerHistory = useMemo(() => teacherPlayerHistory.slice(0, 2), [teacherPlayerHistory]);
+
+  const registerTeacherPlayerHistory = (playerCode: string, action: 'created' | 'updated') => {
+    const nextHistory = recordTeacherPlayerHistoryItem(teacherPlayerHistory, {
+      playerCode,
+      action,
+      changedAt: new Date().toISOString(),
+      changedBy: activePlayer.code,
+    });
+    setTeacherPlayerHistory(nextHistory);
+    saveTeacherPlayerHistory(nextHistory);
+  };
+
   /* eslint-disable react-hooks/set-state-in-effect */
   // This effect syncs the word form with the search result — all setState is conditional/guarded
   useEffect(() => {
@@ -277,6 +305,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
   const submitTeacherWord = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSavingWord(true);
+    const isEditingExistingWord = Boolean(editingWordId);
 
     const result = editingWordId
       ? await updateTeacherWord(editingWordId, {
@@ -298,6 +327,14 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
     await onRefreshBank();
     setIsTeacherWordDirty(false);
     setTeacherWordSearch(teacherWordForm.word.trim());
+    const nextHistory = recordTeacherWordHistoryItem(teacherWordHistory, {
+      word: teacherWordForm.word.trim(),
+      action: isEditingExistingWord ? 'updated' : 'created',
+      changedAt: new Date().toISOString(),
+      changedBy: activePlayer.code,
+    });
+    setTeacherWordHistory(nextHistory);
+    saveTeacherWordHistory(nextHistory);
   };
 
   const submitTeacherPlayer = async (event: FormEvent<HTMLFormElement>) => {
@@ -312,6 +349,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
     setNewPlayerCode('');
     setNewPlayerPassword('');
     setAdminPlayersView('list');
+    registerTeacherPlayerHistory(newPlayerCode.trim().toLowerCase(), 'created');
     await refreshTeacherPlayers(bankState.entries);
   };
 
@@ -332,6 +370,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
     setTeacherMessage(result.message);
 
     if (result.ok) {
+      registerTeacherPlayerHistory(teacherPlayerDraft.playerCode.trim().toLowerCase() || player.playerCode, 'updated');
       await refreshTeacherPlayers(bankState.entries);
     }
   };
@@ -349,6 +388,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
     setTeacherMessage(result.message);
 
     if (result.ok) {
+      registerTeacherPlayerHistory(player.playerCode, 'updated');
       await refreshTeacherPlayers(bankState.entries);
       return;
     }
@@ -360,6 +400,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
     const result = await resetPlayerProgressByTeacher(player);
     setTeacherMessage(result.message);
     if (result.ok) {
+      registerTeacherPlayerHistory(player.playerCode, 'updated');
       await refreshTeacherPlayers(bankState.entries);
     }
   };
@@ -720,6 +761,55 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                 </button>
               </form>
             )}
+
+            <section className="grid gap-3 pt-4 border-t border-[rgba(216,226,241,0.92)]">
+              <div>
+                <p className="mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase text-[#6bb8d9]">Azken aldaketak</p>
+                <h3 className="font-display text-[clamp(1.15rem,2.6vw,1.45rem)] leading-[1.06] tracking-[-0.04em] text-[#203143]">
+                  Azken bi jokalari ukituak
+                </h3>
+              </div>
+
+              {recentTeacherPlayerHistory.length === 0 ? (
+                <div className="rounded-[22px] bg-[rgba(247,249,255,0.92)] p-[18px] font-bold leading-relaxed text-[#7a8d9d]">
+                  Oraindik ez da jokalaririk sortu edo eguneratu kudeaketa panel honetatik.
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {recentTeacherPlayerHistory.map((item) => (
+                    <article
+                      key={`${item.playerCode}-${item.changedAt}-${item.changedBy}`}
+                      className="grid gap-2 rounded-[22px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] p-[18px]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <strong className="block truncate font-display text-[1.18rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">
+                            {item.playerCode}
+                          </strong>
+                          <span className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#7a8d9d]">
+                            {item.action === 'created' ? 'Sortuta' : 'Eguneratuta'}
+                          </span>
+                        </div>
+                        <span className="inline-flex min-h-[34px] items-center rounded-full bg-[rgba(232,248,244,0.96)] px-3 text-[0.82rem] font-bold text-[#2e8a6e]">
+                          {item.changedBy}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 text-[0.82rem] font-bold text-[#7a8d9d]">
+                        <span>{formatAdminDate(item.changedAt)}</span>
+                        <span className="text-[#c2ced8]">•</span>
+                        <span>
+                          {new Date(item.changedAt).toLocaleTimeString('eu-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
           </section>
         )}
 
@@ -872,6 +962,57 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     </button>
                   </div>
                 </form>
+              )}
+
+              {!isDemoMode && (
+                <section className="grid gap-3 pt-4 border-t border-[rgba(216,226,241,0.92)]">
+                  <div>
+                    <p className="mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase text-[#6bb8d9]">Azken aldaketak</p>
+                    <h3 className="font-display text-[clamp(1.15rem,2.6vw,1.45rem)] leading-[1.06] tracking-[-0.04em] text-[#203143]">
+                      Azken bi hitz ukituak
+                    </h3>
+                  </div>
+
+                  {recentTeacherWordHistory.length === 0 ? (
+                    <div className="rounded-[22px] bg-[rgba(247,249,255,0.92)] p-[18px] font-bold leading-relaxed text-[#7a8d9d]">
+                      Oraindik ez da hitzik gehitu edo eguneratu kudeaketa panel honetatik.
+                    </div>
+                  ) : (
+                    <div className="grid gap-3">
+                      {recentTeacherWordHistory.map((item) => (
+                        <article
+                          key={`${item.word}-${item.changedAt}-${item.changedBy}`}
+                          className="grid gap-2 rounded-[22px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] p-[18px]"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <strong className="block truncate font-display text-[1.18rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">
+                                {item.word}
+                              </strong>
+                              <span className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#7a8d9d]">
+                                {item.action === 'created' ? 'Gehituta' : 'Eguneratuta'}
+                              </span>
+                            </div>
+                            <span className="inline-flex min-h-[34px] items-center rounded-full bg-[rgba(232,248,244,0.96)] px-3 text-[0.82rem] font-bold text-[#2e8a6e]">
+                              {item.changedBy}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 text-[0.82rem] font-bold text-[#7a8d9d]">
+                            <span>{formatAdminDate(item.changedAt)}</span>
+                            <span className="text-[#c2ced8]">•</span>
+                            <span>
+                              {new Date(item.changedAt).toLocaleTimeString('eu-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </section>
               )}
             </div>
           </section>
