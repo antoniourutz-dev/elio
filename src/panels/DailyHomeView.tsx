@@ -321,14 +321,14 @@ export const DailyHomeView = memo(function DailyHomeView({
 
         <button
           type="button"
-          className="flex items-center gap-4 py-[1.05rem] px-[1.2rem] bg-gradient-to-br from-[#6b5ed8] via-[#9474e8] via-[60%] to-[#b890f0] border-none rounded-2xl cursor-pointer text-left w-full shadow-[0_14px_34px_rgba(107,94,216,0.24),0_4px_12px_rgba(107,94,216,0.12)] transition-[transform,box-shadow,filter] duration-150 ease-out hover:-translate-y-[2px] hover:shadow-[0_20px_42px_rgba(107,94,216,0.3)] active:scale-[0.98] active:translate-y-0 active:duration-75"
+          className="flex items-center gap-4 py-[1.05rem] px-[1.2rem] bg-[linear-gradient(135deg,#4db6a5_0%,#5fc8bd_34%,#86d2a6_68%,#cfe07e_100%)] border border-[rgba(113,201,181,0.34)] rounded-2xl cursor-pointer text-left w-full shadow-[0_16px_36px_rgba(77,182,165,0.24),0_4px_12px_rgba(77,182,165,0.12)] transition-[transform,box-shadow,filter,border-color] duration-150 ease-out hover:-translate-y-[2px] hover:border-[rgba(77,182,165,0.48)] hover:shadow-[0_22px_44px_rgba(77,182,165,0.3)] active:scale-[0.98] active:translate-y-0 active:duration-75"
           onClick={onGoSynonyms}
       >
-        <span className="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl bg-white/20 border border-white/30 shrink-0">
+        <span className="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl bg-white/18 border border-white/36 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
           <BookOpen className="w-[1.25rem] h-[1.25rem] text-white" />
           </span>
           <div className="flex flex-col gap-[0.2rem] flex-1 min-w-0">
-            <span className="text-[0.78rem] font-semibold text-white/80">Ikasketa modua</span>
+            <span className="text-[0.78rem] font-semibold text-white/82">Ikasketa modua</span>
             <strong className="text-[0.96rem] font-extrabold text-white">Sinonimoak ikasi</strong>
         </div>
         <ArrowRight className="w-[1.1rem] h-[1.1rem] text-white/80 shrink-0 opacity-100" />

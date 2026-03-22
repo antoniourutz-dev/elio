@@ -122,11 +122,13 @@ export const LevelsView = memo(function LevelsView({
       {currentLevel && (
         <button
           type="button"
-          className="group relative grid gap-4 w-full rounded-[30px] border border-[rgba(214,223,235,0.88)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,253,0.95))] px-5 py-5 text-left shadow-[0_18px_44px_rgba(120,146,168,0.12)] overflow-hidden transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-[2px] hover:border-[rgba(107,184,217,0.34)] hover:shadow-[0_22px_50px_rgba(120,146,168,0.15)]"
+          className="group relative grid gap-4 w-full rounded-[30px] border border-[rgba(118,199,178,0.38)] bg-[linear-gradient(180deg,rgba(246,255,251,0.99),rgba(232,247,240,0.97))] px-5 py-5 text-left shadow-[0_22px_52px_rgba(78,160,141,0.16)] overflow-hidden transition-[transform,box-shadow,border-color,filter] duration-200 hover:-translate-y-[2px] hover:border-[rgba(77,182,165,0.58)] hover:shadow-[0_26px_58px_rgba(78,160,141,0.2)] hover:saturate-[1.04]"
           onClick={() => onStartLevel(currentLevel.level)}
           disabled={!currentLevel.unlocked}
         >
-          <div className="absolute pointer-events-none right-[-20px] top-[-18px] w-[140px] h-[140px] rounded-full bg-[radial-gradient(circle,rgba(95,200,189,0.12),transparent_64%)]" />
+          <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(135deg,rgba(87,193,166,0.08),transparent_42%,rgba(201,226,123,0.14))]" />
+          <div className="absolute pointer-events-none right-[-20px] top-[-18px] w-[160px] h-[160px] rounded-full bg-[radial-gradient(circle,rgba(95,200,189,0.22),transparent_64%)]" />
+          <div className="absolute pointer-events-none left-[-36px] bottom-[-44px] w-[180px] h-[180px] rounded-full bg-[radial-gradient(circle,rgba(201,226,123,0.16),transparent_68%)]" />
 
           <div className="flex items-start gap-4">
             <span
@@ -143,7 +145,7 @@ export const LevelsView = memo(function LevelsView({
                 <strong className="font-display text-[1.6rem] leading-none tracking-[-0.05em] text-[#223748]">
                   {currentLevel.level.name}
                 </strong>
-                <span className="inline-flex items-center rounded-full bg-[rgba(71,190,172,0.12)] px-3 py-[0.26rem] text-[0.72rem] font-extrabold uppercase tracking-[0.08em] text-[#2f8f86]">
+                <span className="inline-flex items-center rounded-full border border-[rgba(77,182,165,0.18)] bg-[linear-gradient(180deg,rgba(118,220,199,0.28),rgba(100,206,183,0.2))] px-3 py-[0.26rem] text-[0.72rem] font-black uppercase tracking-[0.1em] text-[#1d8b7f] shadow-[0_6px_14px_rgba(77,182,165,0.12)]">
                   {currentLevel.completed ? 'Gainditzeko prest' : 'Martxan'}
                 </span>
               </div>
