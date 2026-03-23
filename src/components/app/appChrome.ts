@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { BarChart3, BookOpen, CheckCircle2, CircleUserRound, Flame, GraduationCap, House, Mountain, RefreshCw, Shield } from 'lucide-react';
+import { BookOpenText, ChartColumnBig, CheckCircle2, Flame, House, Mountain, RefreshCw, ShieldUser, UserRound } from 'lucide-react';
 import type { ActiveQuiz, LevelSummary } from '../../appTypes';
 
 export type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
@@ -146,7 +146,7 @@ export function resolveDockItems({
       tabs: [],
       actions: [
         { id: 'retry-level', label: 'Berriz', icon: RefreshCw, action: 'retry-level', variant: 'secondary' },
-        { id: 'back-to-study', label: 'Ikasi', icon: GraduationCap, action: 'learn', variant: 'primary' },
+        { id: 'back-to-study', label: 'Ikasi', icon: BookOpenText, action: 'learn', variant: 'primary' },
       ],
     };
   }
@@ -155,8 +155,8 @@ export function resolveDockItems({
     return {
       tabs: [
         { id: 'home', label: 'Hasiera', icon: House, action: 'home', active: mainScreen === 'daily' },
-        { id: 'admin', label: 'Kudeaketa', icon: Shield, action: 'admin', active: mainScreen === 'admin' },
-        { id: 'profile', label: 'Profila', icon: CircleUserRound, action: 'profile', active: mainScreen === 'profile' },
+        { id: 'admin', label: 'Kudeaketa', icon: ShieldUser, action: 'admin', active: mainScreen === 'admin' },
+        { id: 'profile', label: 'Profila', icon: UserRound, action: 'profile', active: mainScreen === 'profile' },
       ],
       actions: [],
     };
@@ -168,7 +168,7 @@ export function resolveDockItems({
       {
         id: 'learn',
         label: 'Ikasi',
-        icon: GraduationCap,
+        icon: BookOpenText,
         action: 'learn',
         active:
           mainScreen === 'learn'
@@ -177,8 +177,8 @@ export function resolveDockItems({
           || mainScreen === 'vocabulary'
           || mainScreen === 'verbs',
       },
-      { id: 'stats', label: 'Estatistikak', icon: BarChart3, action: 'stats', active: mainScreen === 'stats' },
-      { id: 'profile', label: 'Profila', icon: CircleUserRound, action: 'profile', active: mainScreen === 'profile' },
+      { id: 'stats', label: 'Estatistikak', icon: ChartColumnBig, action: 'stats', active: mainScreen === 'stats' },
+      { id: 'profile', label: 'Profila', icon: UserRound, action: 'profile', active: mainScreen === 'profile' },
     ],
     actions: [],
   };

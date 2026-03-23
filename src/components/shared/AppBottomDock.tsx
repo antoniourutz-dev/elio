@@ -22,7 +22,7 @@ function BottomTabButton({
       type="button"
       whileTap={disabled ? undefined : { scale: 0.97 }}
       className={clsx(
-        'relative inline-flex min-h-[40px] flex-1 items-center justify-center overflow-hidden border-none px-1.5 transition-[color,opacity,transform] duration-150 ease-out',
+        'relative inline-flex min-h-[42px] flex-1 items-center justify-center overflow-hidden border-none px-1.5 transition-[color,opacity,transform] duration-150 ease-out',
         active ? 'text-[#237b74]' : 'text-[#8b9aaa]',
         disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
       )}
@@ -30,17 +30,22 @@ function BottomTabButton({
       disabled={disabled}
       aria-label={label}
     >
-      {active ? (
-        <span className="absolute top-[4px] left-1/2 h-[2px] w-[14px] -translate-x-1/2 rounded-full bg-[#41b4aa]" />
-      ) : null}
-
-      <span className="relative inline-flex min-w-0 w-full flex-col items-center justify-center gap-[1px]">
+      <span
+        className={clsx(
+          'relative inline-flex min-w-0 items-center justify-center transition-[background-color,padding,transform] duration-150 ease-out',
+          active
+            ? 'flex-col gap-[2px] rounded-[16px] bg-[rgba(65,180,170,0.1)] px-3 py-1.5'
+            : 'h-full w-full'
+        )}
+      >
         <span className="inline-flex items-center justify-center">
-          <span className="h-[20px] w-[20px] [&_svg]:h-full [&_svg]:w-full">{icon}</span>
+          <span className="h-[23px] w-[23px] [&_svg]:h-full [&_svg]:w-full">{icon}</span>
         </span>
-        <span className={clsx('block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[0.64rem] leading-none tracking-[-0.01em]', active ? 'font-bold' : 'font-semibold')}>
-          {label}
-        </span>
+        {active ? (
+          <span className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-[0.62rem] font-bold leading-none tracking-[-0.01em]">
+            {label}
+          </span>
+        ) : null}
       </span>
     </motion.button>
   );
@@ -89,7 +94,7 @@ export function BottomTabBar({ children }: BottomTabBarProps) {
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <nav
-          className="mx-auto flex h-[52px] w-full max-w-[var(--page-width)] items-center gap-0 px-2"
+          className="mx-auto flex h-[54px] w-full max-w-[var(--page-width)] items-center gap-0 px-2"
           aria-label="Ekintza nagusiak"
         >
           {children}
