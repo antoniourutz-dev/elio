@@ -68,8 +68,8 @@ interface AppBottomDockProps {
 
 export function AppBottomDock({ children }: AppBottomDockProps) {
   return (
-    <div className="relative w-full z-[100] pointer-events-auto shrink-0 bg-[rgba(250,251,247,0.86)] backdrop-blur-[18px] border-t border-[rgba(214,222,229,0.6)] shadow-[0_-4px_18px_rgba(99,117,135,0.05)] [padding-bottom:max(calc(env(safe-area-inset-bottom)-26px),0px)]">
-      <nav className="flex items-stretch gap-[2px] px-2 py-[3px] w-full mx-auto" aria-label="Ekintza nagusiak">
+    <div className="relative w-full z-[100] pointer-events-auto shrink-0 bg-[rgba(250,251,247,0.86)] backdrop-blur-[18px] border-t border-[rgba(214,222,229,0.6)] shadow-[0_-4px_18px_rgba(99,117,135,0.05)]">
+      <nav className="flex items-stretch gap-[2px] w-full mx-auto px-2 pt-[3px] [padding-bottom:max(env(safe-area-inset-bottom),3px)]" aria-label="Ekintza nagusiak">
         {children}
       </nav>
     </div>
