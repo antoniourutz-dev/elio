@@ -26,8 +26,14 @@ export interface DockItemConfig {
   icon: LucideIcon;
   action: DockAction;
   active?: boolean;
-  tone?: 'neutral' | 'primary';
-  wide?: boolean;
+}
+
+export interface DockActionItemConfig {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  action: DockAction;
+  variant?: 'secondary' | 'primary';
 }
 
 export type DockAction = 'home' | 'learn' | 'stats' | 'admin' | 'profile' | 'retry-level';
@@ -130,41 +136,50 @@ export function resolveDockItems({
   dailySession,
   quiz,
   summary,
-}: ResolveDockItemsArgs): DockItemConfig[] {
+}: ResolveDockItemsArgs): { tabs: DockItemConfig[]; actions: DockActionItemConfig[] } {
   if (dailySession || quiz) {
-    return [];
+    return { tabs: [], actions: [] };
   }
 
   if (summary) {
-    return [
-      { id: 'retry-level', label: 'Berriz', icon: RefreshCw, action: 'retry-level' },
-      { id: 'back-to-study', label: 'Ikasi', icon: GraduationCap, action: 'learn', tone: 'primary', wide: true },
-    ];
+    return {
+      tabs: [],
+      actions: [
+        { id: 'retry-level', label: 'Berriz', icon: RefreshCw, action: 'retry-level', variant: 'secondary' },
+        { id: 'back-to-study', label: 'Ikasi', icon: GraduationCap, action: 'learn', variant: 'primary' },
+      ],
+    };
   }
 
   if (isTeacher) {
-    return [
-      { id: 'home', label: 'Hasiera', icon: House, action: 'home', active: mainScreen === 'daily' },
-      { id: 'admin', label: 'Kudeaketa', icon: Shield, action: 'admin', active: mainScreen === 'admin' },
-      { id: 'profile', label: 'Profila', icon: CircleUserRound, action: 'profile', active: mainScreen === 'profile' },
-    ];
+    return {
+      tabs: [
+        { id: 'home', label: 'Hasiera', icon: House, action: 'home', active: mainScreen === 'daily' },
+        { id: 'admin', label: 'Kudeaketa', icon: Shield, action: 'admin', active: mainScreen === 'admin' },
+        { id: 'profile', label: 'Profila', icon: CircleUserRound, action: 'profile', active: mainScreen === 'profile' },
+      ],
+      actions: [],
+    };
   }
 
-  return [
-    { id: 'home', label: 'Hasiera', icon: House, action: 'home', active: mainScreen === 'daily' },
-    {
-      id: 'learn',
-      label: 'Ikasi',
-      icon: GraduationCap,
-      action: 'learn',
-      active:
-        mainScreen === 'learn'
-        || mainScreen === 'synonyms'
-        || mainScreen === 'grammar'
-        || mainScreen === 'vocabulary'
-        || mainScreen === 'verbs',
-    },
-    { id: 'stats', label: 'Estatistikak', icon: BarChart3, action: 'stats', active: mainScreen === 'stats' },
-    { id: 'profile', label: 'Profila', icon: CircleUserRound, action: 'profile', active: mainScreen === 'profile' },
-  ];
+  return {
+    tabs: [
+      { id: 'home', label: 'Hasiera', icon: House, action: 'home', active: mainScreen === 'daily' },
+      {
+        id: 'learn',
+        label: 'Ikasi',
+        icon: GraduationCap,
+        action: 'learn',
+        active:
+          mainScreen === 'learn'
+          || mainScreen === 'synonyms'
+          || mainScreen === 'grammar'
+          || mainScreen === 'vocabulary'
+          || mainScreen === 'verbs',
+      },
+      { id: 'stats', label: 'Estatistikak', icon: BarChart3, action: 'stats', active: mainScreen === 'stats' },
+      { id: 'profile', label: 'Profila', icon: CircleUserRound, action: 'profile', active: mainScreen === 'profile' },
+    ],
+    actions: [],
+  };
 }

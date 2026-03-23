@@ -9,7 +9,7 @@ import type {
   LevelSummary,
 } from '../../appTypes';
 import type { GameLevel, GameProgress, PlayerIdentity } from '../../euskeraLearning';
-import type { DockAction, DockItemConfig, MainScreen, TopBarState } from './appChrome';
+import type { DockAction, DockActionItemConfig, DockItemConfig, MainScreen, TopBarState } from './appChrome';
 
 export interface AccessViewModel {
   code: string;
@@ -72,7 +72,8 @@ export interface SynonymGameViewModel {
 }
 
 export interface DockViewModel {
-  items: DockItemConfig[];
+  tabs: DockItemConfig[];
+  actions: DockActionItemConfig[];
   onItemClick: (action: DockAction) => void;
 }
 

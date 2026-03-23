@@ -16,7 +16,7 @@ import { AppRouterView } from './components/app/AppRouterView';
 import { ConfirmModal } from './components/ConfirmModal';
 import { AppShell } from './components/shared/AppShell';
 import { AppTopBar } from './components/shared/AppTopBar';
-import { AppBottomDock, DockButton } from './components/shared/AppBottomDock';
+import { BottomActionBar, BottomActionButton, BottomTabBar, BottomTabButton } from './components/shared/AppBottomDock';
 import { useAppAuth } from './hooks/useAppAuth';
 import { useDailyGame } from './hooks/useDailyGame';
 import { useAppScreenModel } from './hooks/useAppScreenModel';
@@ -272,7 +272,14 @@ const App = () => {
     goAdmin,
     goProfile,
   });
-  const isDockVisible = Boolean(activePlayer && screenModel.dock.items.length > 0);
+  const bottomBarMode: 'tabs' | 'actions' | null =
+    activePlayer
+      ? screenModel.dock.actions.length > 0
+        ? 'actions'
+        : screenModel.dock.tabs.length > 0
+          ? 'tabs'
+          : null
+      : null;
 
   return (
     <div className="app-frame grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
@@ -290,7 +297,7 @@ const App = () => {
         />
       )}
 
-      <AppShell shellRef={shellRef} isLocked={Boolean(quiz || dailySession)} reserveBottomDock={Boolean(isDockVisible)}>
+      <AppShell shellRef={shellRef} isLocked={Boolean(quiz || dailySession)} bottomBarMode={bottomBarMode}>
         <AppRouterView
           isSessionLoading={screenModel.isSessionLoading}
           activePlayer={activePlayer}
@@ -305,25 +312,41 @@ const App = () => {
         />
       </AppShell>
 
-      {isDockVisible && (
-        <AppBottomDock>
-          {screenModel.dock.items.map((item) => {
+      {bottomBarMode === 'tabs' ? (
+        <BottomTabBar>
+          {screenModel.dock.tabs.map((item) => {
             const Icon = item.icon;
             return (
               <span key={item.id} className="contents">
-                <DockButton
+                <BottomTabButton
                   label={item.label}
                   icon={<Icon />}
                   onClick={() => screenModel.dock.onItemClick(item.action)}
                   active={item.active}
-                  tone={item.tone}
-                  wide={item.wide}
                 />
               </span>
             );
           })}
-        </AppBottomDock>
-      )}
+        </BottomTabBar>
+      ) : null}
+
+      {bottomBarMode === 'actions' ? (
+        <BottomActionBar>
+          {screenModel.dock.actions.map((item) => {
+            const Icon = item.icon;
+            return (
+              <span key={item.id} className="contents">
+                <BottomActionButton
+                  label={item.label}
+                  icon={<Icon />}
+                  onClick={() => screenModel.dock.onItemClick(item.action)}
+                  variant={item.variant}
+                />
+              </span>
+            );
+          })}
+        </BottomActionBar>
+      ) : null}
 
       <ConfirmModal
         isOpen={isDailyExitWarningOpen}

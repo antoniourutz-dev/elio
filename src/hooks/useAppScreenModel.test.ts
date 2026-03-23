@@ -68,7 +68,8 @@ describe('buildAppScreenModel', () => {
         metric: null,
       },
       dock: {
-        items: [],
+        tabs: [],
+        actions: [],
         onItemClick: vi.fn(),
       },
     });
@@ -79,7 +80,8 @@ describe('buildAppScreenModel', () => {
     expect(model.dailyGame.elapsedSeconds).toBe(20);
     expect(model.synonymGame.quizAdvanceLabel).toBe('Hurrengoa');
     expect(model.topBar).toMatchObject({ title: 'urko', subtitle: 'Sinonimoak' });
-    expect(model.dock.items).toEqual([]);
+    expect(model.dock.tabs).toEqual([]);
+    expect(model.dock.actions).toEqual([]);
   });
 
   it('preserves object identity for provided sections', () => {
@@ -95,7 +97,8 @@ describe('buildAppScreenModel', () => {
       onSubmit: vi.fn(),
     };
     const dock = {
-      items: [{ id: 'home', label: 'Hasiera', icon: vi.fn(), action: 'home' as const, active: true }],
+      tabs: [{ id: 'home', label: 'Hasiera', icon: vi.fn(), action: 'home' as const, active: true }],
+      actions: [],
       onItemClick: vi.fn(),
     };
 

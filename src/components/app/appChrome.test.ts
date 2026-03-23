@@ -116,7 +116,7 @@ describe('resolveTopBarState', () => {
 
 describe('resolveDockItems', () => {
   it('hides the dock while a daily session is active', () => {
-    const items = resolveDockItems({
+    const dock = resolveDockItems({
       isTeacher: false,
       mainScreen: 'daily',
       dailySession: true,
@@ -124,11 +124,12 @@ describe('resolveDockItems', () => {
       summary: null,
     });
 
-    expect(items).toEqual([]);
+    expect(dock.tabs).toEqual([]);
+    expect(dock.actions).toEqual([]);
   });
 
   it('builds teacher navigation without public tabs', () => {
-    const items = resolveDockItems({
+    const dock = resolveDockItems({
       isTeacher: true,
       mainScreen: 'admin',
       dailySession: false,
@@ -136,12 +137,13 @@ describe('resolveDockItems', () => {
       summary: null,
     });
 
-    expect(items.map((item) => item.action)).toEqual(['home', 'admin', 'profile']);
-    expect(items.find((item) => item.action === 'admin')?.active).toBe(true);
+    expect(dock.tabs.map((item) => item.action)).toEqual(['home', 'admin', 'profile']);
+    expect(dock.tabs.find((item) => item.action === 'admin')?.active).toBe(true);
+    expect(dock.actions).toEqual([]);
   });
 
   it('builds learner navigation with learning and ranking tabs', () => {
-    const items = resolveDockItems({
+    const dock = resolveDockItems({
       isTeacher: false,
       mainScreen: 'stats',
       dailySession: false,
@@ -149,12 +151,13 @@ describe('resolveDockItems', () => {
       summary: null,
     });
 
-    expect(items.map((item) => item.action)).toEqual(['home', 'learn', 'stats', 'profile']);
-    expect(items.find((item) => item.action === 'stats')?.active).toBe(true);
+    expect(dock.tabs.map((item) => item.action)).toEqual(['home', 'learn', 'stats', 'profile']);
+    expect(dock.tabs.find((item) => item.action === 'stats')?.active).toBe(true);
+    expect(dock.actions).toEqual([]);
   });
 
-  it('replaces navigation with replay and study actions when a level is finished', () => {
-    const items = resolveDockItems({
+  it('replaces navigation with a separate action bar when a level is finished', () => {
+    const dock = resolveDockItems({
       isTeacher: false,
       mainScreen: 'synonyms',
       dailySession: false,
@@ -162,13 +165,14 @@ describe('resolveDockItems', () => {
       summary: sampleSummary,
     });
 
-    expect(items.map((item) => item.action)).toEqual(['retry-level', 'learn']);
-    expect(items[1]).toMatchObject({ tone: 'primary', wide: true });
-    expect(items[1]?.label).toBe('Ikasi');
+    expect(dock.tabs).toEqual([]);
+    expect(dock.actions.map((item) => item.action)).toEqual(['retry-level', 'learn']);
+    expect(dock.actions[1]).toMatchObject({ variant: 'primary' });
+    expect(dock.actions[1]?.label).toBe('Ikasi');
   });
 
   it('keeps the same summary actions regardless of next unlocked level', () => {
-    const items = resolveDockItems({
+    const dock = resolveDockItems({
       isTeacher: false,
       mainScreen: 'synonyms',
       dailySession: false,
@@ -176,7 +180,7 @@ describe('resolveDockItems', () => {
       summary: sampleSummary,
     });
 
-    expect(items.map((item) => item.action)).toEqual(['retry-level', 'learn']);
+    expect(dock.actions.map((item) => item.action)).toEqual(['retry-level', 'learn']);
   });
 
   it('keeps the learning dock item active on synonym and grammar screens', () => {
@@ -209,9 +213,9 @@ describe('resolveDockItems', () => {
       summary: null,
     });
 
-    expect(synonymItems.find((item) => item.action === 'learn')?.active).toBe(true);
-    expect(grammarItems.find((item) => item.action === 'learn')?.active).toBe(true);
-    expect(vocabularyItems.find((item) => item.action === 'learn')?.active).toBe(true);
-    expect(verbsItems.find((item) => item.action === 'learn')?.active).toBe(true);
+    expect(synonymItems.tabs.find((item) => item.action === 'learn')?.active).toBe(true);
+    expect(grammarItems.tabs.find((item) => item.action === 'learn')?.active).toBe(true);
+    expect(vocabularyItems.tabs.find((item) => item.action === 'learn')?.active).toBe(true);
+    expect(verbsItems.tabs.find((item) => item.action === 'learn')?.active).toBe(true);
   });
 });

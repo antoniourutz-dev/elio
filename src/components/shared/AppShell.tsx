@@ -4,11 +4,11 @@ import clsx from 'clsx';
 interface AppShellProps {
   shellRef: { current: HTMLDivElement | null };
   isLocked: boolean;
-  reserveBottomDock?: boolean;
+  bottomBarMode?: 'tabs' | 'actions' | null;
   children: ReactNode;
 }
 
-export function AppShell({ shellRef, isLocked, reserveBottomDock = false, children }: AppShellProps) {
+export function AppShell({ shellRef, isLocked, bottomBarMode = null, children }: AppShellProps) {
   return (
     <div
       ref={shellRef}
@@ -26,8 +26,10 @@ export function AppShell({ shellRef, isLocked, reserveBottomDock = false, childr
           'main-content relative',
           isLocked
             ? ''
-            : reserveBottomDock
-              ? 'pb-[calc(68px+env(safe-area-inset-bottom))]'
+            : bottomBarMode === 'tabs'
+              ? 'pb-[calc(64px+env(safe-area-inset-bottom))]'
+              : bottomBarMode === 'actions'
+                ? 'pb-[calc(92px+env(safe-area-inset-bottom))]'
               : 'pb-[20px] md:pb-[22px]'
         )}
       >

@@ -29,7 +29,7 @@ export function useAppDock({
   onProfile,
   onRetryLevel,
 }: UseAppDockArgs) {
-  const items = useMemo(
+  const dock = useMemo(
     () =>
       resolveDockItems({
         isTeacher,
@@ -61,7 +61,8 @@ export function useAppDock({
   );
 
   return {
-    items,
+    tabs: dock.tabs,
+    actions: dock.actions,
     onItemClick,
   };
 }
