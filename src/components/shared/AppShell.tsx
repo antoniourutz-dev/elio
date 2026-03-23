@@ -27,7 +27,7 @@ export function AppShell({ shellRef, isLocked, reserveBottomDock = false, childr
           isLocked
             ? ''
             : reserveBottomDock
-              ? 'pb-[calc(54px+env(safe-area-inset-bottom))]'
+              ? 'pb-[calc(50px+env(safe-area-inset-bottom))]'
               : 'pb-[20px] md:pb-[22px]'
         )}
       >
