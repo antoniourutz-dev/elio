@@ -282,7 +282,7 @@ const App = () => {
       : null;
 
   return (
-    <div className="app-frame grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
+    <div className="app-frame grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
       {activePlayer && (
         <AppTopBar
           title={screenModel.topBar.title}
