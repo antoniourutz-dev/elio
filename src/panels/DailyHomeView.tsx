@@ -387,7 +387,9 @@ export const DailyHomeView = memo(function DailyHomeView({
               <Icon className="h-[1.4rem] w-[1.4rem]" />
             </span>
             <div className="min-w-0 flex-1">
-              <strong className="block font-display text-[1.2rem] font-extrabold leading-[0.96] tracking-[-0.05em] text-[#223246]">{title}</strong>
+              <strong className="block font-display text-[clamp(1rem,3.5vw,1.2rem)] font-extrabold leading-[0.9] tracking-[-0.05em] text-[#223246] text-balance">
+                {title}
+              </strong>
             </div>
           </button>
         ))}
