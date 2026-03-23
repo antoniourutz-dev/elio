@@ -2,13 +2,17 @@ import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
+import { Languages, Sigma } from 'lucide-react';
 import type { GameLevel, PlayerIdentity } from '../../euskeraLearning';
 import { AccessScreen } from '../../panels/AccessScreen';
 import { DailyHomeView } from '../../panels/DailyHomeView';
+import { LearnHubView } from '../../panels/LearnHubView';
+import { LearningPlaceholderView } from '../../panels/LearningPlaceholderView';
+import { VocabularyView } from '../../panels/VocabularyView';
 import { LoadingPanel, SessionLoadingView } from '../shared/AppLoaders';
 import type { AccessViewModel, DailyGameViewModel, MainViewModel, SynonymGameViewModel } from './appScreenModelTypes';
 
-type MainScreen = 'daily' | 'synonyms' | 'stats' | 'profile' | 'admin';
+type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
 
 const AdminPanel = lazy(() => import('../../panels/AdminPanel'));
 
@@ -111,7 +115,20 @@ export function AppRouterView({
                 isLoadingData={main.isLoadingData}
                 canStartGame={main.canStartDailyGame}
                 onStartGame={main.onStartDailyGame}
+                onGoLearn={main.onGoLearn}
                 onGoSynonyms={main.onGoSynonyms}
+                onGoGrammar={main.onGoGrammar}
+                onGoVocabulary={main.onGoVocabulary}
+                onGoVerbs={main.onGoVerbs}
+              />
+            )}
+
+            {mainScreen === 'learn' && (
+              <LearnHubView
+                onGoSynonyms={main.onGoSynonyms}
+                onGoGrammar={main.onGoGrammar}
+                onGoVocabulary={main.onGoVocabulary}
+                onGoVerbs={main.onGoVerbs}
               />
             )}
 
@@ -127,6 +144,28 @@ export function AppRouterView({
                   onRetry={main.onRefreshBank}
                 />
               </Suspense>
+            )}
+
+            {mainScreen === 'grammar' && (
+              <LearningPlaceholderView
+                eyebrow="Gramatika"
+                title="Gramatika"
+                body="Hemen gramatikako gaiak joango gara gehitzen pixkanaka: azalpenak, adibideak eta etorkizunean ariketak ere bai."
+                icon={Languages}
+              />
+            )}
+
+            {mainScreen === 'vocabulary' && (
+              <VocabularyView isActive />
+            )}
+
+            {mainScreen === 'verbs' && (
+              <LearningPlaceholderView
+                eyebrow="Aditzak"
+                title="Aditzak"
+                body="Hemen aditzen formak, denborak eta erabilera ereduak landuko ditugu aurrerago, pausoz pauso."
+                icon={Sigma}
+              />
             )}
 
             {mainScreen === 'stats' && (

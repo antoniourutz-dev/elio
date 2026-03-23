@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, Mountain } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import {
   GAME_LEVELS,
   getLevelMetersForProgress,
@@ -109,10 +109,30 @@ const App = () => {
   }, []);
 
   const goHome = useCallback(() => openMainScreen('daily'), [openMainScreen]);
+  const goLearn = useCallback(() => {
+    leaveGame();
+    setStudyLevel(null);
+    openMainScreen('learn');
+  }, [leaveGame, openMainScreen]);
   const goSynonyms = useCallback(() => {
     leaveGame();
     setStudyLevel(null);
     openMainScreen('synonyms');
+  }, [leaveGame, openMainScreen]);
+  const goGrammar = useCallback(() => {
+    leaveGame();
+    setStudyLevel(null);
+    openMainScreen('grammar');
+  }, [leaveGame, openMainScreen]);
+  const goVocabulary = useCallback(() => {
+    leaveGame();
+    setStudyLevel(null);
+    openMainScreen('vocabulary');
+  }, [leaveGame, openMainScreen]);
+  const goVerbs = useCallback(() => {
+    leaveGame();
+    setStudyLevel(null);
+    openMainScreen('verbs');
   }, [leaveGame, openMainScreen]);
   const goStats = useCallback(() => openMainScreen('stats'), [openMainScreen]);
   const goAdmin = useCallback(() => openMainScreen('admin'), [openMainScreen]);
@@ -243,7 +263,11 @@ const App = () => {
     answerCurrentQuestion,
     advanceQuiz,
     goHome,
+    goLearn,
     goSynonyms,
+    goGrammar,
+    goVocabulary,
+    goVerbs,
     goStats,
     goAdmin,
     goProfile,
@@ -255,14 +279,11 @@ const App = () => {
         <AppTopBar
           title={screenModel.topBar.title}
           subtitle={screenModel.topBar.subtitle}
-          completedLevels={completedLevels}
-          totalLevels={LEVELS_TOTAL}
           showBackButton={screenModel.topBar.showBackButton}
           onBack={handleTopBarBack}
           metric={screenModel.topBar.metric}
           secondaryMetric={screenModel.topBar.secondaryMetric}
           backIcon={<ChevronLeft />}
-          progressIcon={<Mountain />}
           avatarSrc={topBarAvatar?.src ?? null}
           avatarAlt={topBarAvatar?.label}
         />

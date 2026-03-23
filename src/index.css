@@ -5,38 +5,38 @@
   color-scheme: light;
   --page-width: 1180px;
   --content-narrow: 760px;
-  --bg: #f4fbfa;
-  --bg-soft: #edf7f6;
-  --surface: rgba(255, 255, 255, 0.94);
-  --surface-strong: #ffffff;
-  --surface-muted: #f5f8f9;
-  --line: rgba(209, 223, 229, 0.92);
-  --text: #203143;
-  --muted: #7a8d9d;
-  --primary: #6bb8d9;
-  --primary-soft: #e8f5fb;
-  --primary-line: #cde6ef;
-  --accent: #e6d76f;
-  --accent-deep: #9f8530;
-  --accent-soft: #fcf8de;
-  --accent-line: #ece0ab;
-  --teal: #5fc8bd;
-  --teal-soft: #e8f8f4;
-  --violet: #96a8de;
+  --bg: #f5f6f1;
+  --bg-soft: #eff2eb;
+  --surface: rgba(255, 255, 255, 0.82);
+  --surface-strong: rgba(255, 255, 255, 0.96);
+  --surface-muted: #eef2f0;
+  --line: rgba(208, 218, 225, 0.82);
+  --text: #213043;
+  --muted: #71849a;
+  --primary: #38b7b2;
+  --primary-soft: #e6f7f5;
+  --primary-line: #c7ebe7;
+  --accent: #cbe36a;
+  --accent-deep: #8a7d24;
+  --accent-soft: #f8fbdf;
+  --accent-line: #dce8a0;
+  --teal: #53c5be;
+  --teal-soft: #e7f8f4;
+  --violet: #98a8df;
   --violet-soft: #eff2fb;
-  --indigo: #7f98dd;
-  --indigo-soft: #ebf1fc;
-  --amber: #f0d16d;
-  --amber-soft: #fcf6df;
+  --indigo: #7cb7e8;
+  --indigo-soft: #edf5fc;
+  --amber: #e5b63b;
+  --amber-soft: #fcf4df;
   --danger-soft: #fff0ee;
   --danger-line: #efc2bb;
   --danger-text: #b7594d;
   --success-soft: #ebf8f2;
   --success-line: #c5e8d8;
   --success-text: #3e907b;
-  --shadow-soft: 0 8px 28px rgba(107, 148, 165, 0.1), 0 2px 8px rgba(107, 148, 165, 0.06);
-  --shadow-card: 0 20px 60px rgba(100, 140, 160, 0.13), 0 4px 16px rgba(100, 140, 160, 0.07);
-  --shadow-lifted: 0 28px 72px rgba(90, 130, 155, 0.18), 0 6px 20px rgba(90, 130, 155, 0.1);
+  --shadow-soft: 0 10px 28px rgba(108, 124, 139, 0.07), 0 2px 8px rgba(108, 124, 139, 0.04);
+  --shadow-card: 0 18px 46px rgba(98, 119, 138, 0.11), 0 4px 14px rgba(98, 119, 138, 0.05);
+  --shadow-lifted: 0 26px 62px rgba(83, 108, 128, 0.14), 0 6px 18px rgba(83, 108, 128, 0.07);
   --radius-xl: 34px;
   --radius-lg: 28px;
   --radius-md: 22px;
@@ -66,10 +66,10 @@ body {
   font-family: var(--font-ui);
   color: var(--text);
   background:
-    radial-gradient(circle at top left, rgba(106, 185, 219, 0.18), transparent 30%),
-    radial-gradient(circle at top right, rgba(223, 236, 130, 0.18), transparent 24%),
-    radial-gradient(circle at bottom left, rgba(244, 213, 183, 0.12), transparent 26%),
-    linear-gradient(180deg, #fbfdff 0%, var(--bg) 100%);
+    radial-gradient(circle at top left, rgba(99, 187, 183, 0.12), transparent 32%),
+    radial-gradient(circle at top right, rgba(214, 229, 116, 0.12), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(129, 189, 229, 0.1), transparent 26%),
+    linear-gradient(180deg, #fbfcf8 0%, var(--bg) 100%);
 }
 
 button,

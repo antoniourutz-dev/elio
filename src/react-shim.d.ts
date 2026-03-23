@@ -47,9 +47,11 @@ declare module 'react' {
 
   export function useState<S>(initialState: S | (() => S)): [S, Dispatch<SetStateAction<S>>];
   export function useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void;
+  export function useDeferredValue<T>(value: T): T;
   export function useMemo<T>(factory: () => T, deps: readonly unknown[]): T;
   export function useCallback<T extends (...args: any[]) => any>(callback: T, deps: readonly unknown[]): T;
   export function useRef<T>(initialValue: T): MutableRefObject<T>;
+  export function startTransition(scope: () => void): void;
   export function memo<P extends object>(component: (props: P) => JSX.Element | null): (props: P) => JSX.Element | null;
   export function lazy<T extends object>(factory: () => Promise<{ default: (props: T) => JSX.Element | null }>): (props: T) => JSX.Element | null;
   export const Suspense: FC<{ children?: ReactNode; fallback?: ReactNode }>;

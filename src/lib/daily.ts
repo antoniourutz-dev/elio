@@ -33,6 +33,7 @@ import type {
 import { uniqueNonEmptyStrings } from '../wordUtils';
 import { buildEntryTerms, buildLocalDayKey, normalizeTextKey } from './parsing';
 import { SUPERADMIN_PLAYER_CODE } from './constants';
+import { isMissingColumnError, toDbError } from './db';
 
 // ── Seeded RNG ───────────────────────────────────────────────
 
@@ -288,20 +289,26 @@ function parseResultRow(data: Record<string, unknown>): DailyResult {
 
 export async function loadMyDailyResult(ownerId: string, dayKey: string): Promise<DailyResult | null> {
   if (!supabase) return null;
-  const { data, error } = await supabase
+  const primaryQueryResult = await supabase
     .from(dailyScoresTable)
     .select(DAILY_RESULT_SELECT)
     .eq('owner_id', ownerId)
     .eq('day_key', dayKey)
-    .single();
-  if (!error) return data ? parseResultRow(data as Record<string, unknown>) : null;
+    .maybeSingle();
+  const firstError = toDbError(primaryQueryResult.error);
+  if (!firstError) {
+    return primaryQueryResult.data ? parseResultRow(primaryQueryResult.data as Record<string, unknown>) : null;
+  }
+  if (!isMissingColumnError(firstError, 'answers')) {
+    return null;
+  }
   // answers column may not exist yet — retry without it
   const { data: data2 } = await supabase
     .from(dailyScoresTable)
     .select(DAILY_RESULT_SELECT_NO_ANSWERS)
     .eq('owner_id', ownerId)
     .eq('day_key', dayKey)
-    .single();
+    .maybeSingle();
   return data2 ? parseResultRow(data2 as Record<string, unknown>) : null;
 }
 

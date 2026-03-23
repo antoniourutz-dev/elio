@@ -149,7 +149,7 @@ describe('resolveDockItems', () => {
       summary: null,
     });
 
-    expect(items.map((item) => item.action)).toEqual(['home', 'synonyms', 'stats', 'profile']);
+    expect(items.map((item) => item.action)).toEqual(['home', 'learn', 'stats', 'profile']);
     expect(items.find((item) => item.action === 'stats')?.active).toBe(true);
   });
 
@@ -162,7 +162,7 @@ describe('resolveDockItems', () => {
       summary: sampleSummary,
     });
 
-    expect(items.map((item) => item.action)).toEqual(['retry-level', 'synonyms']);
+    expect(items.map((item) => item.action)).toEqual(['retry-level', 'learn']);
     expect(items[1]).toMatchObject({ tone: 'primary', wide: true });
     expect(items[1]?.label).toBe('Ikasi');
   });
@@ -176,6 +176,42 @@ describe('resolveDockItems', () => {
       summary: sampleSummary,
     });
 
-    expect(items.map((item) => item.action)).toEqual(['retry-level', 'synonyms']);
+    expect(items.map((item) => item.action)).toEqual(['retry-level', 'learn']);
+  });
+
+  it('keeps the learning dock item active on synonym and grammar screens', () => {
+    const synonymItems = resolveDockItems({
+      isTeacher: false,
+      mainScreen: 'synonyms',
+      dailySession: false,
+      quiz: null,
+      summary: null,
+    });
+    const grammarItems = resolveDockItems({
+      isTeacher: false,
+      mainScreen: 'grammar',
+      dailySession: false,
+      quiz: null,
+      summary: null,
+    });
+    const vocabularyItems = resolveDockItems({
+      isTeacher: false,
+      mainScreen: 'vocabulary',
+      dailySession: false,
+      quiz: null,
+      summary: null,
+    });
+    const verbsItems = resolveDockItems({
+      isTeacher: false,
+      mainScreen: 'verbs',
+      dailySession: false,
+      quiz: null,
+      summary: null,
+    });
+
+    expect(synonymItems.find((item) => item.action === 'learn')?.active).toBe(true);
+    expect(grammarItems.find((item) => item.action === 'learn')?.active).toBe(true);
+    expect(vocabularyItems.find((item) => item.action === 'learn')?.active).toBe(true);
+    expect(verbsItems.find((item) => item.action === 'learn')?.active).toBe(true);
   });
 });

@@ -9,7 +9,7 @@ interface UseAppDockArgs {
   quiz: ActiveQuiz | null;
   summary: LevelSummary | null;
   onHome: () => void;
-  onSynonyms: () => void;
+  onLearn: () => void;
   onStats: () => void;
   onAdmin: () => void;
   onProfile: () => void;
@@ -23,7 +23,7 @@ export function useAppDock({
   quiz,
   summary,
   onHome,
-  onSynonyms,
+  onLearn,
   onStats,
   onAdmin,
   onProfile,
@@ -44,13 +44,13 @@ export function useAppDock({
   const actions = useMemo<Record<DockAction, () => void>>(
     () => ({
       home: onHome,
-      synonyms: onSynonyms,
+      learn: onLearn,
       stats: onStats,
       admin: onAdmin,
       profile: onProfile,
       'retry-level': onRetryLevel,
     }),
-    [onHome, onSynonyms, onStats, onAdmin, onProfile, onRetryLevel]
+    [onHome, onLearn, onStats, onAdmin, onProfile, onRetryLevel]
   );
 
   const onItemClick = useCallback(

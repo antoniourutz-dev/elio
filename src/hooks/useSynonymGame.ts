@@ -16,7 +16,7 @@ export interface UseSynonymGameProps {
   bankState: BankState;
   activePlayer: PlayerIdentity | null;
   setUiMessage: (msg: string | null) => void;
-  setMainScreen: (screen: 'daily' | 'synonyms' | 'stats' | 'profile' | 'admin') => void;
+  setMainScreen: (screen: 'daily' | 'learn' | 'synonyms' | 'grammar' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin') => void;
 }
 
 export function useSynonymGame({

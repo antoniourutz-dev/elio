@@ -41,7 +41,11 @@ export interface MainViewModel {
   uiMessage: string | null;
   isTeacher: boolean;
   onStartDailyGame: () => void;
+  onGoLearn: () => void;
   onGoSynonyms: () => void;
+  onGoGrammar: () => void;
+  onGoVocabulary: () => void;
+  onGoVerbs: () => void;
   onStartLevel: (level: GameLevel) => void;
   onRefreshBank: () => Promise<void>;
   onScrollTop: () => void;
@@ -154,7 +158,11 @@ export interface UseAppScreenModelArgs {
   answerCurrentQuestion: (selectedAnswer: string) => void;
   advanceQuiz: () => void;
   goHome: () => void;
+  goLearn: () => void;
   goSynonyms: () => void;
+  goGrammar: () => void;
+  goVocabulary: () => void;
+  goVerbs: () => void;
   goStats: () => void;
   goAdmin: () => void;
   goProfile: () => void;
