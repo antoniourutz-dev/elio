@@ -225,10 +225,10 @@ export const DailyHomeView = memo(function DailyHomeView({
         transition={{ delay: 0.04 }}
         className="grid gap-4"
       >
-      <section className="relative overflow-hidden rounded-[34px] border border-[rgba(132,206,194,0.28)] bg-[linear-gradient(135deg,#42bcb6_0%,#5bc7b2_38%,#98d29b_72%,#d5e57d_100%)] p-[0.95rem] shadow-[0_28px_62px_rgba(80,167,154,0.24),0_10px_28px_rgba(80,167,154,0.12)] sm:p-[1.1rem]">
+      <section className="relative overflow-hidden rounded-[34px] border border-[rgba(132,206,194,0.26)] bg-[linear-gradient(135deg,#42bcb6_0%,#5bc7b2_38%,#98d29b_72%,#d5e57d_100%)] p-[0.95rem] shadow-[0_18px_40px_rgba(80,167,154,0.16),0_6px_18px_rgba(80,167,154,0.08)] sm:p-[1.1rem]">
         <div className="absolute inset-x-0 top-0 h-px bg-white/40" />
-        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.22),transparent_68%)]" aria-hidden="true" />
-        <div className="absolute -left-10 bottom-0 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.16),transparent_72%)]" aria-hidden="true" />
+        <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.18),transparent_68%)]" aria-hidden="true" />
+        <div className="absolute -left-8 bottom-0 h-24 w-24 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.09),transparent_72%)]" aria-hidden="true" />
 
         <div className="relative z-10 grid gap-3">
           <div className="flex items-start justify-between gap-4">

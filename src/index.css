@@ -44,6 +44,11 @@
   --font-display: 'Sora', sans-serif;
   --font-editorial: 'Syne', sans-serif;
   --font-ui: 'Manrope', sans-serif;
+  --app-background:
+    radial-gradient(circle at top left, rgba(99, 187, 183, 0.12), transparent 32%),
+    radial-gradient(circle at top right, rgba(214, 229, 116, 0.12), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(129, 189, 229, 0.1), transparent 26%),
+    linear-gradient(180deg, #fbfcf8 0%, var(--bg) 100%);
 }
 
 * {
@@ -53,23 +58,31 @@
 html,
 body,
 #root {
-  height: 100dvh;
-  overflow: hidden;
+  height: 100%;
+  margin: 0;
+  background: var(--app-background);
 }
 
 #root {
   isolation: isolate;
+  min-height: 100%;
 }
 
 body {
-  margin: 0;
+  overflow: hidden;
   font-family: var(--font-ui);
   color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(99, 187, 183, 0.12), transparent 32%),
-    radial-gradient(circle at top right, rgba(214, 229, 116, 0.12), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(129, 189, 229, 0.1), transparent 26%),
-    linear-gradient(180deg, #fbfcf8 0%, var(--bg) 100%);
+  background: var(--app-background);
+}
+
+.app-frame {
+  min-height: 100svh;
+  min-height: 100dvh;
+  background: var(--app-background);
+}
+
+.app-shell {
+  background: var(--app-background);
 }
 
 button,

@@ -68,7 +68,7 @@ interface AppBottomDockProps {
 
 export function AppBottomDock({ children }: AppBottomDockProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] pointer-events-auto">
+    <div className="bottom-dock fixed inset-x-0 bottom-0 z-[100] pointer-events-auto">
       <div className="bg-[rgba(250,251,247,0.86)] backdrop-blur-[18px] border-t border-[rgba(214,222,229,0.6)] shadow-[0_-4px_18px_rgba(99,117,135,0.05)] [padding-bottom:env(safe-area-inset-bottom)]">
         <nav
           className="flex h-16 items-stretch gap-[2px] w-full mx-auto px-2 pt-[3px]"

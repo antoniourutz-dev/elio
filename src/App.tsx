@@ -275,7 +275,7 @@ const App = () => {
   const isDockVisible = Boolean(activePlayer && screenModel.dock.items.length > 0);
 
   return (
-    <div className="h-[100dvh] grid grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
+    <div className="app-frame grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
       {activePlayer && (
         <AppTopBar
           title={screenModel.topBar.title}

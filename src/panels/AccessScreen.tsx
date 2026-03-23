@@ -44,7 +44,7 @@ export const AccessScreen = ({
     initial={{ opacity: 0, y: 18 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.04 }}
-    className="grid content-start max-w-[560px] mx-auto min-h-[100dvh] pb-10 gap-5 pt-[max(env(safe-area-inset-top),24px)]"
+    className="grid content-start max-w-[560px] mx-auto min-h-full pb-10 gap-5 pt-[max(env(safe-area-inset-top),24px)]"
     style={bgStyle}
   >
     <div className="relative grid justify-items-center gap-2 px-6 pt-9 pb-8 text-white rounded-[32px] overflow-hidden bg-gradient-to-br from-[#5ab4d8] via-[#4ec9ba] via-[52%] to-[#cfe07a] shadow-[0_28px_64px_rgba(78,201,186,0.26),0_6px_20px_rgba(78,201,186,0.14)] before:absolute before:-top-[35%] before:-right-[8%] before:w-[220px] before:h-[220px] before:bg-white/10 before:rounded-full before:pointer-events-none after:absolute after:-bottom-[55%] after:-left-[6%] after:w-[180px] after:h-[180px] after:bg-white/5 after:rounded-full after:pointer-events-none">
