@@ -272,6 +272,7 @@ const App = () => {
     goAdmin,
     goProfile,
   });
+  const isDockVisible = Boolean(activePlayer && screenModel.dock.items.length > 0);
 
   return (
     <div className="h-[100dvh] grid grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
@@ -289,7 +290,7 @@ const App = () => {
         />
       )}
 
-      <AppShell shellRef={shellRef} isLocked={Boolean(quiz || dailySession)}>
+      <AppShell shellRef={shellRef} isLocked={Boolean(quiz || dailySession)} reserveBottomDock={Boolean(isDockVisible)}>
         <AppRouterView
           isSessionLoading={screenModel.isSessionLoading}
           activePlayer={activePlayer}
@@ -304,7 +305,7 @@ const App = () => {
         />
       </AppShell>
 
-      {activePlayer && screenModel.dock.items.length > 0 && (
+      {isDockVisible && (
         <AppBottomDock>
           {screenModel.dock.items.map((item) => {
             const Icon = item.icon;

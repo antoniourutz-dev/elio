@@ -310,6 +310,29 @@ export const DailyHomeView = memo(function DailyHomeView({
         </div>
       </section>
 
+      <div className="grid grid-cols-2 gap-3">
+        {learnActions.map(({ id, title, icon: Icon, onClick, cardClass, iconClass, bodyClass }) => (
+          <button
+            key={id}
+            type="button"
+            className={clsx(
+              'group flex min-w-0 items-center gap-3 rounded-[26px] border px-4 py-4 text-left shadow-[var(--shadow-soft)] transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-[2px] hover:shadow-[var(--shadow-card)]',
+              cardClass
+            )}
+            onClick={onClick}
+          >
+            <span className={clsx('inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[18px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.34)]', iconClass)}>
+              <Icon className="h-[1.4rem] w-[1.4rem]" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <strong className="block font-display text-[clamp(1rem,3.5vw,1.2rem)] font-extrabold leading-[0.9] tracking-[-0.05em] text-[#223246] text-balance">
+                {title}
+              </strong>
+            </div>
+          </button>
+        ))}
+      </div>
+
       <button
         type="button"
         className={clsx(
@@ -371,29 +394,6 @@ export const DailyHomeView = memo(function DailyHomeView({
           )}
         </div>
       </button>
-
-      <div className="grid grid-cols-2 gap-3">
-        {learnActions.map(({ id, title, icon: Icon, onClick, cardClass, iconClass, bodyClass }) => (
-          <button
-            key={id}
-            type="button"
-            className={clsx(
-              'group flex min-w-0 items-center gap-3 rounded-[26px] border px-4 py-4 text-left shadow-[var(--shadow-soft)] transition-[transform,box-shadow,border-color] duration-150 hover:-translate-y-[2px] hover:shadow-[var(--shadow-card)]',
-              cardClass
-            )}
-            onClick={onClick}
-          >
-            <span className={clsx('inline-flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-[18px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.34)]', iconClass)}>
-              <Icon className="h-[1.4rem] w-[1.4rem]" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <strong className="block font-display text-[clamp(1rem,3.5vw,1.2rem)] font-extrabold leading-[0.9] tracking-[-0.05em] text-[#223246] text-balance">
-                {title}
-              </strong>
-            </div>
-          </button>
-        ))}
-      </div>
 
       <section className="rounded-[32px] border border-[rgba(216,224,231,0.86)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,249,249,0.94))] p-4 shadow-[var(--shadow-card)]">
         <div className="mb-4 flex items-center gap-3">

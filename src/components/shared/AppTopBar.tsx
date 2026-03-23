@@ -82,7 +82,7 @@ export function AppTopBar({
   const SecondaryMetricIcon = secondaryMetric?.icon;
 
   return (
-    <div className="relative w-full z-[100] pointer-events-auto shrink-0 pt-[max(env(safe-area-inset-top),6px)] bg-[rgba(248,250,246,0.78)] backdrop-blur-[18px] backdrop-saturate-[160%] border-b border-[rgba(214,222,229,0.58)] shadow-[0_1px_16px_rgba(99,117,135,0.06)]">
+    <div className="relative w-full z-[100] pointer-events-auto shrink-0 pt-[max(env(safe-area-inset-top),6px)] bg-[rgba(245,246,241,0.78)] backdrop-blur-[12px] backdrop-saturate-[135%] border-0 shadow-none">
       <div className="w-[min(var(--page-width),100%)] grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 min-h-[58px] px-[16px] py-2 mx-auto">
         <div className="flex items-center gap-2 min-w-0">
           {avatarSrc ? (
@@ -94,12 +94,7 @@ export function AppTopBar({
         </div>
 
         <div className="grid justify-items-center gap-[2px] text-center min-w-0">
-          <strong className="font-display text-[clamp(1.15rem,2vw,1.45rem)] leading-none tracking-[-0.06em] text-[#223246]">{title}</strong>
-          {subtitle ? (
-            <span className="text-[#7a8b9b] text-[0.65rem] font-extrabold tracking-[0.16em] uppercase">
-              {subtitle}
-            </span>
-          ) : null}
+          {subtitle ? <span className="text-[#7a8b9b] text-[0.65rem] font-extrabold tracking-[0.16em] uppercase">{subtitle}</span> : null}
         </div>
 
         <div className="flex items-center justify-end gap-2 min-w-0">
