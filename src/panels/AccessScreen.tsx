@@ -1,6 +1,6 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, KeyRound, CircleUserRound } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, CircleUserRound, X } from 'lucide-react';
 
 interface AccessScreenProps {
   accessCode: string;
@@ -27,7 +27,7 @@ const fieldShellClass =
   'flex items-center gap-2.5 min-h-[62px] px-4 rounded-[22px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] transition-all duration-150 ease-out focus-within:border-[rgba(107,184,217,0.42)] focus-within:bg-[rgba(252,254,255,0.98)] focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_0_0_3px_rgba(107,184,217,0.08)]';
 
 const fieldInputClass =
-  'w-full min-w-0 appearance-none rounded-none border-0! bg-transparent outline-none! shadow-none! ring-0! text-[#203143] text-base font-extrabold caret-[#6bb8d9] focus:border-0! focus:outline-none! focus:shadow-none! focus:ring-0! placeholder:text-[#a4aec5]';
+  'w-full min-w-0 appearance-none rounded-none border-0! bg-transparent outline-none! shadow-none! ring-0! text-[var(--text)] text-base font-extrabold caret-[#6bb8d9] focus:border-0! focus:outline-none! focus:shadow-none! focus:ring-0! placeholder:text-[var(--muted)]';
 
 export const AccessScreen = ({
   accessCode,
@@ -61,11 +61,11 @@ export const AccessScreen = ({
       </div>
 
       <div className="grid gap-2 text-center">
-        <h1 className="font-display text-[clamp(2rem,6vw,3rem)] leading-none tracking-[-0.05em] text-[#203143]">Sartu jokora</h1>
+        <h1 className="font-display text-[clamp(2rem,6vw,3rem)] leading-none tracking-[-0.05em] text-[var(--text)]">Sartu jokora</h1>
       </div>
 
       <label className="grid gap-2.5" htmlFor="access-code">
-        <span className="text-[#7a8d9d] text-[0.82rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
+        <span className="text-[var(--muted)] text-[0.82rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
         <div className={fieldShellClass}>
           <CircleUserRound className="w-5 h-5 text-[#6bb8d9] shrink-0" />
           <input
@@ -79,11 +79,21 @@ export const AccessScreen = ({
             autoCorrect="off"
             spellCheck={false}
           />
+          {accessCode ? (
+            <button
+              className="inline-flex items-center justify-center w-[34px] h-[34px] rounded-[12px] bg-[rgba(107,184,217,0.1)] text-[#6bb8d9] cursor-pointer transition-colors duration-150 hover:bg-[rgba(107,184,217,0.18)]"
+              type="button"
+              onClick={() => onCodeChange('')}
+              aria-label="Erabiltzailea garbitu"
+            >
+              <X className="w-4 h-4 shrink-0" />
+            </button>
+          ) : null}
         </div>
       </label>
 
       <label className="grid gap-2.5" htmlFor="access-password">
-        <span className="text-[#7a8d9d] text-[0.82rem] font-extrabold tracking-[0.08em] uppercase">Pasahitza</span>
+        <span className="text-[var(--muted)] text-[0.82rem] font-extrabold tracking-[0.08em] uppercase">Pasahitza</span>
         <div className={fieldShellClass}>
           <KeyRound className="w-5 h-5 text-[#6bb8d9] shrink-0" />
           <input

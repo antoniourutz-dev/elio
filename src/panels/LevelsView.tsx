@@ -71,10 +71,10 @@ export const LevelsView = memo(function LevelsView({
     return (
       <section className="grid gap-[18px] p-[18px] rounded-[32px] bg-gradient-to-b from-[rgba(255,255,255,0.98)] to-[rgba(248,252,255,0.97)]">
         <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-white border border-[#dde4ee] text-center">
-          <p className="text-[#688194] text-[0.9rem]">Ezin izan dira hitzak kargatu.</p>
+          <p className="text-[var(--muted)] text-[0.9rem]">Ezin izan dira hitzak kargatu.</p>
           <button
             type="button"
-            className="inline-flex items-center justify-center gap-2.5 rounded-2xl font-extrabold cursor-pointer border border-[#c4d2df] bg-[rgba(242,246,250,0.8)] text-[#506677] py-2.5 px-4 text-[0.92rem] hover:bg-[#e6ebf1] hover:text-[#283845]"
+            className="inline-flex items-center justify-center gap-2.5 rounded-2xl font-extrabold cursor-pointer border border-[#c4d2df] bg-[rgba(242,246,250,0.8)] text-[var(--text-2)] py-2.5 px-4 text-[0.92rem] hover:bg-[#e6ebf1] hover:text-[var(--text)]"
             onClick={onRetry}
           >
             <RefreshCw className="w-[1.05rem] h-[1.05rem]" />
@@ -104,11 +104,11 @@ export const LevelsView = memo(function LevelsView({
   }
 
   return (
-    <section className="grid gap-5 p-[20px] rounded-[32px] bg-gradient-to-b from-[rgba(255,255,255,0.98)] to-[rgba(248,252,255,0.97)]">
+    <section className="grid gap-5 rounded-[34px] border border-[rgba(216,224,231,0.88)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,249,0.95))] p-[20px] shadow-[var(--shadow-card)]">
       {currentLevel && (
         <button
           type="button"
-          className="group relative grid gap-4 w-full rounded-[30px] border-2 border-[rgba(77,182,165,0.7)] bg-[linear-gradient(180deg,rgba(246,255,251,0.99),rgba(232,247,240,0.97))] px-5 py-5 text-left shadow-[0_0_0_4px_rgba(77,182,165,0.12),0_22px_52px_rgba(78,160,141,0.22)] overflow-hidden transition-[transform,box-shadow,border-color,filter] duration-200 hover:-translate-y-[2px] hover:border-[rgba(77,182,165,0.9)] hover:shadow-[0_0_0_5px_rgba(77,182,165,0.16),0_26px_58px_rgba(78,160,141,0.26)] hover:saturate-[1.04]"
+          className="group relative grid w-full gap-4 overflow-hidden rounded-[30px] border-2 border-[rgba(77,182,165,0.66)] bg-[linear-gradient(180deg,rgba(246,255,251,0.99),rgba(232,247,240,0.97))] px-5 py-5 text-left shadow-[0_0_0_4px_rgba(77,182,165,0.1),0_20px_42px_rgba(78,160,141,0.18)] transition-[transform,box-shadow,border-color,filter] duration-200 hover:-translate-y-[2px] hover:border-[rgba(77,182,165,0.86)] hover:shadow-[0_0_0_5px_rgba(77,182,165,0.14),0_24px_50px_rgba(78,160,141,0.22)] hover:saturate-[1.03]"
           onClick={() => onStartLevel(currentLevel.level)}
           disabled={!currentLevel.unlocked}
         >
@@ -137,7 +137,7 @@ export const LevelsView = memo(function LevelsView({
 
             <div className="grid gap-2 min-w-0 flex-1">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <strong className="font-display text-[1.6rem] leading-none tracking-[-0.05em] text-[#1a2e3b]">
+                <strong className="font-display text-[1.6rem] leading-none tracking-[-0.05em] text-[var(--text)]">
                   {currentLevel.level.name}
                 </strong>
                 {!currentLevel.completed && (
@@ -147,7 +147,7 @@ export const LevelsView = memo(function LevelsView({
                   </span>
                 )}
               </div>
-              <p className="text-[0.84rem] font-semibold text-[#7a9aab] leading-none">
+              <p className="text-[0.84rem] font-semibold text-[var(--muted)] leading-none">
                 {currentLevel.remainingMeters > 0
                   ? `${formatMeters(currentLevel.remainingMeters)} falta dira gailurrera`
                   : 'Gailurra lortu duzu'}
@@ -158,8 +158,8 @@ export const LevelsView = memo(function LevelsView({
           <div className="grid gap-3">
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[0.78rem] font-bold tracking-[0.06em] uppercase text-[#8aabb8]">Aurrerapena</span>
-                <span className="text-[0.82rem] font-extrabold text-[#14857e]">
+                <span className="text-[0.78rem] font-bold tracking-[0.06em] uppercase text-[var(--muted)]">Aurrerapena</span>
+                <span className="text-[0.82rem] font-extrabold text-[var(--primary-deep)]">
                   % {Math.round(currentLevel.levelPercentage)}
                 </span>
               </div>
@@ -170,17 +170,17 @@ export const LevelsView = memo(function LevelsView({
                 <div className="h-full w-[var(--progress-w)] rounded-full bg-[linear-gradient(90deg,#0e7a74,#4db6a5,#a8d96e)] shadow-[0_1px_4px_rgba(77,182,165,0.4)] transition-[width] duration-500" />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[0.82rem] font-bold text-[#7a9aab]">
+                <span className="text-[0.82rem] font-bold text-[var(--muted)]">
                   {formatMeters(currentLevel.climbedMeters)}
                 </span>
-                <span className="text-[0.82rem] font-bold text-[#7a9aab]">
+                <span className="text-[0.82rem] font-bold text-[var(--muted)]">
                   {formatMeters(currentLevel.level.elevationMeters)}
                 </span>
               </div>
             </div>
 
             <div className="flex justify-end">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#1d8b7f,#4db6a5)] px-5 py-2 text-[0.88rem] font-extrabold text-white shadow-[0_6px_18px_rgba(29,139,127,0.35)] transition-[transform,shadow] duration-150 group-hover:shadow-[0_8px_22px_rgba(29,139,127,0.45)]">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#1d8b7f,#4db6a5)] px-5 py-2 text-[0.88rem] font-extrabold text-white shadow-[0_6px_18px_rgba(29,139,127,0.3)] transition-[transform,shadow] duration-150 group-hover:shadow-[0_8px_22px_rgba(29,139,127,0.4)]">
                 Jarraitu
                 <ChevronRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-[2px]" />
               </span>
@@ -196,10 +196,10 @@ export const LevelsView = memo(function LevelsView({
               key={level.id}
               type="button"
               className={clsx(
-                'flex items-center gap-4 w-full rounded-[26px] px-4 py-3 text-left transition-transform duration-150 hover:-translate-y-[1px]',
+                'flex items-center gap-4 w-full rounded-[24px] px-4 py-3 text-left transition-transform duration-150 hover:-translate-y-[1px]',
                 isSummited
-                  ? 'bg-[linear-gradient(90deg,rgba(221,244,190,0.9),rgba(234,243,224,0.92))] shadow-[0_10px_24px_rgba(186,210,157,0.12)]'
-                  : 'bg-[linear-gradient(90deg,rgba(225,244,214,0.95),rgba(235,245,236,0.96))] shadow-[0_10px_24px_rgba(158,196,176,0.1)]'
+                  ? 'bg-[linear-gradient(90deg,rgba(221,244,190,0.9),rgba(234,243,224,0.92))] shadow-[0_8px_20px_rgba(186,210,157,0.1)]'
+                  : 'bg-[linear-gradient(90deg,rgba(225,244,214,0.95),rgba(235,245,236,0.96))] shadow-[0_8px_20px_rgba(158,196,176,0.08)]'
               )}
               onClick={() => onStartLevel(level)}
             >
@@ -231,19 +231,19 @@ export const LevelsView = memo(function LevelsView({
         </div>
       )}
 
-      <div className="grid gap-2.5">
-        <p className="text-[0.82rem] font-extrabold tracking-[0.22em] uppercase text-[#a5afbb]">Hurrengo erronkak</p>
+      <div className="grid gap-3">
+        <p className="text-[0.82rem] font-extrabold tracking-[0.22em] uppercase text-[var(--muted)]">Hurrengo erronkak</p>
 
-        <div className="grid gap-1">
+        <div className="grid gap-2">
           {upcomingLevels.map(({ level, unlocked }) => (
             <button
               key={level.id}
               type="button"
               className={clsx(
-                'flex items-center gap-3 w-full rounded-[18px] px-3 py-2.5 text-left transition-[background,box-shadow] duration-150',
+                'flex items-center gap-3 w-full rounded-[20px] px-3.5 py-3 text-left transition-[background,box-shadow,border-color] duration-150',
                 unlocked
-                  ? 'bg-[rgba(255,255,255,0.88)] border border-[rgba(216,226,241,0.76)] hover:bg-white hover:shadow-[0_4px_12px_rgba(100,140,160,0.08)]'
-                  : 'bg-[rgba(243,246,250,0.7)] border border-[rgba(220,228,238,0.4)]'
+                  ? 'border border-[rgba(216,226,241,0.76)] bg-[rgba(255,255,255,0.88)] hover:bg-white hover:shadow-[0_4px_12px_rgba(100,140,160,0.08)]'
+                  : 'border border-[rgba(220,228,238,0.54)] bg-[rgba(245,248,251,0.84)]'
               )}
               onClick={() => unlocked && onStartLevel(level)}
               disabled={!unlocked}
@@ -259,14 +259,14 @@ export const LevelsView = memo(function LevelsView({
 
               <strong className={clsx(
                 'flex-1 min-w-0 font-display text-[1.05rem] leading-none tracking-[-0.04em] truncate',
-                unlocked ? 'text-[#334250]' : 'text-[#b8c5d0]'
+                unlocked ? 'text-[var(--text)]' : 'text-[#aebdca]'
               )}>
                 {level.name}
               </strong>
 
               <span className={clsx(
-                'shrink-0 text-[0.78rem] font-bold tabular-nums transition-[filter] duration-300',
-                unlocked ? 'text-[#84a6b1]' : 'text-[#b8c5d0] blur-[4px] select-none'
+                'shrink-0 text-[0.78rem] font-bold tabular-nums transition-[opacity] duration-300',
+                unlocked ? 'text-[var(--muted)]' : 'text-[#c2ccd6] opacity-55'
               )}>
                 {formatMeters(level.elevationMeters)}
               </span>

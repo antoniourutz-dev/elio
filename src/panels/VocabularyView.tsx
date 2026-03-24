@@ -182,6 +182,15 @@ const normalizeTopicKey = (value: string): string =>
 const getTopicVisual = (topicTitleOrSlug: string): TopicVisual =>
   TOPIC_VISUALS[normalizeTopicKey(topicTitleOrSlug)] ?? DEFAULT_TOPIC_VISUAL;
 
+const LOADING_TOPIC_PLACEHOLDERS = [
+  'adoptzioa',
+  'aniztasun funtzionala',
+  'apustua',
+  'arrazakeria',
+  'bakardadea',
+  'bullyinga',
+];
+
 const filterTopic = (topic: VocabularyTopic, query: string): boolean => {
   if (!query) return true;
 
@@ -216,26 +225,34 @@ export const VocabularyView = memo(function VocabularyView({ isActive }: Vocabul
   const selectedTopic = topics.find((topic) => topic.slug === selectedTopicSlug) ?? null;
 
   return (
-    <section className="grid gap-5 rounded-[34px] border border-[rgba(216,224,231,0.86)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,249,249,0.94))] p-6 shadow-[var(--shadow-card)]">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)] lg:items-start">
+    <section className="grid gap-4 rounded-[34px] border border-[rgba(216,224,231,0.88)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,249,0.95))] p-6 shadow-[var(--shadow-card)]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(270px,0.92fr)] lg:items-start">
         <div className="grid gap-2">
           <p className="m-0 text-[0.74rem] font-extrabold uppercase tracking-[0.18em] text-[#d49a2d]">Hiztegia</p>
-          <h2 className="m-0 font-display text-[clamp(2rem,4vw,2.9rem)] leading-[0.92] tracking-[-0.06em] text-[#213043]">
-            Gai bidez antolatutako hiztegi bizia
+          <h2 className="m-0 max-w-[10ch] font-display text-[clamp(1.8rem,4vw,2.55rem)] leading-[0.92] tracking-[-0.06em] text-[var(--text)]">
+            Gai bidezko hiztegia
           </h2>
+          <p className="m-0 max-w-[28rem] text-[0.9rem] font-medium leading-relaxed text-[var(--muted)]">
+            Bilatu gaiak eta ireki kategoriak modu bisual eta azkarrean.
+          </p>
         </div>
 
-        <div className="grid gap-3 rounded-[28px] border border-[rgba(223,183,79,0.24)] bg-[linear-gradient(135deg,rgba(255,252,243,0.98),rgba(252,245,220,0.96))] p-4 shadow-[var(--shadow-soft)]">
+        <div className="grid gap-3 rounded-[26px] border border-[rgba(223,183,79,0.24)] bg-[linear-gradient(135deg,rgba(255,252,243,0.98),rgba(252,245,220,0.96))] p-3.5 shadow-[0_14px_30px_rgba(118,137,154,0.07)]">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[0.7rem] font-extrabold uppercase tracking-[0.16em] text-[#af7b15]">Bilaketa</span>
+            <span className="rounded-full border border-[rgba(214,181,102,0.26)] bg-white/78 px-2.5 py-1 text-[0.72rem] font-extrabold text-[#a87011]">
+              {topics.length} gai
+            </span>
+          </div>
           <label className="grid gap-2">
-            <span className="text-[0.72rem] font-extrabold uppercase tracking-[0.16em] text-[#af7b15]">Bilatu</span>
-            <span className="flex items-center gap-3 rounded-[18px] border border-[rgba(214,181,102,0.24)] bg-white/88 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <span className="flex items-center gap-3 rounded-[18px] border border-[rgba(214,181,102,0.24)] bg-white/88 px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               <Search className="h-4 w-4 text-[#c48b20]" />
               <input
                 type="search"
                 value={searchText}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => setSearchText(event.target.value)}
                 placeholder="Gaia, kategoria edo item bat..."
-                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[0.95rem] font-semibold text-[#304253] outline-none placeholder:text-[#96a4b1]"
+                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[0.95rem] font-semibold text-[var(--text)] outline-none placeholder:text-[var(--muted)]"
               />
             </span>
           </label>
@@ -244,12 +261,45 @@ export const VocabularyView = memo(function VocabularyView({ isActive }: Vocabul
 
       {isLoading && topics.length === 0 && (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }, (_, index) => (
-            <div
-              key={index}
-              className="h-[180px] rounded-[28px] border border-[rgba(220,229,238,0.9)] bg-[linear-gradient(135deg,rgba(248,250,252,0.95),rgba(240,244,248,0.95))] animate-[skeleton-shimmer]"
-            />
-          ))}
+          {LOADING_TOPIC_PLACEHOLDERS.map((topicKey) => {
+            const visual = getTopicVisual(topicKey);
+            const Icon = visual.icon;
+
+            return (
+              <div
+                key={topicKey}
+                className={clsx(
+                  'relative aspect-[0.94] overflow-hidden rounded-[28px] border p-0 text-left shadow-[0_18px_40px_rgba(101,128,148,0.1)]',
+                  visual.shellClassName
+                )}
+              >
+                <div className={clsx('absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r opacity-95', visual.glowClassName)} />
+                <div className={clsx('absolute -right-8 top-2 h-20 w-20 rounded-full bg-gradient-to-br opacity-45 blur-2xl', visual.glowClassName)} />
+                <div className="absolute bottom-0 left-0 h-20 w-20 rounded-full bg-white/32 blur-2xl" />
+
+                <div className="relative flex h-full flex-col justify-between p-4 animate-pulse">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="pointer-events-none absolute inset-[12px] rounded-[24px] border border-white/40 opacity-80" />
+                    <span
+                      className={clsx(
+                        'relative inline-flex h-15 w-15 items-center justify-center rounded-[22px] border border-white/45 shadow-[0_12px_28px_rgba(255,255,255,0.32)] backdrop-blur-[6px]',
+                        visual.badgeClassName
+                      )}
+                    >
+                      <span className="absolute inset-[7px] rounded-[17px] bg-white/18" />
+                      <Icon className="relative h-7 w-7 opacity-70" />
+                    </span>
+                  </div>
+
+                  <div className="relative grid gap-2">
+                    <div className="h-px w-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.96),rgba(255,255,255,0.18))]" />
+                    <div className="h-4 w-[72%] rounded-full bg-white/55" />
+                    <div className="h-4 w-[48%] rounded-full bg-white/38" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -291,7 +341,7 @@ export const VocabularyView = memo(function VocabularyView({ isActive }: Vocabul
                     })
                   }
                   className={clsx(
-                    'group relative aspect-square overflow-hidden rounded-[30px] border p-0 text-left shadow-[0_20px_46px_rgba(101,128,148,0.11)] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_26px_58px_rgba(101,128,148,0.16)]',
+                    'group relative aspect-[0.94] overflow-hidden rounded-[28px] border p-0 text-left shadow-[0_18px_40px_rgba(101,128,148,0.1)] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_24px_52px_rgba(101,128,148,0.14)]',
                     visual.shellClassName
                   )}
                 >
@@ -300,22 +350,22 @@ export const VocabularyView = memo(function VocabularyView({ isActive }: Vocabul
                   <div className="absolute bottom-0 left-0 h-20 w-20 rounded-full bg-white/36 blur-2xl" />
 
                   <div className="relative flex h-full flex-col justify-between p-4">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start justify-between gap-3">
                       <span className="pointer-events-none absolute inset-[12px] rounded-[24px] border border-white/40 opacity-80" />
                       <span
                         className={clsx(
-                          'relative inline-flex h-15 w-15 items-center justify-center rounded-[22px] border border-white/45 shadow-[0_12px_28px_rgba(255,255,255,0.32)] backdrop-blur-[6px]',
+                          'relative inline-flex h-14 w-14 items-center justify-center rounded-[20px] border border-white/45 shadow-[0_12px_28px_rgba(255,255,255,0.32)] backdrop-blur-[6px]',
                           visual.badgeClassName
                         )}
                       >
-                        <span className="absolute inset-[7px] rounded-[17px] bg-white/18" />
-                        <Icon className="relative h-7 w-7" />
+                        <span className="absolute inset-[7px] rounded-[16px] bg-white/18" />
+                        <Icon className="relative h-6.5 w-6.5" />
                       </span>
                     </div>
 
-                    <div className="relative grid gap-1.5">
+                    <div className="relative mt-auto grid gap-1">
                       <div className="h-px w-10 bg-[linear-gradient(90deg,rgba(255,255,255,0.96),rgba(255,255,255,0.18))]" />
-                      <h3 className="m-0 max-w-[10ch] font-display text-[clamp(1.1rem,3.4vw,1.6rem)] leading-[0.92] tracking-[-0.06em] text-[#203143] text-balance">
+                      <h3 className="m-0 max-w-[10ch] font-display text-[clamp(1.02rem,3.2vw,1.45rem)] leading-[0.94] tracking-[-0.055em] text-[var(--text)] text-balance">
                         {topic.title}
                       </h3>
                     </div>
@@ -327,7 +377,7 @@ export const VocabularyView = memo(function VocabularyView({ isActive }: Vocabul
 
           {!isLoading && filteredTopics.length === 0 && (
             <div className="rounded-[26px] border border-dashed border-[rgba(195,207,220,0.9)] bg-[rgba(247,250,253,0.92)] px-5 py-8 text-center">
-              <p className="text-[1rem] font-semibold text-[#6e8293]">Ez da emaitzarik aurkitu bilaketa honekin.</p>
+              <p className="text-[1rem] font-semibold text-[var(--muted)]">Ez da emaitzarik aurkitu bilaketa honekin.</p>
             </div>
           )}
         </div>
@@ -392,27 +442,32 @@ const TopicDetail = memo(function TopicDetail({ topic, query, onBack }: TopicDet
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-full border border-[rgba(196,208,220,0.88)] bg-white px-4 py-2 text-[0.88rem] font-extrabold text-[#5e7384] shadow-[var(--shadow-soft)] transition-transform duration-150 hover:-translate-y-[1px]"
+          className="inline-flex items-center gap-2 rounded-full border border-[rgba(196,208,220,0.88)] bg-white px-4 py-2 text-[0.84rem] font-extrabold text-[var(--text-2)] shadow-[0_10px_24px_rgba(118,137,154,0.08)] transition-transform duration-150 hover:-translate-y-[1px]"
         >
           <ArrowLeft className="h-4 w-4" />
           Gaietara itzuli
         </button>
-        <span className="rounded-full bg-[rgba(238,244,249,0.9)] px-3 py-1 text-[0.76rem] font-extrabold uppercase tracking-[0.08em] text-[#7890a3]">
+        <span className="rounded-full bg-[rgba(238,244,249,0.9)] px-3 py-1 text-[0.76rem] font-extrabold uppercase tracking-[0.08em] text-[var(--muted)]">
           {topic.categories.length} kategoria
         </span>
       </div>
 
-      <div className={clsx('relative overflow-hidden rounded-[30px] border p-4 md:p-5 shadow-[var(--shadow-soft)]', visual.shellClassName)}>
+      <div className={clsx('relative overflow-hidden rounded-[30px] border p-4 md:p-5 shadow-[0_16px_34px_rgba(118,137,154,0.08)]', visual.shellClassName)}>
         <div className={clsx('absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r', visual.glowClassName)} />
         <div className="grid gap-4">
-          <div className="flex items-center gap-3 md:gap-4">
-            <span className={clsx('inline-flex h-[3.75rem] w-[3.75rem] shrink-0 items-center justify-center rounded-[20px] shadow-[0_16px_32px_rgba(255,255,255,0.36)] md:h-[4.25rem] md:w-[4.25rem]', visual.badgeClassName)}>
-              <Icon className="h-7 w-7 md:h-8 md:w-8" />
-            </span>
+          <div className="flex items-center justify-between gap-3 md:gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
+              <span className={clsx('inline-flex h-[3.75rem] w-[3.75rem] shrink-0 items-center justify-center rounded-[20px] shadow-[0_16px_32px_rgba(255,255,255,0.36)] md:h-[4.25rem] md:w-[4.25rem]', visual.badgeClassName)}>
+                <Icon className="h-7 w-7 md:h-8 md:w-8" />
+              </span>
 
-            <h3 className="m-0 font-display text-[clamp(1.5rem,4vw,2.3rem)] leading-[0.94] tracking-[-0.05em] text-[#203143]">
-              {topic.title}
-            </h3>
+              <h3 className="m-0 font-display text-[clamp(1.5rem,4vw,2.3rem)] leading-[0.94] tracking-[-0.05em] text-[var(--text)]">
+                {topic.title}
+              </h3>
+            </div>
+            <span className="rounded-full border border-white/62 bg-white/68 px-3 py-1 text-[0.74rem] font-extrabold uppercase tracking-[0.08em] text-[var(--muted)]">
+              {visibleCategories.length} atal
+            </span>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -432,7 +487,7 @@ const TopicDetail = memo(function TopicDetail({ topic, query, onBack }: TopicDet
                   'rounded-full border px-3 py-1 text-[0.76rem] font-extrabold transition-[transform,background-color,border-color,color,box-shadow] duration-150 hover:-translate-y-[1px]',
                   selectedCategoryKeys.includes(category.key)
                     ? 'border-[rgba(206,144,47,0.34)] bg-[rgba(255,243,210,0.96)] text-[#a56b11] shadow-[0_12px_24px_rgba(221,184,92,0.18)]'
-                    : 'border-white/70 bg-white/68 text-[#607485]'
+                    : 'border-white/70 bg-white/68 text-[var(--text-2)]'
                 )}
               >
                 {category.label}
@@ -446,14 +501,14 @@ const TopicDetail = memo(function TopicDetail({ topic, query, onBack }: TopicDet
         {visibleCategories.map((category) => (
           <article
             key={`${topic.slug}-${category.key}`}
-            className="rounded-[28px] border border-[rgba(216,226,236,0.9)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,251,254,0.96))] p-5 shadow-[0_18px_44px_rgba(108,128,144,0.08)]"
+            className="rounded-[28px] border border-[rgba(216,226,236,0.9)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,251,254,0.96))] p-5 shadow-[0_16px_34px_rgba(108,128,144,0.08)]"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="grid gap-1">
-                <div className="text-[0.74rem] font-extrabold uppercase tracking-[0.08em] text-[#9dafbc]">Kategoria</div>
-                <h4 className="m-0 font-display text-[1.35rem] tracking-[-0.04em] text-[#213243]">{category.label}</h4>
+                <div className="text-[0.74rem] font-extrabold uppercase tracking-[0.08em] text-[var(--muted)]">Kategoria</div>
+                <h4 className="m-0 font-display text-[1.35rem] tracking-[-0.04em] text-[var(--text)]">{category.label}</h4>
               </div>
-              <span className="rounded-full bg-[rgba(237,244,249,0.92)] px-3 py-1 text-[0.76rem] font-extrabold text-[#678093]">
+              <span className="rounded-full bg-[rgba(237,244,249,0.92)] px-3 py-1 text-[0.76rem] font-extrabold text-[var(--muted)]">
                 {category.items.length} item
               </span>
             </div>
@@ -462,7 +517,7 @@ const TopicDetail = memo(function TopicDetail({ topic, query, onBack }: TopicDet
               {category.items.map((item) => (
                 <li
                   key={`${category.key}-${item.id}`}
-                  className="list-none rounded-[18px] border border-[rgba(229,235,241,0.94)] bg-white px-4 py-3 text-[0.95rem] font-semibold leading-relaxed text-[#445766]"
+                  className="list-none rounded-[18px] border border-[rgba(229,235,241,0.94)] bg-white px-4 py-3 text-[0.95rem] font-semibold leading-relaxed text-[var(--text-2)]"
                 >
                   {item.text}
                 </li>
@@ -473,8 +528,8 @@ const TopicDetail = memo(function TopicDetail({ topic, query, onBack }: TopicDet
       </div>
 
       {visibleCategories.length === 0 && (
-        <div className="rounded-[26px] border border-dashed border-[rgba(195,207,220,0.9)] bg-[rgba(247,250,253,0.92)] px-5 py-8 text-center">
-          <p className="text-[1rem] font-semibold text-[#6e8293]">Ez dago itemik bilaketa honekin gai honetan.</p>
+        <div className="rounded-[24px] border border-dashed border-[rgba(195,207,220,0.9)] bg-[rgba(247,250,253,0.92)] px-5 py-8 text-center">
+          <p className="text-[1rem] font-semibold text-[var(--muted)]">Ez dago itemik bilaketa honekin gai honetan.</p>
         </div>
       )}
     </div>

@@ -51,7 +51,7 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
       </div>
 
       <div className="min-h-[108px] p-5 rounded-[28px] bg-gradient-to-b from-white to-[rgba(248,251,253,0.96)] border border-[rgba(216,226,241,0.75)] grid place-items-center shadow-[0_8px_24px_rgba(107,148,165,0.09),inset_0_1px_0_white]">
-        <div className="text-center font-display text-[clamp(2rem,8vw,2.9rem)] font-bold tracking-[-0.05em] text-[#223748]" aria-live="polite" aria-atomic="true">
+        <div className="text-center font-display text-[clamp(2rem,8vw,2.9rem)] font-bold tracking-[-0.05em] text-[var(--text)]" aria-live="polite" aria-atomic="true">
           {currentQuestion.word}
         </div>
       </div>
@@ -69,7 +69,7 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
               ref={index === 0 ? firstOptionRef : undefined}
               type="button"
               className={clsx(
-                'flex items-center gap-3 w-full min-h-[60px] px-4 rounded-[20px] border-[1.5px] border-[#e1e5ee] bg-white text-[#223748] text-left transition-all duration-150 cursor-pointer outline-none font-extrabold shadow-[0_4px_14px_rgba(107,148,165,0.04)]',
+                'flex items-center gap-3 w-full min-h-[60px] px-4 rounded-[20px] border-[1.5px] border-[#e1e5ee] bg-white text-[var(--text)] text-left transition-all duration-150 cursor-pointer outline-none font-extrabold shadow-[0_4px_14px_rgba(107,148,165,0.04)]',
                 !isAnswered && 'hover:-translate-y-[1px] hover:border-[rgba(107,184,217,0.4)] hover:bg-[#f2f8fd] hover:shadow-[0_10px_20px_rgba(107,184,217,0.1)] active:translate-y-0',
                 isCorrectAnswered &&
                   'border-[#37b788] border-2 bg-[linear-gradient(180deg,#dffaf0,#bff0d7)] text-[#173a33] shadow-[0_16px_30px_rgba(55,183,136,0.24)] ring-1 ring-[rgba(55,183,136,0.22)] animate-[answer-celebrate_0.4s_cubic-bezier(0.34,1.56,0.64,1)_both]',
@@ -84,7 +84,7 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
               <span
                 className={clsx(
                   'shrink-0 w-[30px] h-[30px] rounded-full grid place-items-center text-[0.82rem] font-black transition-colors duration-150',
-                  !isAnswered && 'bg-[#edf2f4] text-[#95a1ae]',
+                  !isAnswered && 'bg-[#edf2f4] text-[var(--muted)]',
                   isCorrectAnswered && 'bg-[#2fb483] text-white',
                   isWrongAnswered && 'bg-[#dd7f70] text-white',
                   isSelected && !isAnswered && 'bg-[#43bf90] text-white'

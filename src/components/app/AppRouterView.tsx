@@ -2,12 +2,12 @@ import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
-import { Languages, Sigma } from 'lucide-react';
 import type { GameLevel, PlayerIdentity } from '../../euskeraLearning';
 import { AccessScreen } from '../../panels/AccessScreen';
 import { DailyHomeView } from '../../panels/DailyHomeView';
+import { GrammarMapView } from '../../panels/GrammarMapView';
 import { LearnHubView } from '../../panels/LearnHubView';
-import { LearningPlaceholderView } from '../../panels/LearningPlaceholderView';
+import { VerbsView } from '../../panels/VerbsView';
 import { VocabularyView } from '../../panels/VocabularyView';
 import { LoadingPanel, SessionLoadingView } from '../shared/AppLoaders';
 import type { AccessViewModel, DailyGameViewModel, MainViewModel, SynonymGameViewModel } from './appScreenModelTypes';
@@ -101,11 +101,16 @@ export function AppRouterView({
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.04 }}
-            className={clsx('grid gap-[22px] content-start', mainScreen === 'daily' && 'min-h-full')}
+            className={clsx(
+              'grid gap-[22px]',
+              mainScreen === 'grammar' ? 'min-h-full grid-rows-[minmax(0,1fr)]' : 'content-start',
+              mainScreen === 'daily' && 'min-h-full'
+            )}
           >
             {mainScreen === 'daily' && (
               <DailyHomeView
                 dayKey={main.dayKey}
+                playerName={activePlayer?.code}
                 dailyResult={main.dailyResult}
                 weekHistory={main.weekHistory}
                 ranking={main.ranking}
@@ -129,6 +134,7 @@ export function AppRouterView({
                 onGoGrammar={main.onGoGrammar}
                 onGoVocabulary={main.onGoVocabulary}
                 onGoVerbs={main.onGoVerbs}
+                onStartOrthographyPractice={main.onStartOrthographyPractice}
               />
             )}
 
@@ -146,13 +152,8 @@ export function AppRouterView({
               </Suspense>
             )}
 
-            {mainScreen === 'grammar' && (
-              <LearningPlaceholderView
-                eyebrow="Gramatika"
-                title="Gramatika"
-                body="Hemen gramatikako gaiak joango gara gehitzen pixkanaka: azalpenak, adibideak eta etorkizunean ariketak ere bai."
-                icon={Languages}
-              />
+            {mainScreen === 'grammar' && main.isSuperUser && (
+              <GrammarMapView />
             )}
 
             {mainScreen === 'vocabulary' && (
@@ -160,12 +161,7 @@ export function AppRouterView({
             )}
 
             {mainScreen === 'verbs' && (
-              <LearningPlaceholderView
-                eyebrow="Aditzak"
-                title="Aditzak"
-                body="Hemen aditzen formak, denborak eta erabilera ereduak landuko ditugu aurrerago, pausoz pauso."
-                icon={Sigma}
-              />
+              <VerbsView isActive />
             )}
 
             {mainScreen === 'stats' && (

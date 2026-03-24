@@ -40,7 +40,7 @@ export type DockAction = 'home' | 'learn' | 'stats' | 'admin' | 'profile' | 'ret
 
 interface ResolveTopBarStateArgs {
   mainScreen: MainScreen;
-  dailySession: boolean;
+  dailySessionMode?: 'daily' | 'orthography_practice' | null;
   quiz: ActiveQuiz | null;
   quizProgress?: string | null;
   summary: LevelSummary | null;
@@ -54,7 +54,7 @@ interface ResolveTopBarStateArgs {
 
 export function resolveTopBarState({
   mainScreen,
-  dailySession,
+  dailySessionMode,
   quiz,
   quizProgress,
   summary,
@@ -65,8 +65,10 @@ export function resolveTopBarState({
   currentSessionMeters,
   summaryPercentage,
 }: ResolveTopBarStateArgs): TopBarState {
-  const subtitle = dailySession
-    ? 'Eguneko jokoa'
+  const subtitle = dailySessionMode
+    ? dailySessionMode === 'orthography_practice'
+      ? 'Ortografia'
+      : 'Eguneko jokoa'
     : quiz
       ? quiz.level.name
       : summary
@@ -85,7 +87,7 @@ export function resolveTopBarState({
                     ? 'Aditzak'
           : null;
 
-  if (dailySession) {
+  if (dailySessionMode) {
     return {
       subtitle,
       showBackButton: true,
@@ -155,6 +157,18 @@ export function resolveDockItems({
     return {
       tabs: [
         { id: 'home', label: 'Hasiera', icon: House, action: 'home', active: mainScreen === 'daily' },
+        {
+          id: 'learn',
+          label: 'Ikasi',
+          icon: BookOpenText,
+          action: 'learn',
+          active:
+            mainScreen === 'learn'
+            || mainScreen === 'synonyms'
+            || mainScreen === 'grammar'
+            || mainScreen === 'vocabulary'
+            || mainScreen === 'verbs',
+        },
         { id: 'admin', label: 'Kudeaketa', icon: ShieldUser, action: 'admin', active: mainScreen === 'admin' },
         { id: 'profile', label: 'Profila', icon: UserRound, action: 'profile', active: mainScreen === 'profile' },
       ],

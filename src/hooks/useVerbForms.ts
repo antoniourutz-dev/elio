@@ -1,36 +1,31 @@
 import { useEffect, useState } from 'react';
-import {
-  clearVocabularyTopicsCache,
-  getVocabularyTopicsSnapshot,
-  loadVocabularyTopics,
-  preloadVocabularyTopics,
-} from '../lib/vocabulary';
-import type { VocabularyTopic } from '../lib/vocabulary';
+import { clearVerbFormsCache, getVerbFormsSnapshot, loadVerbForms, preloadVerbForms } from '../lib/verbs';
+import type { VerbFormRecord } from '../lib/verbs';
 
-interface VocabularyState {
+interface VerbFormsState {
   isLoading: boolean;
-  topics: VocabularyTopic[];
+  forms: VerbFormRecord[];
   message: string;
   isReady: boolean;
 }
 
-const initialState: VocabularyState = {
+const initialState: VerbFormsState = {
   isLoading: true,
-  topics: [],
-  message: 'Hiztegia kargatzen...',
+  forms: [],
+  message: 'Aditzak kargatzen...',
   isReady: false,
 };
 
-preloadVocabularyTopics();
+preloadVerbForms();
 
-export function useVocabularyTopics(isEnabled: boolean) {
-  const [state, setState] = useState<VocabularyState>(() => {
-    const snapshot = getVocabularyTopicsSnapshot();
+export function useVerbForms(isEnabled: boolean) {
+  const [state, setState] = useState<VerbFormsState>(() => {
+    const snapshot = getVerbFormsSnapshot();
     if (!snapshot) return initialState;
 
     return {
       isLoading: false,
-      topics: snapshot.topics,
+      forms: snapshot.forms,
       message: snapshot.message,
       isReady: snapshot.ok,
     };
@@ -47,14 +42,14 @@ export function useVocabularyTopics(isEnabled: boolean) {
     setState((current) => ({
       ...current,
       isLoading: true,
-      message: current.topics.length > 0 ? current.message : 'Hiztegia kargatzen...',
+      message: current.forms.length > 0 ? current.message : 'Aditzak kargatzen...',
     }));
 
-    void loadVocabularyTopics().then((result) => {
+    void loadVerbForms().then((result) => {
       if (!active) return;
       setState({
         isLoading: false,
-        topics: result.topics,
+        forms: result.forms,
         message: result.message,
         isReady: result.ok,
       });
@@ -66,17 +61,17 @@ export function useVocabularyTopics(isEnabled: boolean) {
   }, [isEnabled]);
 
   const refresh = async () => {
-    clearVocabularyTopicsCache();
+    clearVerbFormsCache();
     setState((current) => ({
       ...current,
       isLoading: true,
-      message: current.topics.length > 0 ? current.message : 'Hiztegia kargatzen...',
+      message: current.forms.length > 0 ? current.message : 'Aditzak kargatzen...',
     }));
 
-    const result = await loadVocabularyTopics();
+    const result = await loadVerbForms();
     setState({
       isLoading: false,
-      topics: result.topics,
+      forms: result.forms,
       message: result.message,
       isReady: result.ok,
     });

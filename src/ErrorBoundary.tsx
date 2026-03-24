@@ -26,8 +26,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="fixed inset-0 z-[1000] bg-[#f7fbfe]/98 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
           <div className="bg-white border border-[#e1e5ee] rounded-[32px] p-8 max-w-[400px] w-full shadow-[0_24px_64px_rgba(100,140,160,0.15)] grid gap-5">
             <div className="mx-auto w-14 h-14 rounded-full bg-red-50 text-red-500 font-display text-2xl font-black flex items-center justify-center">!</div>
-            <h1 className="font-display text-2xl font-black tracking-tight text-[#223748] m-0">Zerbait gaizki joan da</h1>
-            <p className="text-[0.92rem] font-bold text-[#76889a] leading-relaxed m-0 break-words">{this.state.error.message}</p>
+            <h1 className="font-display text-2xl font-black tracking-tight text-[var(--text)] m-0">Zerbait gaizki joan da</h1>
+            <p className="text-[0.92rem] font-bold text-[var(--muted)] leading-relaxed m-0 break-words">{this.state.error.message}</p>
             <button
               type="button"
               className="inline-flex items-center justify-center gap-2.5 min-h-[52px] px-6 rounded-full font-black text-white bg-gradient-to-br from-[#69b7da] via-[#62cdbf] to-[#dce97f] shadow-[0_18px_36px_rgba(103,201,190,0.18)] cursor-pointer transition-transform hover:-translate-y-0.5 mt-2"

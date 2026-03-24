@@ -128,7 +128,7 @@ describe('resolveDockItems', () => {
     expect(dock.actions).toEqual([]);
   });
 
-  it('builds teacher navigation without public tabs', () => {
+  it('builds teacher navigation with learning access', () => {
     const dock = resolveDockItems({
       isTeacher: true,
       mainScreen: 'admin',
@@ -137,7 +137,7 @@ describe('resolveDockItems', () => {
       summary: null,
     });
 
-    expect(dock.tabs.map((item) => item.action)).toEqual(['home', 'admin', 'profile']);
+    expect(dock.tabs.map((item) => item.action)).toEqual(['home', 'learn', 'admin', 'profile']);
     expect(dock.tabs.find((item) => item.action === 'admin')?.active).toBe(true);
     expect(dock.actions).toEqual([]);
   });

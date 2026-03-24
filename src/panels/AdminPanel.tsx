@@ -69,7 +69,7 @@ const adminStretchFieldShellClass =
   'flex items-stretch gap-2.5 p-3 rounded-[20px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] transition-all duration-150 focus-within:border-[rgba(107,184,217,0.38)] focus-within:bg-[rgba(252,254,255,0.98)] focus-within:shadow-[0_0_0_3px_rgba(107,184,217,0.08)]';
 
 const adminFieldInputClass =
-  'w-full min-w-0 appearance-none rounded-none border-0! bg-transparent outline-none! shadow-none! ring-0! text-[#203143] text-[0.98rem] font-extrabold caret-[#6bb8d9] focus:border-0! focus:outline-none! focus:shadow-none! focus:ring-0!';
+  'w-full min-w-0 appearance-none rounded-none border-0! bg-transparent outline-none! shadow-none! ring-0! text-[var(--text)] text-[0.98rem] font-extrabold caret-[#6bb8d9] focus:border-0! focus:outline-none! focus:shadow-none! focus:ring-0!';
 
 const normalizeSearchTerm = (value: string): string =>
   value
@@ -471,7 +471,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
     <>
       <div
         className={clsx(
-          'p-4 rounded-[1.2rem] border text-[#4b677d] text-[0.95rem] font-bold shadow-[0_14px_34px_rgba(120,146,168,0.1)] leading-snug transition-opacity duration-150',
+          'p-4 rounded-[1.2rem] border text-[var(--text-2)] text-[0.95rem] font-bold shadow-[0_14px_34px_rgba(120,146,168,0.1)] leading-snug transition-opacity duration-150',
           teacherMessage ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 p-0 border-0 shadow-none',
           teacherMessage?.includes('Errorea') || teacherMessage?.includes('ezin da')
             ? 'bg-gradient-to-br from-[#fff9e9]/98 to-[#fff5d6]/98 border-[#e0bc66]/40 text-[#8d6b20]'
@@ -488,7 +488,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Kudeaketa</p>
-            <h2 className="font-display text-[clamp(2rem,4vw,2.8rem)] leading-[0.96] tracking-[-0.05em] text-[#203143]">Irakaslearen panela</h2>
+            <h2 className="font-display text-[clamp(2rem,4vw,2.8rem)] leading-[0.96] tracking-[-0.05em] text-[var(--text)]">Irakaslearen panela</h2>
           </div>
 
           <div className="inline-flex items-center gap-2.5 flex-wrap">
@@ -497,8 +497,8 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
               className={clsx(
                 'inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] font-extrabold cursor-pointer transition-all duration-150',
                 adminSection === 'words' 
-                  ? 'border-[rgba(95,200,189,0.28)] bg-[rgba(232,248,244,0.96)] text-[#203143] shadow-[0_8px_28px_rgba(107,148,165,0.1)]' 
-                  : 'border-[rgba(216,226,241,0.92)] bg-[rgba(247,249,255,0.88)] text-[#7a8d9d]'
+                  ? 'border-[rgba(95,200,189,0.28)] bg-[rgba(232,248,244,0.96)] text-[var(--text)] shadow-[0_8px_28px_rgba(107,148,165,0.1)]' 
+                  : 'border-[rgba(216,226,241,0.92)] bg-[rgba(247,249,255,0.88)] text-[var(--muted)]'
               )}
               onClick={() => setAdminSection('words')}
             >
@@ -510,8 +510,8 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
               className={clsx(
                 'inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] font-extrabold cursor-pointer transition-all duration-150',
                 adminSection === 'players'
-                  ? 'border-[rgba(95,200,189,0.28)] bg-[rgba(232,248,244,0.96)] text-[#203143] shadow-[0_8px_28px_rgba(107,148,165,0.1)]'
-                  : 'border-[rgba(216,226,241,0.92)] bg-[rgba(247,249,255,0.88)] text-[#7a8d9d]'
+                  ? 'border-[rgba(95,200,189,0.28)] bg-[rgba(232,248,244,0.96)] text-[var(--text)] shadow-[0_8px_28px_rgba(107,148,165,0.1)]'
+                  : 'border-[rgba(216,226,241,0.92)] bg-[rgba(247,249,255,0.88)] text-[var(--muted)]'
               )}
               onClick={() => setAdminSection('players')}
             >
@@ -528,7 +528,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                 <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">
                   {adminPlayersView === 'list' ? 'Aurrerapena' : adminPlayersView === 'detail' ? 'Jokalaria' : 'Jokalari berria'}
                 </p>
-                <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[#203143]">
+                <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[var(--text)]">
                   {adminPlayersView === 'list'
                     ? 'Jokalari guztiak'
                     : adminPlayersView === 'detail'
@@ -540,7 +540,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
               {adminPlayersView !== 'list' && (
                 <button
                   type="button"
-                  className="flex-shrink-0 inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[#203143] cursor-pointer transition-transform hover:-translate-y-0.5"
+                  className="flex-shrink-0 inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[var(--text)] cursor-pointer transition-transform hover:-translate-y-0.5"
                   onClick={() => {
                     setAdminPlayersView('list');
                     setSelectedTeacherPlayerId(null);
@@ -557,14 +557,14 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
 
             {adminPlayersView === 'list' && (
               <>
-                <span className="inline-flex items-center justify-center min-h-[38px] px-3.5 rounded-full bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] text-[0.82rem] font-bold">
+                <span className="inline-flex items-center justify-center min-h-[38px] px-3.5 rounded-full bg-[rgba(247,249,255,0.92)] text-[var(--muted)] text-[0.82rem] font-bold">
                   {isTeacherPlayersLoading ? 'Kargatzen...' : `${teacherPlayers.length} jokalari`}
                 </span>
 
-                {isTeacherPlayersLoading && <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">Jokalariak kargatzen ari dira.</div>}
+                {isTeacherPlayersLoading && <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[var(--muted)] font-bold leading-relaxed">Jokalariak kargatzen ari dira.</div>}
 
                 {!isTeacherPlayersLoading && teacherPlayers.length === 0 && (
-                  <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">Ez dago jokalaririk oraindik.</div>
+                  <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[var(--muted)] font-bold leading-relaxed">Ez dago jokalaririk oraindik.</div>
                 )}
 
                 {!isTeacherPlayersLoading && teacherPlayers.length > 0 && (
@@ -576,7 +576,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                         className="grid w-full p-[16px_18px] rounded-[22px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] text-left transition-all duration-150 hover:-translate-y-0.5 hover:border-[rgba(102,131,255,0.28)] focus:border-[rgba(63,105,210,0.22)]"
                         onClick={() => selectTeacherPlayer(player)}
                       >
-                        <strong className="block font-display text-[1.14rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">{player.playerCode}</strong>
+                        <strong className="block font-display text-[1.14rem] leading-[1.04] tracking-[-0.04em] text-[var(--text)]">{player.playerCode}</strong>
                       </button>
                     ))}
                   </div>
@@ -597,23 +597,23 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
               <article className="grid gap-3.5 p-5 rounded-[24px] border border-[rgba(216,226,241,0.92)] bg-[rgba(255,255,255,0.98)] shadow-[0_6px_20px_rgba(107,148,165,0.09)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <strong className="block font-display text-[1.3rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">{selectedTeacherPlayer.playerCode}</strong>
-                    <span className="text-[#7a8d9d] text-[0.92rem] font-bold">{selectedTeacherPlayer.currentLevelName} unean</span>
+                    <strong className="block font-display text-[1.3rem] leading-[1.04] tracking-[-0.04em] text-[var(--text)]">{selectedTeacherPlayer.playerCode}</strong>
+                    <span className="text-[var(--muted)] text-[0.92rem] font-bold">{selectedTeacherPlayer.currentLevelName} unean</span>
                   </div>
-                  <span className="text-[0.78rem] font-bold text-[#7a8d9d] opacity-80 uppercase">Eguneratua {formatAdminDate(selectedTeacherPlayer.updatedAt)}</span>
+                  <span className="text-[0.78rem] font-bold text-[var(--muted)] opacity-80 uppercase">Eguneratua {formatAdminDate(selectedTeacherPlayer.updatedAt)}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-2.5">
-                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayer.totalGamesPlayed} partida</span>
-                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayer.consecutivePlayDays} egun jarraian</span>
-                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayerLearnedWords} hitz ikasita</span>
-                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayerUnitStatus}</span>
-                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[#7a8d9d] text-[0.82rem] font-bold">{selectedTeacherPlayerAccuracy}% asmatuta</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[var(--muted)] text-[0.82rem] font-bold">{selectedTeacherPlayer.totalGamesPlayed} partida</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[var(--muted)] text-[0.82rem] font-bold">{selectedTeacherPlayer.consecutivePlayDays} egun jarraian</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[var(--muted)] text-[0.82rem] font-bold">{selectedTeacherPlayerLearnedWords} hitz ikasita</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[var(--muted)] text-[0.82rem] font-bold">{selectedTeacherPlayerUnitStatus}</span>
+                  <span className="inline-flex items-center min-h-[34px] px-3 rounded-full bg-[rgba(247,249,255,0.94)] text-[var(--muted)] text-[0.82rem] font-bold">{selectedTeacherPlayerAccuracy}% asmatuta</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   <label className="grid gap-2.5">
-                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
+                    <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
                     <div className={adminFieldShellClass}>
                       <CircleUserRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <input
@@ -629,7 +629,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   </label>
 
                   <label className="grid gap-2.5 md:col-span-2">
-                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Pasahitz berria</span>
+                    <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Pasahitz berria</span>
                     <div className={adminFieldShellClass}>
                       <KeyRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <input
@@ -647,7 +647,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
 
                 <div className="grid grid-cols-1 gap-3.5 mt-2">
                   <div className="grid gap-2.5">
-                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Mendiak eskuz zabaldu</span>
+                    <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Mendiak eskuz zabaldu</span>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                       {GAME_LEVELS.map((level) => {
                         const forcedLevels = unlockDrafts[selectedTeacherPlayer.ownerId] ?? selectedTeacherPlayer.forcedUnlockLevels;
@@ -663,7 +663,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                               'flex items-center justify-between min-h-[42px] px-2.5 rounded-[16px] border text-[0.78rem] font-extrabold transition-all duration-150',
                               isActive 
                                 ? 'border-[rgba(95,200,189,0.4)] bg-gradient-to-br from-[#66c9c1] to-[#9ad3a9] text-white shadow-[0_14px_28px_rgba(112,205,182,0.16)]' 
-                                : 'border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] text-[#7a8d9d] hover:border-[rgba(95,200,189,0.38)]'
+                                : 'border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)] text-[var(--muted)] hover:border-[rgba(95,200,189,0.38)]'
                             )}
                             disabled={isAlwaysUnlocked || isSavingUnlocks}
                             aria-pressed={isAlwaysUnlocked ? undefined : isActive}
@@ -699,7 +699,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
 
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[#efc2bb] bg-[#fff0ee] text-[#b7594d] cursor-pointer transition-transform hover:-translate-y-0.5"
+                    className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger-text)] cursor-pointer transition-transform hover:-translate-y-0.5"
                     onClick={() => void resetTeacherPlayer(selectedTeacherPlayer)}
                   >
                     <RotateCcw className="w-[18px] h-[18px]" />
@@ -709,7 +709,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   {selectedTeacherPlayer.playerCode !== ADMIN_PLAYER_CODE && (
                     <button
                       type="button"
-                      className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[#efc2bb] bg-[#fff0ee] text-[#b7594d] cursor-pointer transition-transform hover:-translate-y-0.5"
+                      className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger-text)] cursor-pointer transition-transform hover:-translate-y-0.5"
                       onClick={() => void deleteTeacherPlayer(selectedTeacherPlayer)}
                       disabled={isDeletingTeacherPlayer}
                     >
@@ -724,7 +724,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
             {adminPlayersView === 'create' && (
               <form className="grid gap-[18px]" onSubmit={(e: FormEvent<HTMLFormElement>) => void submitTeacherPlayer(e)}>
                 <label className="grid gap-2.5">
-                  <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
+                  <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Erabiltzailea</span>
                   <div className={adminFieldShellClass}>
                     <CircleUserRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                     <input
@@ -738,7 +738,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                 </label>
 
                 <label className="grid gap-2.5">
-                  <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Pasahitza</span>
+                  <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Pasahitza</span>
                   <div className={adminFieldShellClass}>
                     <KeyRound className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                     <input
@@ -765,13 +765,13 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
             <section className="grid gap-3 pt-4 border-t border-[rgba(216,226,241,0.92)]">
               <div>
                 <p className="mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase text-[#6bb8d9]">Azken aldaketak</p>
-                <h3 className="font-display text-[clamp(1.15rem,2.6vw,1.45rem)] leading-[1.06] tracking-[-0.04em] text-[#203143]">
+                <h3 className="font-display text-[clamp(1.15rem,2.6vw,1.45rem)] leading-[1.06] tracking-[-0.04em] text-[var(--text)]">
                   Azken bi jokalari ukituak
                 </h3>
               </div>
 
               {recentTeacherPlayerHistory.length === 0 ? (
-                <div className="rounded-[22px] bg-[rgba(247,249,255,0.92)] p-[18px] font-bold leading-relaxed text-[#7a8d9d]">
+                <div className="rounded-[22px] bg-[rgba(247,249,255,0.92)] p-[18px] font-bold leading-relaxed text-[var(--muted)]">
                   Oraindik ez da jokalaririk sortu edo eguneratu kudeaketa panel honetatik.
                 </div>
               ) : (
@@ -783,19 +783,19 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <strong className="block truncate font-display text-[1.18rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">
+                          <strong className="block truncate font-display text-[1.18rem] leading-[1.04] tracking-[-0.04em] text-[var(--text)]">
                             {item.playerCode}
                           </strong>
-                          <span className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#7a8d9d]">
+                          <span className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[var(--muted)]">
                             {item.action === 'created' ? 'Sortuta' : 'Eguneratuta'}
                           </span>
                         </div>
-                        <span className="inline-flex min-h-[34px] items-center rounded-full bg-[rgba(232,248,244,0.96)] px-3 text-[0.82rem] font-bold text-[#2e8a6e]">
+                        <span className="inline-flex min-h-[34px] items-center rounded-full bg-[rgba(232,248,244,0.96)] px-3 text-[0.82rem] font-bold text-[var(--primary-deep)]">
                           {item.changedBy}
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-2 text-[0.82rem] font-bold text-[#7a8d9d]">
+                      <div className="flex flex-wrap items-center gap-2 text-[0.82rem] font-bold text-[var(--muted)]">
                         <span>{formatAdminDate(item.changedAt)}</span>
                         <span className="text-[#c2ced8]">•</span>
                         <span>
@@ -818,7 +818,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Sinonimoak</p>
-                <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[#203143]">Bilatu, editatu edo gehitu</h3>
+                <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[var(--text)]">Bilatu, editatu edo gehitu</h3>
               </div>
             </div>
 
@@ -837,13 +837,13 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
               </div>
 
               {isDemoMode && (
-                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">
+                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[var(--muted)] font-bold leading-relaxed">
                   Demoko hitzak bakarrik daude ikusgai. Taula erreala erabilgarri dagoenean hemen agertuko dira benetako sarrerak.
                 </div>
               )}
 
               {!isDemoMode && teacherWordQuery.length === 0 && (
-                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">
+                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[var(--muted)] font-bold leading-relaxed">
                   Idatzi hitz bat edo sinonimo bat. Aurkitzen bada editatu ahal izango duzu; bestela, sarrera berria sortuko da.
                 </div>
               )}
@@ -854,13 +854,13 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     <article key={entry.id} className="grid gap-3.5 p-[18px] rounded-[24px] border border-[rgba(216,226,241,0.92)] bg-[rgba(249,251,255,0.94)]">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <strong className="block font-display text-[1.28rem] leading-[1.05] tracking-[-0.04em] text-[#203143]">{entry.word}</strong>
-                          <span className="text-[#7a8d9d] text-[0.92rem] font-bold">{GAME_LEVELS[(entry.levelOrder ?? 1) - 1]?.name ?? 'Mailarik gabe'}</span>
+                          <strong className="block font-display text-[1.28rem] leading-[1.05] tracking-[-0.04em] text-[var(--text)]">{entry.word}</strong>
+                          <span className="text-[var(--muted)] text-[0.92rem] font-bold">{GAME_LEVELS[(entry.levelOrder ?? 1) - 1]?.name ?? 'Mailarik gabe'}</span>
                         </div>
 
                         <button 
                           type="button" 
-                          className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] border border-[rgba(216,226,241,0.92)] bg-white/96 text-[#203143] font-extrabold cursor-pointer transition-transform hover:-translate-y-0.5" 
+                          className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-[18px] border border-[rgba(216,226,241,0.92)] bg-white/96 text-[var(--text)] font-extrabold cursor-pointer transition-transform hover:-translate-y-0.5" 
                           onClick={() => startEditingWord(entry)}
                         >
                           <PencilLine className="w-[18px] h-[18px]" />
@@ -868,14 +868,14 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                         </button>
                       </div>
 
-                      <p className="text-[#7a8d9d] text-[0.92rem] font-bold leading-relaxed">{entry.synonyms.join(', ')}</p>
+                      <p className="text-[var(--muted)] text-[0.92rem] font-bold leading-relaxed">{entry.synonyms.join(', ')}</p>
                     </article>
                   ))}
                 </div>
               )}
 
               {!isDemoMode && teacherWordQuery.length > 0 && teacherWordResults.length === 0 && (
-                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] font-bold leading-relaxed">Ez da hitz hori aurkitu. Azpiko formularioan zuzenean sor dezakezu.</div>
+                <div className="grid gap-3 p-[18px] rounded-[22px] bg-[rgba(247,249,255,0.92)] text-[var(--muted)] font-bold leading-relaxed">Ez da hitz hori aurkitu. Azpiko formularioan zuzenean sor dezakezu.</div>
               )}
 
               {!isDemoMode && teacherWordQuery.length > 0 && (
@@ -883,13 +883,13 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-[#6bb8d9] mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">{editingWordId ? 'Editatzen' : 'Sarrera berria'}</p>
-                      <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[#203143]">{editingWordId ? 'Hitza eguneratu' : 'Hitza gehitu'}</h3>
+                      <h3 className="font-display text-[clamp(1.3rem,3vw,1.8rem)] leading-[1.04] tracking-[-0.04em] text-[var(--text)]">{editingWordId ? 'Hitza eguneratu' : 'Hitza gehitu'}</h3>
                     </div>
-                    <span className="inline-flex items-center justify-center min-h-[38px] px-3.5 rounded-full bg-[rgba(247,249,255,0.92)] text-[#7a8d9d] text-[0.82rem] font-bold">{editingWordId ? 'Badago' : 'Berria'}</span>
+                    <span className="inline-flex items-center justify-center min-h-[38px] px-3.5 rounded-full bg-[rgba(247,249,255,0.92)] text-[var(--muted)] text-[0.82rem] font-bold">{editingWordId ? 'Badago' : 'Berria'}</span>
                   </div>
 
                   <label className="grid gap-2.5">
-                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Hitza</span>
+                    <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Hitza</span>
                     <div className={adminFieldShellClass}>
                       <BookOpen className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <input
@@ -906,10 +906,10 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   </label>
 
                   <label className="grid gap-2.5">
-                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Sinonimoak</span>
+                    <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Sinonimoak</span>
                     <div className={adminStretchFieldShellClass}>
                       <textarea
-                        className="w-full border-0 bg-transparent outline-none text-[#203143] text-[0.98rem] font-extrabold resize-vertical leading-relaxed caret-[#6bb8d9]"
+                        className="w-full border-0 bg-transparent outline-none text-[var(--text)] text-[0.98rem] font-extrabold resize-vertical leading-relaxed caret-[#6bb8d9]"
                         value={teacherWordForm.synonyms}
                         onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
                           setIsTeacherWordDirty(true);
@@ -922,11 +922,11 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                   </label>
 
                   <label className="grid gap-2.5">
-                    <span className="text-[#7a8d9d] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Maila</span>
+                    <span className="text-[var(--muted)] text-[0.8rem] font-extrabold tracking-[0.08em] uppercase">Maila</span>
                     <div className={adminFieldShellClass}>
                       <Mountain className="w-4.5 h-4.5 text-[#6bb8d9] shrink-0" />
                       <select
-                        className="w-full border-0 bg-transparent outline-none text-[#203143] text-[0.98rem] font-extrabold appearance-none cursor-pointer"
+                        className="w-full border-0 bg-transparent outline-none text-[var(--text)] text-[0.98rem] font-extrabold appearance-none cursor-pointer"
                         value={teacherWordForm.levelOrder}
                         onChange={(event: ChangeEvent<HTMLSelectElement>) => {
                           setIsTeacherWordDirty(true);
@@ -953,7 +953,7 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                     </button>
 
                     <button 
-                      className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[#203143] cursor-pointer transition-transform hover:-translate-y-0.5" 
+                      className="inline-flex items-center justify-center gap-2.5 min-h-[46px] px-4 rounded-full font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[var(--text)] cursor-pointer transition-transform hover:-translate-y-0.5" 
                       type="button" 
                       onClick={resetTeacherWordForm}
                     >
@@ -968,13 +968,13 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                 <section className="grid gap-3 pt-4 border-t border-[rgba(216,226,241,0.92)]">
                   <div>
                     <p className="mb-2 text-[0.8rem] font-extrabold tracking-[0.08em] uppercase text-[#6bb8d9]">Azken aldaketak</p>
-                    <h3 className="font-display text-[clamp(1.15rem,2.6vw,1.45rem)] leading-[1.06] tracking-[-0.04em] text-[#203143]">
+                    <h3 className="font-display text-[clamp(1.15rem,2.6vw,1.45rem)] leading-[1.06] tracking-[-0.04em] text-[var(--text)]">
                       Azken bi hitz ukituak
                     </h3>
                   </div>
 
                   {recentTeacherWordHistory.length === 0 ? (
-                    <div className="rounded-[22px] bg-[rgba(247,249,255,0.92)] p-[18px] font-bold leading-relaxed text-[#7a8d9d]">
+                    <div className="rounded-[22px] bg-[rgba(247,249,255,0.92)] p-[18px] font-bold leading-relaxed text-[var(--muted)]">
                       Oraindik ez da hitzik gehitu edo eguneratu kudeaketa panel honetatik.
                     </div>
                   ) : (
@@ -986,19 +986,19 @@ export const AdminPanel = ({ bankState, activePlayer, onScrollTop, onRefreshBank
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <strong className="block truncate font-display text-[1.18rem] leading-[1.04] tracking-[-0.04em] text-[#203143]">
+                              <strong className="block truncate font-display text-[1.18rem] leading-[1.04] tracking-[-0.04em] text-[var(--text)]">
                                 {item.word}
                               </strong>
-                              <span className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[#7a8d9d]">
+                              <span className="text-[0.78rem] font-bold uppercase tracking-[0.08em] text-[var(--muted)]">
                                 {item.action === 'created' ? 'Gehituta' : 'Eguneratuta'}
                               </span>
                             </div>
-                            <span className="inline-flex min-h-[34px] items-center rounded-full bg-[rgba(232,248,244,0.96)] px-3 text-[0.82rem] font-bold text-[#2e8a6e]">
+                            <span className="inline-flex min-h-[34px] items-center rounded-full bg-[rgba(232,248,244,0.96)] px-3 text-[0.82rem] font-bold text-[var(--primary-deep)]">
                               {item.changedBy}
                             </span>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2 text-[0.82rem] font-bold text-[#7a8d9d]">
+                          <div className="flex flex-wrap items-center gap-2 text-[0.82rem] font-bold text-[var(--muted)]">
                             <span>{formatAdminDate(item.changedAt)}</span>
                             <span className="text-[#c2ced8]">•</span>
                             <span>

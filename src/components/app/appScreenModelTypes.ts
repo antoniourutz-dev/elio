@@ -40,12 +40,14 @@ export interface MainViewModel {
   isDemoMode: boolean;
   uiMessage: string | null;
   isTeacher: boolean;
+  isSuperUser: boolean;
   onStartDailyGame: () => void;
   onGoLearn: () => void;
   onGoSynonyms: () => void;
   onGoGrammar: () => void;
   onGoVocabulary: () => void;
   onGoVerbs: () => void;
+  onStartOrthographyPractice: () => void;
   onStartLevel: (level: GameLevel) => void;
   onRefreshBank: () => Promise<void>;
   onScrollTop: () => void;
@@ -135,6 +137,7 @@ export interface UseAppScreenModelArgs {
   isDemoMode: boolean;
   uiMessage: string | null;
   isTeacher: boolean;
+  isSuperUser: boolean;
   quiz: ActiveQuiz | null;
   currentQuestion: ActiveQuiz['questions'][number] | null;
   currentAnswer: ActiveQuiz['answers'][number] | null;
@@ -149,6 +152,7 @@ export interface UseAppScreenModelArgs {
   nextLevel: GameLevel | null;
   nextLevelUnlocked: boolean;
   startDailyGame: () => void;
+  startOrthographyPractice: () => void;
   answerDailyQuestion: (selectedAnswer: string) => void;
   solveDailyQuestion: () => void;
   advanceDailyQuestion: () => void;

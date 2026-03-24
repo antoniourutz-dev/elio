@@ -16,18 +16,18 @@ export function AppShell({ shellRef, isLocked, bottomBarMode = null, children }:
         'app-shell relative h-full min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [WebkitOverflowScrolling:touch]',
         isLocked
           ? 'grid overflow-hidden p-[12px_14px_16px]'
-          : 'p-[16px_16px_0] md:p-[18px_18px_0]'
+          : 'p-[8px_16px_0] md:p-[10px_18px_0]'
       )}
     >
-      <div className="absolute pointer-events-none blur-[20px] opacity-45 rounded-full mix-blend-multiply top-[18px] left-[-40px] w-[220px] h-[220px] bg-[rgba(107,184,217,0.09)]" />
-      <div className="absolute pointer-events-none blur-[18px] opacity-65 rounded-full mix-blend-multiply right-[-40px] bottom-[8%] w-[200px] h-[200px] bg-[rgba(218,235,128,0.12)]" />
+      <div className="absolute pointer-events-none blur-[28px] opacity-40 rounded-full top-[18px] left-[-40px] w-[220px] h-[220px] bg-[var(--primary-soft)]" />
+      <div className="absolute pointer-events-none blur-[24px] opacity-30 rounded-full right-[-40px] bottom-[8%] w-[200px] h-[200px] bg-[var(--primary-soft)]" />
       <div
         className={clsx(
           'main-content relative',
           isLocked
             ? ''
             : bottomBarMode === 'tabs'
-              ? 'pb-[calc(64px+env(safe-area-inset-bottom))]'
+              ? 'pb-[calc(72px+env(safe-area-inset-bottom))]'
               : bottomBarMode === 'actions'
                 ? 'pb-[calc(92px+env(safe-area-inset-bottom))]'
               : 'pb-[20px] md:pb-[22px]'

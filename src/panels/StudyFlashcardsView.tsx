@@ -141,25 +141,25 @@ function SwipeCard({ card, onRate }: SwipeCardProps) {
         >
           <div className="face-hidden flex min-h-[280px] w-full flex-col items-center justify-center gap-3 rounded-[28px] border border-[rgba(216,226,241,0.76)] bg-white p-8 shadow-[0_14px_40px_rgba(100,140,160,0.13)]">
             {card.theme && (
-              <p className="m-0 text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-[#a5afbb]">
+              <p className="m-0 text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-[var(--muted)]">
                 {card.theme}
               </p>
             )}
-            <strong className="m-0 text-center font-display text-[2.6rem] font-extrabold leading-none tracking-[-0.04em] text-[#1a2e3b]">
+            <strong className="m-0 text-center font-display text-[2.6rem] font-extrabold leading-none tracking-[-0.04em] text-[var(--text)]">
               {card.promptWord}
             </strong>
             {card.translation && (
-              <p className="m-0 italic text-[0.9rem] text-[#76889a]">{card.translation}</p>
+              <p className="m-0 italic text-[0.9rem] text-[var(--muted)]">{card.translation}</p>
             )}
-            <p className="m-0 mt-3 text-[0.74rem] font-semibold text-[#b0bfcc]">Sakatu ikusteko</p>
+            <p className="m-0 mt-3 text-[0.74rem] font-semibold text-[var(--muted)]">Sakatu ikusteko</p>
           </div>
 
           <div className="face-back absolute inset-0 flex min-h-[280px] w-full flex-col justify-center gap-4 rounded-[28px] border border-[rgba(77,182,165,0.3)] bg-white p-6 shadow-[0_14px_40px_rgba(100,140,160,0.13)]">
-            <p className="m-0 text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-[#a5afbb]">
+            <p className="m-0 text-[0.7rem] font-extrabold uppercase tracking-[0.18em] text-[var(--muted)]">
               Sinonimo zuzena
             </p>
             <div className="grid gap-2 rounded-[22px] border border-[rgba(77,182,165,0.2)] bg-[linear-gradient(180deg,rgba(235,250,244,0.84),rgba(226,246,238,0.92))] px-4 py-5 text-center">
-              <span className="text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[#8fa6b4]">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
                 {card.promptWord}
               </span>
               <strong className="font-display text-[2.15rem] leading-none tracking-[-0.04em] text-[#1d8b7f]">
@@ -167,11 +167,11 @@ function SwipeCard({ card, onRate }: SwipeCardProps) {
               </strong>
             </div>
             {card.example && (
-              <p className="m-0 border-l-2 border-[rgba(77,182,165,0.4)] pl-3 text-[0.85rem] italic leading-relaxed text-[#506677]">
+              <p className="m-0 border-l-2 border-[rgba(77,182,165,0.4)] pl-3 text-[0.85rem] italic leading-relaxed text-[var(--text-2)]">
                 {card.example}
               </p>
             )}
-            <p className="m-0 mt-1 text-center text-[0.7rem] font-semibold text-[#b0bfcc]">
+            <p className="m-0 mt-1 text-center text-[0.7rem] font-semibold text-[var(--muted)]">
               Ezkerra / Berriz - Behera / Zaila - Eskuina / Badakit - Gora / Erraza
             </p>
           </div>
@@ -329,15 +329,15 @@ export const StudyFlashcardsView = memo(function StudyFlashcardsView({
           type="button"
           aria-label="Itzuli"
           onClick={onClose}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgba(220,229,239,0.7)] text-[#506677] transition-colors hover:bg-[rgba(200,215,230,0.9)]"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[rgba(220,229,239,0.7)] text-[var(--text-2)] transition-colors hover:bg-[rgba(200,215,230,0.9)]"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="min-w-0 flex-1">
-          <h2 className="m-0 truncate font-display text-[1.1rem] font-extrabold tracking-[-0.03em] text-[#223748]">
+          <h2 className="m-0 truncate font-display text-[1.1rem] font-extrabold tracking-[-0.03em] text-[var(--text)]">
             {level.name}
           </h2>
-          <p className="m-0 text-[0.78rem] font-bold text-[#76889a]">
+          <p className="m-0 text-[0.78rem] font-bold text-[var(--muted)]">
             Gaur: {queueSummary.newCount} berri eta {queueSummary.dueCount} errepaso
           </p>
         </div>
@@ -355,14 +355,14 @@ export const StudyFlashcardsView = memo(function StudyFlashcardsView({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-[22px] border border-[rgba(77,182,165,0.16)] bg-[rgba(237,249,246,0.95)] px-4 py-3">
-          <p className="m-0 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-[#89a4af]">Gaurko berriak</p>
+          <p className="m-0 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">Gaurko berriak</p>
           <p className="m-0 mt-1 text-[1.1rem] font-extrabold text-[#1d8b7f]">
             {dailyProgress.newCardsStudied}/{DEFAULT_STUDY_DAILY_NEW_LIMIT}
           </p>
         </div>
         <div className="rounded-[22px] border border-[rgba(180,205,215,0.24)] bg-[rgba(246,250,252,0.96)] px-4 py-3">
-          <p className="m-0 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-[#89a4af]">Saio honetako errepasoak</p>
-          <p className="m-0 mt-1 text-[1.1rem] font-extrabold text-[#476171]">
+          <p className="m-0 text-[0.68rem] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">Saio honetako errepasoak</p>
+          <p className="m-0 mt-1 text-[1.1rem] font-extrabold text-[var(--text-2)]">
             {sessionReviewCount}/{DEFAULT_STUDY_SESSION_REVIEW_LIMIT}
           </p>
         </div>
@@ -374,21 +374,21 @@ export const StudyFlashcardsView = memo(function StudyFlashcardsView({
             <CheckCircle2 className="h-9 w-9 text-white" />
           </span>
           <div className="grid gap-1">
-            <h3 className="m-0 font-display text-[1.4rem] font-extrabold tracking-[-0.03em] text-[#1a2e3b]">
+            <h3 className="m-0 font-display text-[1.4rem] font-extrabold tracking-[-0.03em] text-[var(--text)]">
               {hasReachedSessionReviewLimit
                 ? 'Saio honetako muga beteta'
                 : hasReachedDailyNewLimit
                   ? 'Gaurko berri kupoa eginda'
                   : 'Oraingoz kitto'}
             </h3>
-            <p className="m-0 text-[0.9rem] text-[#76889a]">
+            <p className="m-0 text-[0.9rem] text-[var(--muted)]">
               {hasReachedSessionReviewLimit
                 ? `Saio bakoitzean gehienez ${DEFAULT_STUDY_SESSION_REVIEW_LIMIT} errepaso egiten dira.`
                 : hasReachedDailyNewLimit
                   ? `Gaurko ${DEFAULT_STUDY_DAILY_NEW_LIMIT} txartel berriak eginda daude.`
                   : 'Une honetan ez dago txartel berririk edo epez kanpoko txartelik.'}
             </p>
-            <p className="m-0 text-[0.82rem] font-semibold text-[#8aa0ad]">
+            <p className="m-0 text-[0.82rem] font-semibold text-[var(--muted)]">
               Gaur oraindik {todayNewRemaining} berri geratzen dira.
             </p>
             {nextDueAt && (
@@ -424,7 +424,7 @@ export const StudyFlashcardsView = memo(function StudyFlashcardsView({
           </div>
 
           <div className="grid gap-1 px-1">
-            <div className="flex items-center justify-between text-[0.76rem] font-bold text-[#9ab0bc]">
+            <div className="flex items-center justify-between text-[0.76rem] font-bold text-[var(--muted)]">
               <span>Ezkerra / Berriz</span>
               <span>{availableCount} prest</span>
               <span>Eskuina / Badakit</span>

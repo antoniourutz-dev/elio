@@ -45,6 +45,9 @@ export interface VocabularyLoadResult {
   message: string;
 }
 
+let vocabularyCache: VocabularyLoadResult | null = null;
+let vocabularyRequest: Promise<VocabularyLoadResult> | null = null;
+
 const TOPIC_ITEMS_VIEW = 'v_topic_items';
 const TOPIC_ITEMS_SELECT = [
   'topic_id',
@@ -80,6 +83,15 @@ const sortItems = (left: VocabularyItem, right: VocabularyItem): number =>
   left.sortIndex - right.sortIndex || left.text.localeCompare(right.text, 'eu');
 
 export async function loadVocabularyTopics(): Promise<VocabularyLoadResult> {
+  if (vocabularyCache) {
+    return vocabularyCache;
+  }
+
+  if (vocabularyRequest) {
+    return vocabularyRequest;
+  }
+
+  vocabularyRequest = (async (): Promise<VocabularyLoadResult> => {
   if (!supabase) {
     return {
       ok: false,
@@ -180,4 +192,23 @@ export async function loadVocabularyTopics(): Promise<VocabularyLoadResult> {
     topics,
     message: topics.length > 0 ? `${topics.length} gai kargatuta.` : 'Ez dago hiztegi edukirik oraindik.',
   };
+  })();
+
+  const result = await vocabularyRequest;
+  vocabularyCache = result;
+  vocabularyRequest = null;
+  return result;
+}
+
+export function preloadVocabularyTopics(): void {
+  void loadVocabularyTopics();
+}
+
+export function getVocabularyTopicsSnapshot(): VocabularyLoadResult | null {
+  return vocabularyCache;
+}
+
+export function clearVocabularyTopicsCache(): void {
+  vocabularyCache = null;
+  vocabularyRequest = null;
 }

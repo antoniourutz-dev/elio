@@ -17,11 +17,20 @@
 // CREATE POLICY "Players can update own scores" ON daily_scores FOR UPDATE USING (auth.uid() = owner_id);
 // CREATE POLICY "All players can view ranking" ON daily_scores FOR SELECT USING (true);
 
-import { supabase, gameWordsTable, dailyScoresTable, dailyHieroglyphsTable, dailyHieroglyphsBaseUrl } from '../supabaseClient';
+import {
+  supabase,
+  gameWordsTable,
+  dailyScoresTable,
+  dailyHieroglyphsTable,
+  dailyHieroglyphsBaseUrl,
+  orthographyExercisesTable,
+} from '../supabaseClient';
 import type { SynonymEntry } from './types';
 import type {
   GameWord,
   SpellingDailyQuestion,
+  OrthographyExercise,
+  OrthographyDailyQuestion,
   SynonymDailyQuestion,
   EroglificoDailyQuestion,
   EroglificoEntry,
@@ -142,12 +151,73 @@ export async function loadDailyHieroglyphs(): Promise<EroglificoEntry[]> {
   return (data as Record<string, unknown>[]).map(parseHieroglyphRow).filter((entry): entry is EroglificoEntry => Boolean(entry));
 }
 
+function normalizeOrthographyOption(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeOrthographySolution(value: unknown): 'A' | 'B' | 'C' | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toUpperCase();
+  if (normalized === 'A' || normalized === 'B' || normalized === 'C') return normalized;
+  return null;
+}
+
+function parseOrthographyRow(row: Record<string, unknown>): OrthographyExercise | null {
+  const optionA = normalizeOrthographyOption(row.option_a);
+  const optionB = normalizeOrthographyOption(row.option_b);
+  const optionC = normalizeOrthographyOption(row.option_c);
+  const solution = normalizeOrthographySolution(row.solution);
+  const exerciseNumber =
+    typeof row.exercise_number === 'number'
+      ? row.exercise_number
+      : typeof row.exercise_n === 'number'
+        ? row.exercise_n
+        : typeof row.exercise_num === 'number'
+          ? row.exercise_num
+          : typeof row.exercise_no === 'number'
+            ? row.exercise_no
+            : typeof row.id === 'number'
+              ? row.id
+              : 0;
+
+  if (!optionA || !optionB || !optionC || !solution) return null;
+
+  return {
+    id: (row.id as number | string | undefined) ?? String(row.exercise_number ?? optionA),
+    exerciseNumber,
+    optionA,
+    optionB,
+    optionC,
+    solution,
+  };
+}
+
+export async function loadOrthographyExercises(): Promise<OrthographyExercise[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from(orthographyExercisesTable)
+    .select('*')
+    .order('id', { ascending: true });
+  if (error || !data) {
+    console.error('Orthography exercises could not be loaded:', error);
+    return [];
+  }
+  return (data as Record<string, unknown>[])
+    .map(parseOrthographyRow)
+    .filter((entry): entry is OrthographyExercise => Boolean(entry))
+    .sort((left, right) => left.exerciseNumber - right.exerciseNumber);
+}
+
 // ── Build Daily Game ─────────────────────────────────────────
 
-const DAILY_SPELLING_COUNT = 5;
+const DAILY_SPELLING_COUNT = 3;
+const DAILY_ORTHOGRAPHY_COUNT = 2;
+const ORTHOGRAPHY_PRACTICE_COUNT = 10;
+const ORTHOGRAPHY_PRACTICE_ORTHOGRAPHY_COUNT = 5;
+const ORTHOGRAPHY_PRACTICE_SPELLING_COUNT = 5;
 const DAILY_SYNONYM_COUNT = 5;
 const DAILY_HIEROGLYPH_COUNT = 2;
-const DAILY_TOTAL_QUESTIONS = DAILY_SPELLING_COUNT + DAILY_SYNONYM_COUNT + DAILY_HIEROGLYPH_COUNT;
+const DAILY_TOTAL_QUESTIONS = DAILY_SPELLING_COUNT + DAILY_ORTHOGRAPHY_COUNT + DAILY_SYNONYM_COUNT + DAILY_HIEROGLYPH_COUNT;
 
 function buildSpellingQuestion(word: GameWord): SpellingDailyQuestion {
   return {
@@ -155,6 +225,26 @@ function buildSpellingQuestion(word: GameWord): SpellingDailyQuestion {
     id: `spell-${word.id}`,
     displayText: word.text,
     correctAnswer: word.egoera ? 'ZUZEN' : 'OKER',
+  };
+}
+
+function buildOrthographyQuestion(exercise: OrthographyExercise): OrthographyDailyQuestion {
+  const toWords = (value: string) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+  return {
+    type: 'orthography',
+    id: `orth-${exercise.id}`,
+    exerciseNumber: exercise.exerciseNumber,
+    options: [
+      { key: 'A', text: exercise.optionA, words: toWords(exercise.optionA) },
+      { key: 'B', text: exercise.optionB, words: toWords(exercise.optionB) },
+      { key: 'C', text: exercise.optionC, words: toWords(exercise.optionC) },
+    ],
+    correctAnswer: exercise.solution,
   };
 }
 
@@ -211,6 +301,7 @@ function buildHieroglyphQuestion(entry: EroglificoEntry): EroglificoDailyQuestio
 export function buildDailyGame(
   dayKey: string,
   gameWords: GameWord[],
+  orthographyExercises: OrthographyExercise[],
   synonymEntries: SynonymEntry[],
   hieroglyphs: EroglificoEntry[]
 ): DailyQuestion[] {
@@ -220,6 +311,9 @@ export function buildDailyGame(
   const spellingQuestions: SpellingDailyQuestion[] = shuffleWithRng(gameWords, rng)
     .slice(0, DAILY_SPELLING_COUNT)
     .map(buildSpellingQuestion);
+  const orthographyQuestions: OrthographyDailyQuestion[] = shuffleWithRng(orthographyExercises, rng)
+    .slice(0, DAILY_ORTHOGRAPHY_COUNT)
+    .map(buildOrthographyQuestion);
 
   const synonymQuestions: SynonymDailyQuestion[] = [];
   for (const entry of shuffleWithRng(synonymEntries, rng)) {
@@ -233,15 +327,21 @@ export function buildDailyGame(
     .map(buildHieroglyphQuestion)
     .filter((question): question is EroglificoDailyQuestion => Boolean(question));
 
-  // Interleave: spelling, synonym, spelling, synonym, ...
   const questions: DailyQuestion[] = [];
-  const paired = Math.min(spellingQuestions.length, synonymQuestions.length);
-  for (let i = 0; i < paired; i++) {
-    questions.push(spellingQuestions[i]);
-    questions.push(synonymQuestions[i]);
-  }
-  questions.push(...spellingQuestions.slice(paired));
-  questions.push(...synonymQuestions.slice(paired));
+  const languageQuestions: DailyQuestion[] = [];
+
+  if (spellingQuestions[0]) languageQuestions.push(spellingQuestions[0]);
+  if (synonymQuestions[0]) languageQuestions.push(synonymQuestions[0]);
+  if (orthographyQuestions[0]) languageQuestions.push(orthographyQuestions[0]);
+  if (synonymQuestions[1]) languageQuestions.push(synonymQuestions[1]);
+  if (spellingQuestions[1]) languageQuestions.push(spellingQuestions[1]);
+  if (synonymQuestions[2]) languageQuestions.push(synonymQuestions[2]);
+  if (orthographyQuestions[1]) languageQuestions.push(orthographyQuestions[1]);
+  if (synonymQuestions[3]) languageQuestions.push(synonymQuestions[3]);
+  if (spellingQuestions[2]) languageQuestions.push(spellingQuestions[2]);
+  if (synonymQuestions[4]) languageQuestions.push(synonymQuestions[4]);
+
+  questions.push(...languageQuestions);
 
   if (hieroglyphQuestions.length > 0) {
     const firstInsertAt = Math.min(4, questions.length);
@@ -253,6 +353,49 @@ export function buildDailyGame(
   }
 
   return questions.slice(0, DAILY_TOTAL_QUESTIONS);
+}
+
+export function buildOrthographyPracticeGame(
+  dayKey: string,
+  exercises: OrthographyExercise[],
+  gameWords: GameWord[]
+): DailyQuestion[] {
+  const seed = fnv1a(`${dayKey}-orthography-practice`);
+  const rng = makeLcg(seed);
+
+  const orthographyQuestions = shuffleWithRng(exercises, rng)
+    .slice(0, ORTHOGRAPHY_PRACTICE_ORTHOGRAPHY_COUNT)
+    .map(buildOrthographyQuestion);
+
+  const spellingQuestions = shuffleWithRng(gameWords, rng)
+    .slice(0, ORTHOGRAPHY_PRACTICE_SPELLING_COUNT)
+    .map(buildSpellingQuestion);
+
+  const questions: DailyQuestion[] = [];
+  const paired = Math.min(orthographyQuestions.length, spellingQuestions.length);
+
+  for (let index = 0; index < paired; index += 1) {
+    questions.push(orthographyQuestions[index]);
+    questions.push(spellingQuestions[index]);
+  }
+
+  questions.push(...orthographyQuestions.slice(paired));
+  questions.push(...spellingQuestions.slice(paired));
+
+  if (questions.length < ORTHOGRAPHY_PRACTICE_COUNT) {
+    const extraOrthography = shuffleWithRng(exercises, rng)
+      .slice(ORTHOGRAPHY_PRACTICE_ORTHOGRAPHY_COUNT)
+      .map(buildOrthographyQuestion)
+      .filter((question) => !questions.some((existing) => existing.id === question.id));
+    const extraSpelling = shuffleWithRng(gameWords, rng)
+      .slice(ORTHOGRAPHY_PRACTICE_SPELLING_COUNT)
+      .map(buildSpellingQuestion)
+      .filter((question) => !questions.some((existing) => existing.id === question.id));
+
+    questions.push(...extraOrthography, ...extraSpelling);
+  }
+
+  return questions.slice(0, ORTHOGRAPHY_PRACTICE_COUNT);
 }
 
 // ── Scoring ──────────────────────────────────────────────────

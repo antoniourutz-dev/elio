@@ -32,8 +32,8 @@ export function SessionLoadingView() {
       </div>
       <div className="bg-white/84 backdrop-blur-xl border border-[rgba(209,223,229,0.92)] rounded-[32px] p-10 shadow-[0_20px_60px_rgba(100,140,160,0.11)] animate-pulse">
         <div>
-          <h1 className="text-[#203143] text-xl font-extrabold tracking-tight">Saioa kargatzen</h1>
-          <p className="mt-2 text-[0.92rem] font-semibold text-[#7a8d9d]">Datuak prestatzen ari gara.</p>
+          <h1 className="text-[var(--text)] text-xl font-extrabold tracking-tight">Saioa kargatzen</h1>
+          <p className="mt-2 text-[0.92rem] font-semibold text-[var(--muted)]">Datuak prestatzen ari gara.</p>
         </div>
       </div>
     </motion.section>

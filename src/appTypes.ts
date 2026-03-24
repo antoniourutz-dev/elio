@@ -14,6 +14,27 @@ export interface SpellingDailyQuestion {
   correctAnswer: 'ZUZEN' | 'OKER';
 }
 
+export interface OrthographyExercise {
+  id: number | string;
+  exerciseNumber: number;
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  solution: 'A' | 'B' | 'C';
+}
+
+export interface OrthographyDailyQuestion {
+  type: 'orthography';
+  id: string;
+  exerciseNumber: number;
+  options: {
+    key: 'A' | 'B' | 'C';
+    text: string;
+    words: string[];
+  }[];
+  correctAnswer: 'A' | 'B' | 'C';
+}
+
 export interface SynonymDailyQuestion {
   type: 'synonym';
   id: string;
@@ -41,11 +62,15 @@ export interface EroglificoDailyQuestion {
   acceptedAnswers: string[];
 }
 
-export type DailyQuestion = SpellingDailyQuestion | SynonymDailyQuestion | EroglificoDailyQuestion;
+export type DailyQuestion =
+  | SpellingDailyQuestion
+  | OrthographyDailyQuestion
+  | SynonymDailyQuestion
+  | EroglificoDailyQuestion;
 
 export interface DailyAnswer {
   questionId: string;
-  questionType: 'spelling' | 'synonym' | 'eroglifico';
+  questionType: 'spelling' | 'orthography' | 'synonym' | 'eroglifico';
   selectedAnswer: string;
   correctAnswer: string;
   isCorrect: boolean;
@@ -54,6 +79,7 @@ export interface DailyAnswer {
 
 export interface DailyGameSession {
   dayKey: string;
+  mode?: 'daily' | 'orthography_practice';
   questions: DailyQuestion[];
   currentIndex: number;
   answers: DailyAnswer[];
@@ -61,7 +87,7 @@ export interface DailyGameSession {
 }
 
 export interface DailyStoredAnswer {
-  type: 'spelling' | 'synonym' | 'eroglifico';
+  type: 'spelling' | 'orthography' | 'synonym' | 'eroglifico';
   word: string;
   selected: string;
   correct: string;

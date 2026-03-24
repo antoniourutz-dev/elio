@@ -7,7 +7,7 @@ import type { ActiveQuiz, LevelSummary } from '../appTypes';
 interface UseAppTopBarArgs {
   playerCode: string | null | undefined;
   mainScreen: MainScreen;
-  dailySession: boolean;
+  dailySessionMode?: 'daily' | 'orthography_practice' | null;
   dailySessionProgress: string | null;
   dailyElapsed: string | null;
   quiz: ActiveQuiz | null;
@@ -23,7 +23,7 @@ interface UseAppTopBarArgs {
 export function useAppTopBar({
   playerCode,
   mainScreen,
-  dailySession,
+  dailySessionMode,
   dailySessionProgress,
   dailyElapsed,
   quiz,
@@ -39,7 +39,7 @@ export function useAppTopBar({
     () =>
       resolveTopBarState({
         mainScreen,
-        dailySession,
+        dailySessionMode,
         quiz,
         quizProgress,
         summary,
@@ -52,7 +52,7 @@ export function useAppTopBar({
       }),
     [
       mainScreen,
-      dailySession,
+      dailySessionMode,
       quiz,
       quizProgress,
       summary,
@@ -64,10 +64,23 @@ export function useAppTopBar({
     ]
   );
 
+  const sessionMetric =
+    dailySessionMode && dailySessionProgress
+      ? { icon: CheckCircle2, label: dailySessionProgress, variant: 'success' as const }
+      : null;
+  const sessionSecondary =
+    dailySessionMode === 'daily' && dailyElapsed
+      ? { icon: undefined as never, label: dailyElapsed, variant: 'default' as const }
+      : null;
+  const combinedDailyMetric =
+    dailySessionMode === 'daily' && dailySessionProgress && dailyElapsed
+      ? { icon: CheckCircle2, label: `${dailySessionProgress} · ${dailyElapsed}`, variant: 'success' as const }
+      : null;
+
   return {
     title: playerCode ?? 'Elio',
     ...state,
-    metric: dailySession && dailySessionProgress ? { icon: CheckCircle2, label: dailySessionProgress, variant: 'success' as const } : state.metric,
-    secondaryMetric: dailySession && dailyElapsed ? { icon: undefined as never, label: dailyElapsed, variant: 'default' as const } : state.secondaryMetric ?? null,
+    metric: combinedDailyMetric ?? sessionMetric ?? state.metric,
+    secondaryMetric: combinedDailyMetric ? null : sessionSecondary ?? state.secondaryMetric ?? null,
   };
 }

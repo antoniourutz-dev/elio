@@ -38,7 +38,7 @@ function formatSeconds(seconds: number): string {
 
 function AnswerReview({ answers }: { answers: DailyStoredAnswer[] }) {
   if (answers.length === 0) {
-    return <p className="text-[0.85rem] text-[#76889a] text-center pt-2 pb-1 m-0">Ez dago xehetasunik erregistro zahar honetatik.</p>;
+    return <p className="text-[0.85rem] text-[var(--muted)] text-center pt-2 pb-1 m-0">Ez dago xehetasunik erregistro zahar honetatik.</p>;
   }
 
   return (
@@ -46,7 +46,7 @@ function AnswerReview({ answers }: { answers: DailyStoredAnswer[] }) {
       {answers.map((ans, i) => (
         <div key={`${ans.word}-${i}`} className="flex items-center flex-wrap gap-[0.55rem] text-[0.8rem]">
           <span className={clsx('w-1.5 h-1.5 rounded-full shrink-0', ans.isCorrect ? 'bg-[#2ba074]' : 'bg-[#d05060]')} />
-          <span className="font-bold text-[#223748] min-w-[65px]">{ans.word}</span>
+          <span className="font-bold text-[var(--text)] min-w-[65px]">{ans.word}</span>
           {ans.isCorrect ? (
             <span className="font-semibold text-[#2ba074]">{ans.selected}</span>
           ) : (
@@ -54,8 +54,8 @@ function AnswerReview({ answers }: { answers: DailyStoredAnswer[] }) {
               {ans.selected} <span className="text-[#2ba074] ml-[0.2rem]">-&gt; {ans.correct}</span>
             </span>
           )}
-          <span className="ml-auto text-[0.65rem] font-bold text-[#76889a] bg-[#f0f4fa] py-[0.1rem] px-[0.35rem] rounded">
-            {ans.type === 'spelling' ? 'Ort.' : ans.type === 'synonym' ? 'Sin.' : 'Ero.'}
+          <span className="ml-auto text-[0.65rem] font-bold text-[var(--muted)] bg-[#f0f4fa] py-[0.1rem] px-[0.35rem] rounded">
+            {ans.type === 'spelling' || ans.type === 'orthography' ? 'Ort.' : ans.type === 'synonym' ? 'Sin.' : 'Ero.'}
           </span>
         </div>
       ))}
@@ -95,8 +95,8 @@ export const ProfileView = memo(function ProfileView({
           <img src={avatar.src} alt={avatar.label} className="h-11 w-11 object-contain" />
         </span>
         <div className="flex-1 min-w-0">
-          <strong className="font-display text-[1.3rem] font-extrabold text-[#1a2e3b] leading-none tracking-[-0.03em] block">{activePlayer.code}</strong>
-          <span className="text-[0.78rem] text-[#76889a] font-semibold">Jokalari erregistratua</span>
+          <strong className="font-display text-[1.3rem] font-extrabold text-[var(--text)] leading-none tracking-[-0.03em] block">{activePlayer.code}</strong>
+          <span className="text-[0.78rem] text-[var(--muted)] font-semibold">Jokalari erregistratua</span>
         </div>
       </div>
 
@@ -108,8 +108,8 @@ export const ProfileView = memo(function ProfileView({
           { label: 'Partida', value: weekHistory.length > 0 ? `${weekHistory.length}` : '0' },
         ].map(({ label, value }) => (
           <div key={label} className="flex flex-col items-center gap-0.5 rounded-[18px] bg-[rgba(240,245,250,0.9)] border border-[rgba(216,226,241,0.6)] py-3 px-2">
-            <strong className="font-display text-[1.3rem] font-extrabold text-[#1a2e3b] leading-none tracking-[-0.04em]">{value}</strong>
-            <span className="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-[#a5b5c4]">{label}</span>
+            <strong className="font-display text-[1.3rem] font-extrabold text-[var(--text)] leading-none tracking-[-0.04em]">{value}</strong>
+            <span className="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-[var(--muted)]">{label}</span>
           </div>
         ))}
       </div>
@@ -149,14 +149,14 @@ export const ProfileView = memo(function ProfileView({
       {/* ── Weekly history ── */}
       <div className="p-[1.125rem_1.25rem] rounded-[24px] bg-[rgba(248,250,253,0.96)] border border-[#e1e5ee] shadow-[0_6px_20px_rgba(110,130,150,0.06)] lg:bg-white lg:border-[#dce5ef]">
         <p className="text-[0.65rem] font-extrabold tracking-[0.14em] uppercase text-[#35b1d4] mb-2">Historia</p>
-        <h3 className="font-display text-[1.05rem] font-extrabold text-[#223748] m-[0_0_1rem] tracking-[-0.02em]">Aste honetako partida</h3>
+        <h3 className="font-display text-[1.05rem] font-extrabold text-[var(--text)] m-[0_0_1rem] tracking-[-0.02em]">Aste honetako partida</h3>
 
         {isLoadingData && (
           <div className="h-14 rounded-xl bg-[#f0f4fa] animate-[skeleton-shimmer_1.4s_ease-in-out_infinite]" aria-label="Kargatzen..." />
         )}
 
         {!isLoadingData && weekHistory.length === 0 && (
-          <p className="text-[0.85rem] text-[#76889a] text-center p-[1rem_0] m-0">Oraindik ez duzu aste honetan jokorik jokatu.</p>
+          <p className="text-[0.85rem] text-[var(--muted)] text-center p-[1rem_0] m-0">Oraindik ez duzu aste honetan jokorik jokatu.</p>
         )}
 
         {!isLoadingData && weekHistory.length > 0 && (
@@ -177,9 +177,9 @@ export const ProfileView = memo(function ProfileView({
                       onClick={() => toggleDay(result.dayKey)}
                       aria-expanded={isExpanded}
                     >
-                      <span className="text-[0.8rem] font-extrabold text-[#223748] min-w-[46px]">{dayLabel(result.dayKey)}</span>
+                      <span className="text-[0.8rem] font-extrabold text-[var(--text)] min-w-[46px]">{dayLabel(result.dayKey)}</span>
                       <span className="font-extrabold text-[0.85rem] tracking-[-0.02em] text-[#35b1d4]">{result.score} pt</span>
-                      <span className="flex items-center gap-[0.35rem] text-[0.8rem] font-bold text-[#223748] ml-auto">
+                      <span className="flex items-center gap-[0.35rem] text-[0.8rem] font-bold text-[var(--text)] ml-auto">
                         {perfect ? (
                           <CheckCircle2 className="w-[0.85rem] h-[0.85rem] text-[#2ba074]" />
                         ) : (
@@ -187,14 +187,14 @@ export const ProfileView = memo(function ProfileView({
                         )}
                         {result.correctCount}/{result.totalQuestions}
                       </span>
-                      <span className="flex items-center gap-[0.35rem] text-[0.75rem] font-semibold text-[#76889a]">
+                      <span className="flex items-center gap-[0.35rem] text-[0.75rem] font-semibold text-[var(--muted)]">
                         <Clock className="w-[0.85rem] h-[0.85rem]" />
                         {formatSeconds(result.secondsElapsed)}
                       </span>
                       {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-[#76889a] ml-1 shrink-0" />
+                        <ChevronUp className="w-4 h-4 text-[var(--muted)] ml-1 shrink-0" />
                       ) : (
-                        <ChevronDown className="w-4 h-4 text-[#76889a] ml-1 shrink-0" />
+                        <ChevronDown className="w-4 h-4 text-[var(--muted)] ml-1 shrink-0" />
                       )}
                     </button>
 
@@ -208,7 +208,7 @@ export const ProfileView = memo(function ProfileView({
       </div>
 
       <button
-        className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-[#b0bfcc] font-inherit text-[0.82rem] font-bold cursor-pointer transition-colors duration-150 hover:text-[#d05060] w-full"
+        className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-[var(--muted)] font-inherit text-[0.82rem] font-bold cursor-pointer transition-colors duration-150 hover:text-[#d05060] w-full"
         type="button"
         onClick={onLogout}
       >

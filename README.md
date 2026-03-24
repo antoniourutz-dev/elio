@@ -31,6 +31,42 @@ Aplicacion React/Vite para alumnado que aprende euskera. La app propone 10 nivel
 4. Lanza la app:
    `npm run dev`
 
+## Conjugador de verbos
+
+- La migracion versionada para `public.verb_forms` esta en:
+  `supabase/migrations/20260323154000_verb_forms_lookup_key_and_updated_at.sql`
+- Esa migracion:
+  - crea un indice unico sobre `public.verb_forms(lookup_key)` si no existe
+  - crea o reemplaza la funcion que mantiene `updated_at`
+  - recrea el trigger `before update` para actualizar `updated_at`
+  - no borra datos existentes
+
+### Importacion
+
+Variables necesarias para el script:
+
+- `SUPABASE_SERVICE_ROLE_KEY=...`
+- `SUPABASE_URL=...`
+  Tambien acepta la `VITE_SUPABASE_URL` ya existente como fallback para no duplicar la URL.
+
+Comando exacto:
+
+- `npm run import:verb-forms`
+
+Opcional para revisar la normalizacion sin escribir en Supabase:
+
+- `npm run import:verb-forms -- --dry-run`
+
+Que hace el script:
+
+- lee `scripts/verb-data/norData.ts`
+- lee `scripts/verb-data/norNorkData.ts`
+- lee `scripts/verb-data/norNoriData.ts`
+- lee `scripts/verb-data/norNoriNorkData.ts`
+- normaliza las filas para `public.verb_forms`
+- genera `lookup_key` estable
+- hace `upsert` por bloques usando `lookup_key`
+
 ## Esquema esperado
 
 La app puede leer varios alias de columnas, pero con tu estructura actual basta con:

@@ -38,19 +38,19 @@ export const ConfirmModal = ({
           transition={{ duration: 0.18, ease: 'easeOut' }}
           onClick={(e: MouseEvent) => e.stopPropagation()}
         >
-          <p className="text-[1.1rem] font-black tracking-[-0.02em] text-[#203143] mb-2">{title}</p>
-          <p className="text-[0.92rem] font-bold text-[#7a8d9d] leading-relaxed m-0">{message}</p>
+          <p className="text-[1.1rem] font-black tracking-[-0.02em] text-[var(--text)] mb-2">{title}</p>
+          <p className="text-[0.92rem] font-bold text-[var(--muted)] leading-relaxed m-0">{message}</p>
           <div className="flex gap-2.5 mt-5 justify-end">
             <button 
               type="button" 
-              className="inline-flex items-center justify-center min-h-[46px] px-4 rounded-full font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[#203143] cursor-pointer transition-transform hover:-translate-y-0.5" 
+              className="inline-flex items-center justify-center min-h-[46px] px-4 rounded-full font-extrabold border border-[rgba(216,226,241,0.92)] bg-white/96 text-[var(--text)] cursor-pointer transition-transform hover:-translate-y-0.5"
               onClick={onCancel}
             >
               {cancelLabel}
             </button>
             <button 
               type="button" 
-              className="inline-flex items-center justify-center min-h-[46px] px-4 rounded-full font-extrabold border border-[#efc2bb] bg-[#fff0ee] text-[#b7594d] cursor-pointer transition-transform hover:-translate-y-0.5" 
+              className="inline-flex items-center justify-center min-h-[46px] px-4 rounded-full font-extrabold border border-[var(--danger-line)] bg-[var(--danger-soft)] text-[var(--danger-text)] cursor-pointer transition-transform hover:-translate-y-0.5"
               onClick={onConfirm}
             >
               {confirmLabel}

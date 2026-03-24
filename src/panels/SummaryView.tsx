@@ -35,7 +35,7 @@ export const SummaryView = memo(function SummaryView({ summary, summaryErrors }:
         <h2
           ref={headingRef}
           tabIndex={-1}
-          className="font-display text-[clamp(2rem,4vw,2.8rem)] leading-[0.96] tracking-[-0.05em] text-[#223748] m-0 outline-none"
+          className="font-display text-[clamp(2rem,4vw,2.8rem)] leading-[0.96] tracking-[-0.05em] text-[var(--text)] m-0 outline-none"
         >
           {summary.level.name}
         </h2>
@@ -43,14 +43,14 @@ export const SummaryView = memo(function SummaryView({ summary, summaryErrors }:
 
       <div className="grid gap-[12px] p-[20px] rounded-[30px] bg-gradient-to-br from-[rgba(230,252,242,0.98)] to-[rgba(248,255,252,0.95)] border-[1.5px] border-[#81d8b6] shadow-[0_16px_40px_rgba(95,200,160,0.14)]">
         <div className="flex items-end justify-between gap-[14px]">
-          <span className="font-display text-[clamp(2.8rem,10vw,4.2rem)] font-extrabold leading-none tracking-[-0.05em] text-[#223748]">
+          <span className="font-display text-[clamp(2.8rem,10vw,4.2rem)] font-extrabold leading-none tracking-[-0.05em] text-[var(--text)]">
             {summary.correctCount}/{summary.totalQuestions}
           </span>
-          <span className="shrink-0 text-[#223748] font-display text-[clamp(1.35rem,4vw,2.1rem)] font-extrabold leading-[1.1] tracking-[-0.04em]">
+          <span className="shrink-0 text-[var(--text)] font-display text-[clamp(1.35rem,4vw,2.1rem)] font-extrabold leading-[1.1] tracking-[-0.04em]">
             {formatPercentage(summary.percentage)}
           </span>
         </div>
-        <p className="text-[#76889a] m-0">Saio honetako emaitza</p>
+        <p className="text-[var(--muted)] m-0">Saio honetako emaitza</p>
         <SegmentBar total={summary.totalQuestions} filledCount={summary.correctCount} />
       </div>
 
@@ -60,7 +60,7 @@ export const SummaryView = memo(function SummaryView({ summary, summaryErrors }:
             <CheckCircle2 className="w-4 h-4" />
             Mendiaren aurrerapena
           </span>
-          <strong className="text-[1rem] font-extrabold text-[#223748]">
+          <strong className="text-[1rem] font-extrabold text-[var(--text)]">
             {formatMeterProgress(climbedMeters, summary.level.elevationMeters)}
           </strong>
         </div>
@@ -70,7 +70,7 @@ export const SummaryView = memo(function SummaryView({ summary, summaryErrors }:
             <Flag className="w-4 h-4" />
             Hurrengo helburua
           </span>
-          <strong className="text-[1rem] font-extrabold text-[#223748]">{formatMeters(nextTargetMeters)}</strong>
+          <strong className="text-[1rem] font-extrabold text-[var(--text)]">{formatMeters(nextTargetMeters)}</strong>
         </div>
       </div>
 
@@ -80,8 +80,8 @@ export const SummaryView = memo(function SummaryView({ summary, summaryErrors }:
         <div className="flex flex-col gap-[10px]">
           {summaryErrors.length === 0 && (
             <div className="grid gap-[6px] p-[14px_16px] rounded-[20px] bg-[rgba(233,249,243,0.96)] border border-[#81d8b6] shadow-[0_2px_8px_rgba(107,148,165,0.06)]">
-              <strong className="text-[1rem] font-extrabold tracking-[-0.02em] text-[#223748]">Bikain</strong>
-              <span className="text-[0.92rem] leading-[1.5] text-[#76889a]">Maila honetan ez duzu akatsik egin.</span>
+              <strong className="text-[1rem] font-extrabold tracking-[-0.02em] text-[var(--text)]">Bikain</strong>
+              <span className="text-[0.92rem] leading-[1.5] text-[var(--muted)]">Maila honetan ez duzu akatsik egin.</span>
             </div>
           )}
 
@@ -90,8 +90,8 @@ export const SummaryView = memo(function SummaryView({ summary, summaryErrors }:
               key={answer.questionId}
               className="grid gap-[8px] p-[14px_16px] rounded-[20px] bg-[rgba(255,255,255,0.98)] border border-[rgba(216,226,241,0.8)] shadow-[0_2px_8px_rgba(107,148,165,0.06)]"
             >
-              <strong className="text-[1rem] font-extrabold tracking-[-0.02em] text-[#223748]">{answer.word}</strong>
-              <span className="inline-flex items-center gap-2 text-[0.92rem] leading-[1.5] text-[#76889a]">
+              <strong className="text-[1rem] font-extrabold tracking-[-0.02em] text-[var(--text)]">{answer.word}</strong>
+              <span className="inline-flex items-center gap-2 text-[0.92rem] leading-[1.5] text-[var(--muted)]">
                 <span>Hautatua: {answer.selectedAnswer}</span>
                 <ArrowUpRight className="w-4 h-4 text-[#35b1d4]" />
                 <span>Zuzena: {answer.correctAnswer}</span>

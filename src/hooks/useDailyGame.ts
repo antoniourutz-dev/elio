@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { SynonymEntry, PlayerIdentity } from '../lib/types';
 import type {
   GameWord,
+  OrthographyExercise,
   EroglificoEntry,
   DailyAnswer,
   DailyGameSession,
@@ -14,8 +15,10 @@ import {
   getDayKey,
   getWeekRange,
   loadGameWords,
+  loadOrthographyExercises,
   loadDailyHieroglyphs,
   buildDailyGame,
+  buildOrthographyPracticeGame,
   calculateDailyScore,
   loadMyDailyResult,
   saveDailyResult,
@@ -44,6 +47,7 @@ interface UseDailyGameOptions {
 export interface UseDailyGameReturn {
   dayKey: string;
   gameWords: GameWord[];
+  orthographyExercises: OrthographyExercise[];
   hieroglyphs: EroglificoEntry[];
   dailySession: DailyGameSession | null;
   dailyResult: DailyResult | null;
@@ -55,6 +59,7 @@ export interface UseDailyGameReturn {
   elapsedSeconds: number;
   isLoadingData: boolean;
   startDailyGame: () => void;
+  startOrthographyPractice: () => void;
   answerDailyQuestion: (answer: string) => void;
   solveDailyQuestion: () => void;
   advanceDailyQuestion: () => void;
@@ -96,9 +101,18 @@ function clearDailySessionMarker(): void {
 function buildStoredAnswers(session: DailyGameSession): DailyStoredAnswer[] {
   return session.answers.map((ans, index) => {
     const question = session.questions[index];
+    const word =
+      question.type === 'spelling'
+        ? question.displayText
+        : question.type === 'orthography'
+          ? `Ariketa ${question.exerciseNumber}`
+          : question.type === 'synonym'
+            ? question.word
+            : question.clue;
+
     return {
       type: ans.questionType,
-      word: question.type === 'spelling' ? question.displayText : question.type === 'synonym' ? question.word : question.clue,
+      word,
       selected: ans.wasSolved ? 'Ebatzita' : ans.selectedAnswer,
       correct: ans.correctAnswer,
       isCorrect: ans.isCorrect,
@@ -111,6 +125,7 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
   const dayKey = getDayKey();
   const isSuperUser = isSuperPlayer(activePlayer);
   const [gameWords, setGameWords] = useState<GameWord[]>([]);
+  const [orthographyExercises, setOrthographyExercises] = useState<OrthographyExercise[]>([]);
   const [hieroglyphs, setHieroglyphs] = useState<EroglificoEntry[]>([]);
   const [dailySession, setDailySession] = useState<DailyGameSession | null>(null);
   const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
@@ -125,6 +140,7 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
 
   useEffect(() => {
     void loadGameWords().then(setGameWords);
+    void loadOrthographyExercises().then(setOrthographyExercises);
     void loadDailyHieroglyphs().then(setHieroglyphs);
   }, []);
 
@@ -228,7 +244,7 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
 
   const startDailyGame = useCallback(() => {
     if (synonymEntries.length === 0) return;
-    const questions = buildDailyGame(dayKey, gameWords, synonymEntries, hieroglyphs);
+    const questions = buildDailyGame(dayKey, gameWords, orthographyExercises, synonymEntries, hieroglyphs);
     if (questions.length === 0) return;
     const startedAt = Date.now();
     setElapsedSeconds(0);
@@ -243,12 +259,33 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
     }
     setDailySession({
       dayKey,
+      mode: 'daily',
       questions,
       currentIndex: 0,
       answers: [],
       startedAt,
     });
-  }, [activePlayer, dayKey, gameWords, synonymEntries, hieroglyphs, isSuperUser]);
+  }, [activePlayer, dayKey, gameWords, orthographyExercises, synonymEntries, hieroglyphs, isSuperUser]);
+
+  const startOrthographyPractice = useCallback(() => {
+    if (orthographyExercises.length === 0 && gameWords.length === 0) {
+      console.warn('No orthography or spelling exercises are available.');
+      return;
+    }
+    const questions = buildOrthographyPracticeGame(dayKey, orthographyExercises, gameWords);
+    if (questions.length === 0) return;
+    const startedAt = Date.now();
+    clearDailySessionMarker();
+    setElapsedSeconds(0);
+    setDailySession({
+      dayKey,
+      mode: 'orthography_practice',
+      questions,
+      currentIndex: 0,
+      answers: [],
+      startedAt,
+    });
+  }, [dayKey, gameWords, orthographyExercises]);
 
   const answerDailyQuestion = useCallback((selectedAnswer: string) => {
     setDailySession((current) => {
@@ -320,9 +357,18 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
       answers: storedAnswers,
     };
 
+    const isPracticeSession = dailySession.mode === 'orthography_practice';
+
     clearDailySessionMarker();
-    setDailyResult(isSuperUser ? null : result);
+    if (!isPracticeSession) {
+      setDailyResult(isSuperUser ? null : result);
+    }
     setDailySession(null);
+    setElapsedSeconds(0);
+
+    if (isPracticeSession || !activePlayer) {
+      return;
+    }
 
     if (activePlayer) {
       void saveDailyResult(activePlayer.userId, activePlayer.code, result).then(() => {
@@ -342,6 +388,7 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
       return;
     }
 
+    const isPracticeSession = dailySession.mode === 'orthography_practice';
     const secondsElapsed = Math.floor((Date.now() - dailySession.startedAt) / 1000);
     const correctCount = dailySession.answers.filter((answer) => answer.isCorrect).length;
     const result: DailyResult = {
@@ -357,9 +404,11 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
     clearDailySessionMarker();
     setDailySession(null);
     setElapsedSeconds(0);
-    setDailyResult(isSuperUser ? null : result);
+    if (!isPracticeSession) {
+      setDailyResult(isSuperUser ? null : result);
+    }
 
-    if (!activePlayer || isSuperUser) {
+    if (isPracticeSession || !activePlayer || isSuperUser) {
       return;
     }
 
@@ -383,6 +432,7 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
   return {
     dayKey,
     gameWords,
+    orthographyExercises,
     hieroglyphs,
     dailySession,
     dailyResult,
@@ -394,6 +444,7 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
     elapsedSeconds,
     isLoadingData,
     startDailyGame,
+    startOrthographyPractice,
     answerDailyQuestion,
     solveDailyQuestion,
     advanceDailyQuestion,

@@ -31,6 +31,17 @@ const EMPTY_PILL: DailyPill = {
   body: 'Eguneko pilula hau ikusteko, gehitu eduki aktiboa `eguneko_pildorak` taulan.',
 };
 
+const DAILY_PILL_OVERRIDES: Record<string, DailyPill> = {
+  '2026-03-24': {
+    id: 'override-2026-03-24',
+    category: 'Gramatika',
+    tone: 'gramatika',
+    title: 'Ezezkoa: EZ partikula',
+    body: '"Ez" partikulak aditzaren aurrean joanez ezezko esaldiak osatzen dira. Normalean aditzari lotuta doa esaldiaren egituran.',
+    example: '"Ez dut ulertzen." / "Ez naiz etorri."',
+  },
+};
+
 const normalizeCategoryLabel = (value: unknown): string => {
   const normalized = String(value ?? '').trim();
   if (!normalized) return 'Gramatika';
@@ -109,6 +120,9 @@ export function getFallbackDailyPill(dayKey: string): DailyPill {
 }
 
 export async function loadDailyPill(dayKey: string): Promise<DailyPill> {
+  const override = DAILY_PILL_OVERRIDES[dayKey];
+  if (override) return override;
+
   const remotePills = await loadRemotePills();
   return remotePills ? selectDailyPill(dayKey, remotePills) : getFallbackDailyPill(dayKey);
 }

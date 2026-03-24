@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import {
   GAME_LEVELS,
@@ -6,6 +6,7 @@ import {
   getConsecutivePlayDays,
   getResolvedLevelRecord,
   getUnlockedLevels,
+  isSuperPlayer,
   isTeacherPlayer,
   isLevelUnlocked,
   LEVELS_TOTAL,
@@ -66,6 +67,7 @@ const App = () => {
   const {
     dayKey,
     gameWords,
+    orthographyExercises,
     hieroglyphs,
     dailySession,
     dailyResult,
@@ -77,6 +79,7 @@ const App = () => {
     elapsedSeconds,
     isLoadingData,
     startDailyGame,
+    startOrthographyPractice,
     answerDailyQuestion,
     solveDailyQuestion,
     advanceDailyQuestion,
@@ -120,10 +123,13 @@ const App = () => {
     openMainScreen('synonyms');
   }, [leaveGame, openMainScreen]);
   const goGrammar = useCallback(() => {
+    if (!isSuperPlayer(activePlayer)) {
+      return;
+    }
     leaveGame();
     setStudyLevel(null);
     openMainScreen('grammar');
-  }, [leaveGame, openMainScreen]);
+  }, [activePlayer, leaveGame, openMainScreen]);
   const goVocabulary = useCallback(() => {
     leaveGame();
     setStudyLevel(null);
@@ -134,6 +140,12 @@ const App = () => {
     setStudyLevel(null);
     openMainScreen('verbs');
   }, [leaveGame, openMainScreen]);
+  const goOrthographyPractice = useCallback(() => {
+    leaveGame();
+    setStudyLevel(null);
+    openMainScreen('learn');
+    startOrthographyPractice();
+  }, [leaveGame, openMainScreen, startOrthographyPractice]);
   const goStats = useCallback(() => openMainScreen('stats'), [openMainScreen]);
   const goAdmin = useCallback(() => openMainScreen('admin'), [openMainScreen]);
   const goProfile = useCallback(() => openMainScreen('profile'), [openMainScreen]);
@@ -145,12 +157,17 @@ const App = () => {
   }, [leaveGame]);
   const handleTopBarBack = useCallback(() => {
     if (dailySession) {
+      if (dailySession.mode === 'orthography_practice') {
+        abandonDailyGame();
+        return;
+      }
+
       setIsDailyExitWarningOpen(true);
       return;
     }
 
     handleBackFromSynonymsGame();
-  }, [dailySession, handleBackFromSynonymsGame]);
+  }, [abandonDailyGame, dailySession, handleBackFromSynonymsGame]);
   const confirmDailyExit = useCallback(() => {
     setIsDailyExitWarningOpen(false);
     abandonDailyGame();
@@ -176,7 +193,7 @@ const App = () => {
   const quizAdvanceLabel = quiz ? (quiz.currentIndex === quiz.questions.length - 1 ? 'Amaitu' : 'Hurrengoa') : 'Hurrengoa';
   const quizProgress = quiz ? `${quiz.currentIndex + 1}/${quiz.questions.length}` : null;
   const currentTargetLevel = unlockedLevels.at(-1)?.index ?? 1;
-  const canStartDailyGame = bankState.entries.length >= 5 && gameWords.length >= 5 && hieroglyphs.length >= 2;
+  const canStartDailyGame = bankState.entries.length >= 5 && gameWords.length >= 3 && orthographyExercises.length >= 2 && hieroglyphs.length >= 2;
   const dailySessionProgress = dailySession ? `${dailySession.currentIndex + 1}/${dailySession.questions.length}` : null;
   const dailyElapsedLabel = dailySession
     ? (() => {
@@ -204,7 +221,15 @@ const App = () => {
   const nextLevel = summary && summary.level.index < LEVELS_TOTAL ? GAME_LEVELS[summary.level.index] : null;
   const nextLevelUnlocked = nextLevel ? isLevelUnlocked(progress, nextLevel.index, bankState.entries) : false;
   const isTeacher = isTeacherPlayer(activePlayer);
+  const isSuperUser = isSuperPlayer(activePlayer);
   const topBarAvatar = useMemo(() => (activePlayer ? getAvatarForPlayer(activePlayer) : null), [activePlayer]);
+
+  useEffect(() => {
+    if (!isSuperUser && mainScreen === 'grammar') {
+      setMainScreen('learn');
+    }
+  }, [isSuperUser, mainScreen]);
+
   const screenModel = useAppScreenModel({
     activePlayer,
     mainScreen,
@@ -239,6 +264,7 @@ const App = () => {
     isDemoMode,
     uiMessage,
     isTeacher,
+    isSuperUser,
     quiz,
     currentQuestion,
     currentAnswer,
@@ -252,8 +278,9 @@ const App = () => {
     currentSessionMeters,
     nextLevel,
     nextLevelUnlocked,
-    startDailyGame,
-    answerDailyQuestion,
+      startDailyGame,
+      startOrthographyPractice: goOrthographyPractice,
+      answerDailyQuestion,
     solveDailyQuestion,
     advanceDailyQuestion,
     startLevel,
