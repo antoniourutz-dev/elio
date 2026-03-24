@@ -83,13 +83,13 @@ export function AppTopBar({
   const isSessionBar = showBackButton;
 
   return (
-    <div className="relative w-full z-[100] pointer-events-auto shrink-0 pt-[max(env(safe-area-inset-top),6px)] bg-[rgba(245,246,241,0.16)] backdrop-blur-[6px] backdrop-saturate-[118%] border-0 shadow-none">
+    <div className="relative w-full z-[100] pointer-events-auto shrink-0 pt-[max(env(safe-area-inset-top),4px)] bg-[rgba(245,246,241,0.16)] backdrop-blur-[6px] backdrop-saturate-[118%] border-0 shadow-none">
       <div
         className={clsx(
           'w-[min(var(--page-width),100%)] items-center mx-auto',
           isSessionBar
             ? 'grid grid-cols-[auto_minmax(0,1fr)_auto] gap-2 min-h-[52px] px-[14px] py-[6px]'
-            : 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 min-h-[56px] px-[16px] py-[7px]'
+            : 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-3 min-h-[48px] px-[16px] py-[4px]'
         )}
       >
         <div className="flex items-center gap-2 min-w-0">

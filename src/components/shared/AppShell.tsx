@@ -16,7 +16,7 @@ export function AppShell({ shellRef, isLocked, bottomBarMode = null, children }:
         'app-shell relative h-full min-h-0 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [WebkitOverflowScrolling:touch]',
         isLocked
           ? 'grid overflow-hidden p-[12px_14px_16px]'
-          : 'p-[8px_16px_0] md:p-[10px_18px_0]'
+          : 'p-[2px_16px_0] md:p-[4px_18px_0]'
       )}
     >
       <div className="absolute pointer-events-none blur-[28px] opacity-40 rounded-full top-[18px] left-[-40px] w-[220px] h-[220px] bg-[var(--primary-soft)]" />

@@ -85,14 +85,6 @@ function formatDayKey(dayKey: string): string {
   return `${BASQUE_DAYS[date.getDay()]}, ${date.getDate()} ${BASQUE_MONTHS[date.getMonth()]}`;
 }
 
-function getDailyHeaderMessage(dayKey: string): string {
-  const date = new Date(`${dayKey}T12:00:00`);
-  const phrases = DAILY_HEADER_PHRASES[date.getDay()] ?? DAILY_HEADER_PHRASES[1];
-  const seed = dayKey.split('').reduce((total, char) => total + char.charCodeAt(0), 0);
-  const phrase = phrases[seed % phrases.length] ?? phrases[0] ?? '';
-  return phrase.replace(/\{\{izena\}\},?\s*/g, '');
-}
-
 function formatSeconds(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
@@ -188,7 +180,6 @@ export const DailyHomeView = memo(function DailyHomeView({
   const weekDays = getWeekDays(dayKey);
   const playedKeys = new Set(weekHistory.map((result) => result.dayKey));
   const playedCount = weekDays.filter(({ key }) => playedKeys.has(key)).length;
-  const dailyHeaderMessage = getDailyHeaderMessage(dayKey);
   const learnActions = [
     { id: 'synonyms',  title: 'Sinonimoak', icon: BookOpen,   onClick: onGoSynonyms,   accent: 'from-[#e8fbf5] to-[#eefbf8]', iconTone: 'text-[#199b8c]', iconBorder: 'border-[rgba(105,206,186,0.34)]', iconBg: 'bg-[linear-gradient(180deg,rgba(244,255,251,0.98),rgba(229,249,242,0.98))]', tag: 'Lotu hitzak' },
     { id: 'grammar',   title: 'Gramatika',  icon: Languages,  onClick: onGoGrammar,    accent: 'from-[#edf5ff] to-[#f2f8ff]', iconTone: 'text-[#4b86c8]', iconBorder: 'border-[rgba(125,168,223,0.34)]', iconBg: 'bg-[linear-gradient(180deg,rgba(247,251,255,0.98),rgba(235,243,255,0.98))]', tag: 'Eraiki arauak' },
@@ -252,18 +243,6 @@ export const DailyHomeView = memo(function DailyHomeView({
         transition={{ delay: 0.04 }}
         className="grid gap-0"
       >
-      {playerName && (
-        <div className="grid gap-2.5 px-1 pt-0.5 pb-3">
-          <div className="grid gap-1.5">
-            <h1 className="m-0 font-display text-[clamp(2.2rem,5.6vw,3rem)] leading-[0.86] tracking-[-0.075em] text-[var(--text)]">
-              {playerName}
-            </h1>
-            <p className="m-0 max-w-[24rem] text-[1rem] font-semibold leading-[1.3] tracking-[-0.028em] text-[var(--muted)]">
-              {dailyHeaderMessage}
-            </p>
-          </div>
-        </div>
-      )}
       <section className="relative overflow-hidden rounded-[34px] border border-[rgba(132,206,194,0.26)] bg-[linear-gradient(140deg,#36b8b4_0%,#58c6b4_34%,#8cd39f_68%,#d6e879_100%)] p-[0.85rem] shadow-[0_20px_44px_rgba(80,167,154,0.18),0_6px_18px_rgba(80,167,154,0.08)] sm:p-[0.95rem]">
         <div className="absolute inset-x-0 top-0 h-px bg-white/40" />
         <div className="absolute -right-12 -top-14 h-36 w-36 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.2),transparent_68%)]" aria-hidden="true" />
