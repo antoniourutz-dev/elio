@@ -194,18 +194,32 @@ function parseOrthographyRow(row: Record<string, unknown>): OrthographyExercise 
 
 export async function loadOrthographyExercises(): Promise<OrthographyExercise[]> {
   if (!supabase) return [];
-  const { data, error } = await supabase
-    .from(orthographyExercisesTable)
-    .select('*')
-    .order('id', { ascending: true });
-  if (error || !data) {
-    console.error('Orthography exercises could not be loaded:', error);
-    return [];
+
+  const tableCandidates = [...new Set([orthographyExercisesTable, 'ejercicios_orto', 'ortografia'])];
+  let lastError: unknown = null;
+
+  for (const tableName of tableCandidates) {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (!error && data) {
+      return (data as Record<string, unknown>[])
+        .map(parseOrthographyRow)
+        .filter((entry): entry is OrthographyExercise => Boolean(entry))
+        .sort((left, right) => left.exerciseNumber - right.exerciseNumber);
+    }
+
+    lastError = error;
+
+    if (error?.code !== 'PGRST205') {
+      break;
+    }
   }
-  return (data as Record<string, unknown>[])
-    .map(parseOrthographyRow)
-    .filter((entry): entry is OrthographyExercise => Boolean(entry))
-    .sort((left, right) => left.exerciseNumber - right.exerciseNumber);
+
+  console.error('Orthography exercises could not be loaded:', lastError);
+  return [];
 }
 
 // ── Build Daily Game ─────────────────────────────────────────
