@@ -26,11 +26,36 @@ import { useSynonymGame } from './hooks/useSynonymGame';
 import { getAvatarForPlayer } from './lib/avatars';
 
 const App = () => {
+  const GRAMMAR_PROGRESS_KEY = 'grammar-map-progress-v1';
   const [uiMessage, setUiMessage] = useState<string | null>(null);
   const [mainScreen, setMainScreen] = useState<MainScreen>('daily');
   const [isDailyExitWarningOpen, setIsDailyExitWarningOpen] = useState(false);
   const [studyLevel, setStudyLevel] = useState<GameLevel | null>(null);
+  const [activeGrammarLessonSlug, setActiveGrammarLessonSlug] = useState<string | null>(null);
+  const [grammarCompletedStops, setGrammarCompletedStops] = useState(0);
   const shellRef = useRef<HTMLDivElement | null>(null);
+
+  const readGrammarProgress = useCallback((playerId: string | null | undefined) => {
+    if (typeof window === 'undefined' || !playerId) return 0;
+
+    try {
+      const raw = window.localStorage.getItem(`${GRAMMAR_PROGRESS_KEY}:${playerId}`);
+      const parsed = Number(raw);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    } catch {
+      return 0;
+    }
+  }, []);
+
+  const writeGrammarProgress = useCallback((playerId: string | null | undefined, value: number) => {
+    if (typeof window === 'undefined' || !playerId) return;
+
+    try {
+      window.localStorage.setItem(`${GRAMMAR_PROGRESS_KEY}:${playerId}`, String(Math.max(0, value)));
+    } catch {
+      // Ignore storage failures and keep in-memory progress.
+    }
+  }, []);
 
   const handleLoginSuccess = useCallback(() => {
     setMainScreen('daily');
@@ -128,8 +153,27 @@ const App = () => {
     }
     leaveGame();
     setStudyLevel(null);
+    setActiveGrammarLessonSlug(null);
     openMainScreen('grammar');
   }, [activePlayer, leaveGame, openMainScreen]);
+  const openGrammarLesson = useCallback((slug?: string | null) => {
+    if (!isSuperPlayer(activePlayer)) {
+      return;
+    }
+    leaveGame();
+    setStudyLevel(null);
+    setActiveGrammarLessonSlug(slug ?? null);
+    openMainScreen('grammar-lesson');
+  }, [activePlayer, leaveGame, openMainScreen]);
+  const completeGrammarStop = useCallback(() => {
+    if (!activePlayer?.userId) return;
+
+    setGrammarCompletedStops((current) => {
+      const next = Math.min(current + 1, 10);
+      writeGrammarProgress(activePlayer.userId, next);
+      return next;
+    });
+  }, [activePlayer?.userId, writeGrammarProgress]);
   const goVocabulary = useCallback(() => {
     leaveGame();
     setStudyLevel(null);
@@ -166,8 +210,13 @@ const App = () => {
       return;
     }
 
+    if (mainScreen === 'grammar-lesson') {
+      setMainScreen('grammar');
+      return;
+    }
+
     handleBackFromSynonymsGame();
-  }, [abandonDailyGame, dailySession, handleBackFromSynonymsGame]);
+  }, [abandonDailyGame, dailySession, handleBackFromSynonymsGame, mainScreen]);
   const confirmDailyExit = useCallback(() => {
     setIsDailyExitWarningOpen(false);
     abandonDailyGame();
@@ -225,10 +274,19 @@ const App = () => {
   const topBarAvatar = useMemo(() => (activePlayer ? getAvatarForPlayer(activePlayer) : null), [activePlayer]);
 
   useEffect(() => {
-    if (!isSuperUser && mainScreen === 'grammar') {
+    if (!isSuperUser && (mainScreen === 'grammar' || mainScreen === 'grammar-lesson')) {
       setMainScreen('learn');
     }
   }, [isSuperUser, mainScreen]);
+
+  useEffect(() => {
+    if (!activePlayer?.userId) {
+      setGrammarCompletedStops(0);
+      return;
+    }
+
+    setGrammarCompletedStops(readGrammarProgress(activePlayer.userId));
+  }, [activePlayer?.userId, readGrammarProgress]);
 
   const screenModel = useAppScreenModel({
     activePlayer,
@@ -265,6 +323,8 @@ const App = () => {
     uiMessage,
     isTeacher,
     isSuperUser,
+    activeGrammarLessonSlug,
+    grammarCompletedStops,
     quiz,
     currentQuestion,
     currentAnswer,
@@ -293,6 +353,8 @@ const App = () => {
     goLearn,
     goSynonyms,
     goGrammar,
+    openGrammarLesson,
+    completeGrammarStop,
     goVocabulary,
     goVerbs,
     goStats,

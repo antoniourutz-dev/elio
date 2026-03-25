@@ -18,6 +18,8 @@ export const dailyScoresTable = 'daily_scores';
 export const dailyPillsTable = import.meta.env.VITE_SUPABASE_DAILY_PILLS_TABLE || 'eguneko_pildorak';
 export const dailyHieroglyphsTable = import.meta.env.VITE_SUPABASE_EROGLIFIKOAK_TABLE || 'eroglifikoak';
 export const orthographyExercisesTable = import.meta.env.VITE_SUPABASE_ORTHOGRAPHY_TABLE || 'ejercicios_orto';
+export const lessonsTable = import.meta.env.VITE_SUPABASE_LESSONS_TABLE || 'lessons';
+export const lessonBlocksTable = import.meta.env.VITE_SUPABASE_LESSON_BLOCKS_TABLE || 'lesson_blocks';
 export const dailyHieroglyphsBucket = import.meta.env.VITE_SUPABASE_EROGLIFIKOAK_BUCKET || 'eroglificos';
 export const dailyHieroglyphsBaseUrl =
   import.meta.env.VITE_SUPABASE_EROGLIFIKOAK_BASE_URL ||

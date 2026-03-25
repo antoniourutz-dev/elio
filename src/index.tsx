@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { MotionConfig } from 'framer-motion';
 import App from './App.tsx';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { validateEnv } from './env.ts';
@@ -19,7 +20,9 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <MotionConfig reducedMotion={import.meta.env.DEV ? 'never' : 'user'}>
+        <App />
+      </MotionConfig>
     </ErrorBoundary>
   </React.StrictMode>
 );

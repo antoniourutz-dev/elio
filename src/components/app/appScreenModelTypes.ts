@@ -41,10 +41,14 @@ export interface MainViewModel {
   uiMessage: string | null;
   isTeacher: boolean;
   isSuperUser: boolean;
+  activeGrammarLessonSlug: string | null;
+  grammarCompletedStops: number;
   onStartDailyGame: () => void;
   onGoLearn: () => void;
   onGoSynonyms: () => void;
   onGoGrammar: () => void;
+  onOpenGrammarLesson: (slug?: string | null) => void;
+  onCompleteGrammarStop: () => void;
   onGoVocabulary: () => void;
   onGoVerbs: () => void;
   onStartOrthographyPractice: () => void;
@@ -138,6 +142,8 @@ export interface UseAppScreenModelArgs {
   uiMessage: string | null;
   isTeacher: boolean;
   isSuperUser: boolean;
+  activeGrammarLessonSlug: string | null;
+  grammarCompletedStops: number;
   quiz: ActiveQuiz | null;
   currentQuestion: ActiveQuiz['questions'][number] | null;
   currentAnswer: ActiveQuiz['answers'][number] | null;
@@ -166,6 +172,8 @@ export interface UseAppScreenModelArgs {
   goLearn: () => void;
   goSynonyms: () => void;
   goGrammar: () => void;
+  openGrammarLesson: (slug?: string | null) => void;
+  completeGrammarStop: () => void;
   goVocabulary: () => void;
   goVerbs: () => void;
   goStats: () => void;

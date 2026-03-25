@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { BookOpenText, ChartColumnBig, CheckCircle2, Flame, House, Mountain, RefreshCw, ShieldUser, UserRound } from 'lucide-react';
 import type { ActiveQuiz, LevelSummary } from '../../appTypes';
 
-export type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
+export type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'grammar-lesson' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
 
 type TopBarMetricVariant = 'default' | 'success' | 'streak';
 
@@ -81,6 +81,8 @@ export function resolveTopBarState({
               ? 'Sinonimoak'
               : mainScreen === 'grammar'
                 ? 'Gramatika'
+                : mainScreen === 'grammar-lesson'
+                  ? 'Ikasgaia'
                 : mainScreen === 'vocabulary'
                   ? 'Hiztegia'
                   : mainScreen === 'verbs'
@@ -116,7 +118,7 @@ export function resolveTopBarState({
 
   return {
     subtitle,
-    showBackButton: false,
+    showBackButton: mainScreen === 'grammar-lesson',
     metric: consecutivePlayDays >= 0
       ? { icon: Flame, label: `${consecutivePlayDays} egun`, variant: 'streak', streakTone }
       : { icon: Mountain, label: `${completedLevels}/${totalLevels}`, variant: 'default' },
@@ -166,6 +168,7 @@ export function resolveDockItems({
             mainScreen === 'learn'
             || mainScreen === 'synonyms'
             || mainScreen === 'grammar'
+            || mainScreen === 'grammar-lesson'
             || mainScreen === 'vocabulary'
             || mainScreen === 'verbs',
         },
@@ -188,6 +191,7 @@ export function resolveDockItems({
           mainScreen === 'learn'
           || mainScreen === 'synonyms'
           || mainScreen === 'grammar'
+          || mainScreen === 'grammar-lesson'
           || mainScreen === 'vocabulary'
           || mainScreen === 'verbs',
       },

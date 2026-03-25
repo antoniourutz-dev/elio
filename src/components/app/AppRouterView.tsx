@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import type { GameLevel, PlayerIdentity } from '../../euskeraLearning';
 import { AccessScreen } from '../../panels/AccessScreen';
 import { DailyHomeView } from '../../panels/DailyHomeView';
+import { GrammarLessonView } from '../../panels/GrammarLessonView';
 import { GrammarMapView } from '../../panels/GrammarMapView';
 import { LearnHubView } from '../../panels/LearnHubView';
 import { VerbsView } from '../../panels/VerbsView';
@@ -12,7 +13,7 @@ import { VocabularyView } from '../../panels/VocabularyView';
 import { LoadingPanel, SessionLoadingView } from '../shared/AppLoaders';
 import type { AccessViewModel, DailyGameViewModel, MainViewModel, SynonymGameViewModel } from './appScreenModelTypes';
 
-type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
+type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'grammar-lesson' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
 
 const AdminPanel = lazy(() => import('../../panels/AdminPanel'));
 
@@ -103,7 +104,7 @@ export function AppRouterView({
             transition={{ delay: 0.04 }}
             className={clsx(
               'grid gap-[22px]',
-              mainScreen === 'grammar' ? 'min-h-full grid-rows-[minmax(0,1fr)]' : 'content-start',
+              mainScreen === 'grammar' || mainScreen === 'grammar-lesson' ? 'min-h-full grid-rows-[minmax(0,1fr)]' : 'content-start',
               mainScreen === 'daily' && 'min-h-full'
             )}
           >
@@ -153,7 +154,18 @@ export function AppRouterView({
             )}
 
             {mainScreen === 'grammar' && main.isSuperUser && (
-              <GrammarMapView />
+              <GrammarMapView
+                completedStops={main.grammarCompletedStops}
+                onOpenLesson={main.onOpenGrammarLesson}
+              />
+            )}
+
+            {mainScreen === 'grammar-lesson' && main.isSuperUser && (
+              <GrammarLessonView
+                lessonSlug={main.activeGrammarLessonSlug}
+                completedStops={main.grammarCompletedStops}
+                onCompleteStop={main.onCompleteGrammarStop}
+              />
             )}
 
             {mainScreen === 'vocabulary' && (

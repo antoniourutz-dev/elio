@@ -1,61 +1,81 @@
 import { memo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Building2, ChevronRight, Lock } from 'lucide-react';
+import { AlertCircle, Building2, Check, ChevronRight, Lock } from 'lucide-react';
+import { usePublishedLessons } from '../hooks/usePublishedLessons';
+import type { LessonSummary } from '../lib/lessons';
 
-type StopStatus = 'active' | 'locked';
+type StopStatus = 'completed' | 'active' | 'locked';
 
 interface GrammarStop {
   id: string;
   town: string;
   distance: string;
-  summary: string;
-  status: StopStatus;
+  district: string;
+}
+
+interface GrammarMapViewProps {
+  completedStops: number;
+  onOpenLesson: (slug?: string | null) => void;
 }
 
 const GRAMMAR_STOPS: GrammarStop[] = [
-  {
-    id: 'gasteiz',
-    town: 'Gasteiz',
-    distance: 'Hasiera',
-    summary: 'Hiriburua, kultura eta parkeak',
-    status: 'active',
-  },
-  {
-    id: 'legutio',
-    town: 'Legutio',
-    distance: '8 km',
-    summary: 'Natura, ura eta isiltasuna',
-    status: 'locked',
-  },
-  {
-    id: 'amurrio',
-    town: 'Amurrio',
-    distance: '12 km',
-    summary: 'Harana, tradizioa eta paisaia',
-    status: 'locked',
-  },
-  {
-    id: 'laudio',
-    town: 'Laudio',
-    distance: '14 km',
-    summary: 'Industria, lotura eta garapena',
-    status: 'locked',
-  },
-  {
-    id: 'artziniega',
-    town: 'Artziniega',
-    distance: '9 km',
-    summary: 'Historia, ondarea eta kaleak',
-    status: 'locked',
-  },
+  { id: 'gasteiz', town: 'Gasteiz', distance: 'Hasiera', district: 'Arabako Lautada' },
+  { id: 'argomaniz', town: 'Argomaniz', distance: '12 km', district: 'Arabako Lautada' },
+  { id: 'dulantzi', town: 'Alegria-Dulantzi', distance: '5 km', district: 'Arabako Lautada' },
+  { id: 'agurain', town: 'Agurain', distance: '14 km', district: 'Arabako Lautada' },
+  { id: 'zalduondo', town: 'Zalduondo', distance: '10 km', district: 'Arabako Lautada' },
+  { id: 'araia', town: 'Araia', distance: '5 km', district: 'Asparrena' },
+  { id: 'maeztu', town: 'Maeztu', distance: '24 km', district: 'Arabako Mendialdea' },
+  { id: 'antonana', town: 'Antonana', distance: '12 km', district: 'Arabako Mendialdea' },
+  { id: 'kanpezu', town: 'Kanpezu', distance: '8 km', district: 'Arabako Mendialdea' },
+  { id: 'bernedo', town: 'Bernedo', distance: '15 km', district: 'Arabako Mendialdea' },
 ];
 
-const activeRowHeight = 'h-[12.5rem]';
-const lockedRowHeight = 'h-[5.9rem]';
+const activeRowHeight = 'h-[14.3rem]';
+const compactRowHeight = 'h-[6.1rem]';
 const railXMobile = '1.95rem';
 
-export const GrammarMapView = memo(function GrammarMapView() {
-  const prefersReducedMotion = useReducedMotion();
+function getStopLessonSummary(stop: GrammarStop, lesson: LessonSummary | null): string {
+  if (lesson?.title) return lesson.title;
+  return stop.district;
+}
+
+function getStopLessonMeta(stop: GrammarStop, lesson: LessonSummary | null): string {
+  if (lesson?.topic) return lesson.topic;
+  if (lesson?.section) return lesson.section;
+  if (lesson?.level) return lesson.level;
+  return stop.district;
+}
+
+function getStopStatus(index: number, completedStops: number, totalStops: number): StopStatus {
+  const normalizedCompleted = Math.max(0, Math.min(completedStops, totalStops));
+
+  if (index < normalizedCompleted) {
+    return 'completed';
+  }
+
+  if (normalizedCompleted >= totalStops) {
+    return 'completed';
+  }
+
+  return index === normalizedCompleted ? 'active' : 'locked';
+}
+
+export const GrammarMapView = memo(function GrammarMapView({
+  completedStops,
+  onOpenLesson,
+}: GrammarMapViewProps) {
+  const systemPrefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = import.meta.env.DEV ? false : systemPrefersReducedMotion;
+  const { lessons, isLoading, isReady, message, refresh } = usePublishedLessons(10, true);
+  const totalStops = GRAMMAR_STOPS.length;
+  const allCompleted = completedStops >= totalStops;
+
+  const stopsWithLessons = GRAMMAR_STOPS.map((stop, index) => ({
+    ...stop,
+    lesson: lessons[index] ?? null,
+    status: getStopStatus(index, completedStops, totalStops),
+  }));
 
   return (
     <section className="relative min-h-full overflow-hidden px-2 pb-6 pt-3">
@@ -70,9 +90,7 @@ export const GrammarMapView = memo(function GrammarMapView() {
       />
       <div
         className="absolute bottom-0 right-0 h-[16rem] w-[16rem] opacity-60"
-        style={{
-          background: 'radial-gradient(circle, rgba(212,226,158,0.16), transparent 66%)',
-        }}
+        style={{ background: 'radial-gradient(circle, rgba(212,226,158,0.16), transparent 66%)' }}
         aria-hidden="true"
       />
 
@@ -91,12 +109,13 @@ export const GrammarMapView = memo(function GrammarMapView() {
           style={{
             left: railXMobile,
             top: '4.85rem',
-            height: '5.5rem',
+            height: allCompleted ? '100%' : '5.5rem',
+            maxHeight: allCompleted ? 'none' : '5.5rem',
             transform: 'translateX(-1px)',
           }}
           aria-hidden="true"
         />
-        {!prefersReducedMotion ? (
+        {!prefersReducedMotion && !allCompleted ? (
           <motion.div
             className="absolute w-[3px] rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(218,255,247,0.9),rgba(255,255,255,0))]"
             style={{
@@ -112,15 +131,13 @@ export const GrammarMapView = memo(function GrammarMapView() {
         ) : null}
 
         <div className="relative grid">
-          {GRAMMAR_STOPS.map((stop, index) => {
+          {stopsWithLessons.map((stop, index) => {
             const isActive = stop.status === 'active';
+            const isCompleted = stop.status === 'completed';
 
             return (
-              <div key={stop.id} className={`relative ${isActive ? activeRowHeight : lockedRowHeight}`}>
-                <div
-                  className={isActive ? 'absolute left-8 top-1/2 z-20' : 'absolute left-8 top-1/2 z-20'}
-                  style={{ transform: 'translate(-50%, -50%)' }}
-                >
+              <div key={stop.id} className={`relative ${isActive ? activeRowHeight : compactRowHeight}`}>
+                <div className="absolute left-8 top-1/2 z-20" style={{ transform: 'translate(-50%, -50%)' }}>
                   {isActive ? (
                     <motion.div
                       className="flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full border-[3px] border-[#6edbd3] bg-white text-[#177f76] shadow-[0_0_0_4px_rgba(110,219,211,0.12),0_14px_30px_rgba(46,146,136,0.14)]"
@@ -129,6 +146,10 @@ export const GrammarMapView = memo(function GrammarMapView() {
                     >
                       <Building2 className="h-[1.7rem] w-[1.7rem]" />
                     </motion.div>
+                  ) : isCompleted ? (
+                    <div className="flex h-[2.3rem] w-[2.3rem] items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(180deg,#51c9bb,#8fdf93)] text-white shadow-[0_10px_20px_rgba(69,177,157,0.18)]">
+                      <Check className="h-[1rem] w-[1rem] stroke-[3]" />
+                    </div>
                   ) : (
                     <div className="flex h-[1.95rem] w-[1.95rem] items-center justify-center rounded-full border-[3px] border-white bg-[#d9e1e6] text-[var(--muted)] shadow-[0_8px_18px_rgba(120,140,158,0.08)]">
                       <Lock className="h-[0.9rem] w-[0.9rem]" />
@@ -149,16 +170,24 @@ export const GrammarMapView = memo(function GrammarMapView() {
                         <div className="grid gap-1">
                           <span className="text-[0.56rem] font-extrabold uppercase tracking-[0.14em] text-[var(--muted)]">{stop.distance}</span>
                           <h3 className="m-0 font-display text-[1.9rem] leading-none tracking-[-0.065em] text-[var(--text)]">{stop.town}</h3>
-                          <p className="m-0 max-w-[14rem] text-[0.82rem] font-semibold leading-[1.3] text-[var(--muted)]">{stop.summary}</p>
+                          <p className="m-0 max-w-[14rem] text-[0.82rem] font-semibold leading-[1.3] text-[var(--muted)]">
+                            {getStopLessonSummary(stop, stop.lesson)}
+                          </p>
+                          <p className="m-0 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-[#17897d]">
+                            {getStopLessonMeta(stop, stop.lesson)}
+                          </p>
                         </div>
 
                         <div className="grid gap-1.5">
                           <div className="flex items-center justify-between text-[0.68rem] font-extrabold uppercase tracking-[0.09em] text-[var(--muted)]">
                             <span>Aurrerapena</span>
-                            <span className="text-[#17897d]">65%</span>
+                            <span className="text-[#17897d]">{Math.round((completedStops / totalStops) * 100)}%</span>
                           </div>
                           <div className="relative h-[0.42rem] overflow-hidden rounded-full bg-[#e3eaee]">
-                            <div className="h-full w-[65%] rounded-full bg-[linear-gradient(90deg,#0e7a72,#5ed2c5)]" />
+                            <div
+                              className="h-full rounded-full bg-[linear-gradient(90deg,#0e7a72,#5ed2c5)]"
+                              style={{ width: `${Math.max(10, ((completedStops + 1) / totalStops) * 100)}%` }}
+                            />
                             {!prefersReducedMotion ? (
                               <motion.div
                                 className="absolute top-0 h-full w-[24%] rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(235,255,251,0.92),rgba(255,255,255,0))]"
@@ -171,7 +200,9 @@ export const GrammarMapView = memo(function GrammarMapView() {
 
                         <button
                           type="button"
-                          className="inline-flex min-h-[2.85rem] w-fit items-center justify-center gap-2 rounded-full bg-[linear-gradient(180deg,#0b6f69,#0c847b)] px-6 text-[0.9rem] font-black text-white shadow-[0_12px_24px_rgba(12,132,123,0.22)] transition-transform duration-150 hover:-translate-y-[1px]"
+                          onClick={() => onOpenLesson(stop.lesson?.slug ?? null)}
+                          disabled={!stop.lesson}
+                          className="inline-flex min-h-[2.85rem] w-fit items-center justify-center gap-2 rounded-full bg-[linear-gradient(180deg,#0b6f69,#0c847b)] px-6 text-[0.9rem] font-black text-white shadow-[0_12px_24px_rgba(12,132,123,0.22)] transition-transform duration-150 hover:-translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Hasi ikasten
                           <ChevronRight className="h-4 w-4" />
@@ -179,33 +210,46 @@ export const GrammarMapView = memo(function GrammarMapView() {
                       </div>
                     </article>
                   ) : (
-                    <div className="relative h-full opacity-80">
-                      <div className="relative h-full max-w-[13.5rem]">
-                        <div className="absolute left-0 top-1/2 grid -translate-y-1/2 gap-0.5">
-                          <h3 className="m-0 font-display text-[1.34rem] leading-none tracking-[-0.055em] text-[#9ba9b7]">
-                            {stop.town}
-                          </h3>
-                          <p className="m-0 max-w-[11rem] text-[0.69rem] font-semibold leading-[1.26] text-[#b0bcc7]">
-                            {stop.summary}
-                          </p>
-                        </div>
+                    <div className={`relative h-full ${isCompleted ? 'opacity-100' : 'opacity-80'}`}>
+                      <div className="relative h-full max-w-[14.2rem]">
+                        {isCompleted ? (
+                          <button
+                            type="button"
+                            onClick={() => onOpenLesson(stop.lesson?.slug ?? null)}
+                            disabled={!stop.lesson}
+                            className="absolute left-0 top-1/2 grid min-w-0 -translate-y-1/2 gap-0.5 rounded-[1rem] px-1.5 py-1 text-left transition-colors duration-150 hover:bg-white/60 disabled:cursor-not-allowed disabled:opacity-70"
+                          >
+                            <h3 className="m-0 font-display text-[1.34rem] leading-none tracking-[-0.055em] text-[#71889a]">
+                              {stop.town}
+                            </h3>
+                            <p className="m-0 max-w-[12rem] text-[0.69rem] font-semibold leading-[1.26] text-[#8ea1b0]">
+                              {getStopLessonSummary(stop, stop.lesson)}
+                            </p>
+                          </button>
+                        ) : (
+                          <div className="absolute left-0 top-1/2 grid -translate-y-1/2 gap-0.5">
+                            <h3 className="m-0 font-display text-[1.34rem] leading-none tracking-[-0.055em] text-[#9ba9b7]">
+                              {stop.town}
+                            </h3>
+                            <p className="m-0 max-w-[12rem] text-[0.69rem] font-semibold leading-[1.26] text-[#b0bcc7]">
+                              {getStopLessonSummary(stop, stop.lesson)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
                 </div>
 
-                {isActive && index === 0 ? (
+                {isActive ? (
                   <div
-                    className="absolute left-8 top-[calc(50%+1.95rem)] z-10 h-[3.5rem] w-[3px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,#0b8478,rgba(11,132,120,0.08))]"
+                    className="absolute left-8 top-[calc(50%+1.95rem)] z-10 h-[4.5rem] w-[3px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,#0b8478,rgba(11,132,120,0.08))]"
                     aria-hidden="true"
                   />
                 ) : null}
 
                 {!isActive ? (
-                  <div
-                    className="absolute left-8 z-20 -translate-x-1/2"
-                    style={{ top: '-0.65rem' }}
-                  >
+                  <div className="absolute left-8 z-20 -translate-x-1/2" style={{ top: '-0.65rem' }}>
                     <span className="inline-flex w-fit rounded-full border border-[rgba(221,229,235,0.95)] bg-[rgba(255,255,255,0.92)] px-2 py-0.5 text-[0.54rem] font-extrabold uppercase tracking-[0.14em] text-[var(--muted)] shadow-[0_8px_16px_rgba(126,145,160,0.06)]">
                       {stop.distance}
                     </span>
@@ -215,6 +259,26 @@ export const GrammarMapView = memo(function GrammarMapView() {
             );
           })}
         </div>
+
+        {!isLoading && !isReady ? (
+          <div className="mt-4 ml-[4.85rem] rounded-[22px] border border-[rgba(236,187,92,0.26)] bg-[linear-gradient(180deg,rgba(255,250,240,0.98),rgba(255,247,232,0.96))] px-4 py-4 shadow-[0_12px_24px_rgba(181,144,71,0.08)]">
+            <div className="flex items-start gap-3">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[15px] border border-[rgba(236,187,92,0.26)] bg-white/84 text-[#b47b10]">
+                <AlertCircle className="h-[1rem] w-[1rem]" />
+              </span>
+              <div className="grid gap-2">
+                <p className="m-0 text-[0.92rem] font-semibold leading-relaxed text-[var(--text)]">{message}</p>
+                <button
+                  type="button"
+                  onClick={() => void refresh()}
+                  className="inline-flex min-h-[2.4rem] w-fit items-center justify-center rounded-full border border-[rgba(220,228,235,0.9)] bg-white px-4 text-[0.82rem] font-extrabold text-[var(--text)]"
+                >
+                  Berriro saiatu
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
