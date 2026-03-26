@@ -1,5 +1,4 @@
 import type { ChangeEvent, FormEvent } from 'react';
-import { motion } from 'framer-motion';
 import { Eye, EyeOff, KeyRound, CircleUserRound, X } from 'lucide-react';
 
 interface AccessScreenProps {
@@ -40,11 +39,8 @@ export const AccessScreen = ({
   onPasswordVisibilityToggle,
   onSubmit,
 }: AccessScreenProps) => (
-  <motion.section
-    initial={{ opacity: 0, y: 18 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.04 }}
-    className="grid content-start max-w-[560px] mx-auto min-h-full pb-10 gap-5 pt-[max(env(safe-area-inset-top),24px)]"
+  <section
+    className="grid max-w-[560px] mx-auto min-h-full content-start gap-5 pb-10 pt-[max(env(safe-area-inset-top),24px)] animate-[fade-up_220ms_ease-out]"
     style={bgStyle}
   >
     <div className="relative grid justify-items-center gap-2 px-6 pt-9 pb-8 text-white rounded-[32px] overflow-hidden bg-gradient-to-br from-[#5ab4d8] via-[#4ec9ba] via-[52%] to-[#cfe07a] shadow-[0_28px_64px_rgba(78,201,186,0.26),0_6px_20px_rgba(78,201,186,0.14)] before:absolute before:-top-[35%] before:-right-[8%] before:w-[220px] before:h-[220px] before:bg-white/10 before:rounded-full before:pointer-events-none after:absolute after:-bottom-[55%] after:-left-[6%] after:w-[180px] after:h-[180px] after:bg-white/5 after:rounded-full after:pointer-events-none">
@@ -52,7 +48,7 @@ export const AccessScreen = ({
       <span className="relative text-[0.72rem] font-bold tracking-[0.14em] uppercase opacity-80">Euskara ikasi. Jolasean.</span>
     </div>
 
-    <motion.form 
+    <form 
       className="grid gap-5 px-7 py-[30px] rounded-[36px] border border-white/70 bg-white/90 backdrop-blur-[20px] backdrop-saturate-[160%] shadow-[0_32px_80px_rgba(60,110,145,0.13),0_6px_22px_rgba(60,110,145,0.07),inset_0_1px_0_rgba(255,255,255,0.85)]" 
       onSubmit={onSubmit}
     >
@@ -120,6 +116,6 @@ export const AccessScreen = ({
       <button className="relative overflow-hidden inline-flex items-center justify-center min-h-[66px] rounded-full text-white text-[1.05rem] font-black tracking-[0.04em] cursor-pointer bg-gradient-to-br from-[#52bec2] via-[#6ecbac] via-[58%] to-[#c9de72] shadow-[0_18px_40px_rgba(82,190,194,0.32)] transition-all duration-150 ease-out hover:not-disabled:-translate-y-0.5 hover:not-disabled:shadow-[0_26px_48px_rgba(82,190,194,0.38)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-wait disabled:shadow-none after:absolute after:top-0 after:left-0 after:w-[60%] after:h-full after:bg-gradient-to-r after:from-transparent after:via-[rgba(255,255,255,0.22)] after:to-transparent after:-translate-x-[180%] after:animate-[submit-sheen_3.2s_ease-in-out_infinite] after:pointer-events-none" type="submit" disabled={isSubmittingAccess}>
         {isSubmittingAccess ? 'Konektatzen...' : 'Sartu'}
       </button>
-    </motion.form>
-  </motion.section>
+    </form>
+  </section>
 );

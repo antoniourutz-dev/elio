@@ -1,6 +1,9 @@
-import { isSupabaseConfigured, supabase, synonymsTable } from '../supabaseClient';
 import type { SynonymEntry, BankLoadSuccess, BankLoadFailure } from './types';
+import { logError, logWarn } from './logger';
 import { normalizeSynonymRow, redistributeEntriesByQuestionTargets } from './parsing';
+import { isDevRuntime } from './runtime';
+import { isSupabaseConfigured, synonymsTable } from './supabaseConfig';
+import { selectSupabaseRows } from './supabaseRest';
 
 const DEMO_SYNONYM_BANK: SynonymEntry[] = [
   { id: 'demo-1', word: 'maite', synonyms: ['laket', 'atsegin', 'gogoko'], difficulty: 1, theme: 'sentimenduak', translation: 'maitatua', example: 'Lagun maite bat dut.', tags: ['demo'], levelOrder: 1 },
@@ -26,7 +29,18 @@ const DEMO_SYNONYM_BANK: SynonymEntry[] = [
 ];
 
 export const loadSynonymBank = async (): Promise<BankLoadSuccess | BankLoadFailure> => {
-  if (!isSupabaseConfigured || !supabase) {
+  const allowDemoFallback = isDevRuntime();
+
+  if (!isSupabaseConfigured) {
+    if (!allowDemoFallback) {
+      return {
+        ok: false,
+        entries: [],
+        message: 'Supabase ez dago prest; sinonimo bankua ezin izan da kargatu.',
+      };
+    }
+
+    logWarn('bank', 'Supabase not configured; using demo synonym bank.');
     return {
       ok: true,
       entries: redistributeEntriesByQuestionTargets(DEMO_SYNONYM_BANK),
@@ -34,9 +48,18 @@ export const loadSynonymBank = async (): Promise<BankLoadSuccess | BankLoadFailu
     };
   }
 
-  const { data, error } = await supabase.from(synonymsTable).select('*');
+  const { data, error } = await selectSupabaseRows<Record<string, unknown>>(synonymsTable);
 
   if (error) {
+    logError('bank', `Could not read synonym table "${synonymsTable}".`, error);
+    if (!allowDemoFallback) {
+      return {
+        ok: false,
+        entries: [],
+        message: `Ezin izan da ${synonymsTable} taula irakurri: ${error.message}.`,
+      };
+    }
+
     return {
       ok: true,
       entries: redistributeEntriesByQuestionTargets(DEMO_SYNONYM_BANK),
@@ -51,6 +74,15 @@ export const loadSynonymBank = async (): Promise<BankLoadSuccess | BankLoadFailu
   );
 
   if (entries.length === 0) {
+    if (!allowDemoFallback) {
+      return {
+        ok: false,
+        entries: [],
+        message: `${synonymsTable} taulak ez du sinonimo baliozkorik eman.`,
+      };
+    }
+
+    logWarn('bank', `Synonym table "${synonymsTable}" returned no valid entries; using demo bank.`);
     return {
       ok: true,
       entries: redistributeEntriesByQuestionTargets(DEMO_SYNONYM_BANK),

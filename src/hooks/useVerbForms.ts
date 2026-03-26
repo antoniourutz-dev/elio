@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { clearVerbFormsCache, getVerbFormsSnapshot, loadVerbForms, preloadVerbForms } from '../lib/verbs';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { loadVerbForms } from '../lib/verbs';
 import type { VerbFormRecord } from '../lib/verbs';
+import { measureAsyncOperation } from '../lib/performanceMetrics';
 
 interface VerbFormsState {
   isLoading: boolean;
@@ -16,66 +17,33 @@ const initialState: VerbFormsState = {
   isReady: false,
 };
 
-preloadVerbForms();
+const verbFormsQueryKey = ['verbs', 'forms'] as const;
 
 export function useVerbForms(isEnabled: boolean) {
-  const [state, setState] = useState<VerbFormsState>(() => {
-    const snapshot = getVerbFormsSnapshot();
-    if (!snapshot) return initialState;
-
-    return {
-      isLoading: false,
-      forms: snapshot.forms,
-      message: snapshot.message,
-      isReady: snapshot.ok,
-    };
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: verbFormsQueryKey,
+    queryFn: () => measureAsyncOperation('query', 'verb-forms', loadVerbForms),
+    enabled: isEnabled,
+    staleTime: 10 * 60_000,
   });
 
-  useEffect(() => {
-    if (!isEnabled) {
-      setState(initialState);
-      return;
-    }
-
-    let active = true;
-
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.forms.length > 0 ? current.message : 'Aditzak kargatzen...',
-    }));
-
-    void loadVerbForms().then((result) => {
-      if (!active) return;
-      setState({
-        isLoading: false,
-        forms: result.forms,
-        message: result.message,
-        isReady: result.ok,
-      });
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [isEnabled]);
-
   const refresh = async () => {
-    clearVerbFormsCache();
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.forms.length > 0 ? current.message : 'Aditzak kargatzen...',
-    }));
-
-    const result = await loadVerbForms();
-    setState({
-      isLoading: false,
-      forms: result.forms,
-      message: result.message,
-      isReady: result.ok,
-    });
+    await queryClient.invalidateQueries({ queryKey: verbFormsQueryKey });
+    await query.refetch();
   };
+
+  const state: VerbFormsState = query.data
+    ? {
+        isLoading: query.isLoading || query.isFetching,
+        forms: query.data.forms,
+        message: query.data.message,
+        isReady: query.data.ok,
+      }
+    : {
+        ...initialState,
+        isLoading: isEnabled,
+      };
 
   return {
     ...state,

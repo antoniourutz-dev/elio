@@ -1,11 +1,12 @@
 import { memo } from 'react';
-import { BookOpen, Languages, LibraryBig, Sigma, SpellCheck } from 'lucide-react';
+import { BookOpen, Languages, LibraryBig, Search, Sigma, SpellCheck } from 'lucide-react';
 import clsx from 'clsx';
 
 interface LearnHubViewProps {
   onGoSynonyms: () => void;
   onGoGrammar: () => void;
   onGoVocabulary: () => void;
+  onGoTopics: () => void;
   onGoVerbs: () => void;
   onStartOrthographyPractice: () => void;
 }
@@ -25,10 +26,21 @@ export const LearnHubView = memo(function LearnHubView({
   onGoSynonyms,
   onGoGrammar,
   onGoVocabulary,
+  onGoTopics,
   onGoVerbs,
   onStartOrthographyPractice,
 }: LearnHubViewProps) {
   const learnCards: LearnCardDefinition[] = [
+    {
+      id: 'vocabulary',
+      title: 'Hiztegia',
+      eyebrow: 'Bilatu hitzak',
+      icon: Search,
+      onClick: onGoVocabulary,
+      shellClassName: 'border-[rgba(228,191,89,0.24)] bg-[linear-gradient(135deg,rgba(255,252,241,0.98),rgba(255,245,214,0.96))]',
+      iconClassName: 'border-[rgba(228,191,89,0.28)] bg-[linear-gradient(180deg,rgba(255,254,247,0.98),rgba(255,247,223,0.98))] text-[#b78618]',
+      accentClassName: 'from-[#f1d97f] via-[#eab94b] to-[#f0c96a]',
+    },
     {
       id: 'synonyms',
       title: 'Sinonimoak',
@@ -60,14 +72,14 @@ export const LearnHubView = memo(function LearnHubView({
       accentClassName: 'from-[#71d5c3] via-[#52c7ad] to-[#9ddeaa]',
     },
     {
-      id: 'vocabulary',
-      title: 'Hiztegia',
-      eyebrow: 'Zabaldu hiztegia',
+      id: 'topics',
+      title: 'Gaiak',
+      eyebrow: 'Gaika landu',
       icon: LibraryBig,
-      onClick: onGoVocabulary,
-      shellClassName: 'border-[rgba(228,191,89,0.24)] bg-[linear-gradient(135deg,rgba(255,252,241,0.98),rgba(255,245,214,0.96))]',
-      iconClassName: 'border-[rgba(228,191,89,0.28)] bg-[linear-gradient(180deg,rgba(255,254,247,0.98),rgba(255,247,223,0.98))] text-[#b78618]',
-      accentClassName: 'from-[#f1d97f] via-[#eab94b] to-[#f0c96a]',
+      onClick: onGoTopics,
+      shellClassName: 'border-[rgba(131,180,227,0.24)] bg-[linear-gradient(135deg,rgba(244,249,255,0.98),rgba(231,240,252,0.96))]',
+      iconClassName: 'border-[rgba(131,180,227,0.28)] bg-[linear-gradient(180deg,rgba(250,253,255,0.98),rgba(236,244,254,0.98))] text-[#4f85c7]',
+      accentClassName: 'from-[#98c9f4] via-[#79afe9] to-[#8bbcf1]',
     },
     {
       id: 'verbs',

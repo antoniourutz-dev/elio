@@ -1,4 +1,6 @@
-import { lessonBlocksTable, lessonsTable, supabase } from '../supabaseClient';
+import { grammarTopicsTable, isSupabaseConfigured, lessonsTable } from './supabaseConfig';
+import { selectSupabaseRows } from './supabaseRest';
+import { loadFirstPublishedLessonFlow, loadLessonFlowBySlug } from './lessonFlow';
 
 export type LessonBlockType = 'definition' | 'rule' | 'example' | 'tip';
 
@@ -50,310 +52,168 @@ export interface LessonListLoadResult {
 
 interface LessonRow {
   id: number | string | null;
-  title: string | null;
+  topic_id: number | string | null;
   slug: string | null;
-  section: string | null;
-  topic: string | null;
+  title_eu: string | null;
+  subtitle_eu: string | null;
   level: string | null;
   published: boolean | null;
-  order_index: number | null;
+  sort_order: number | null;
   created_at: string | null;
 }
 
-interface LessonBlockRow {
+interface TopicRow {
   id: number | string | null;
-  lesson_id: number | string | null;
-  block_type: string | null;
-  content: unknown;
-  order_index: number | null;
-  created_at: string | null;
+  title_eu: string | null;
 }
-
-const LESSON_SELECT = ['id', 'title', 'slug', 'section', 'topic', 'level', 'published', 'order_index', 'created_at'].join(', ');
-const LESSON_BLOCK_SELECT = ['id', 'lesson_id', 'block_type', 'content', 'order_index', 'created_at'].join(', ');
-const VALID_BLOCK_TYPES = new Set<LessonBlockType>(['definition', 'rule', 'example', 'tip']);
-
-const lessonCache = new Map<string, LessonLoadResult>();
-const lessonRequests = new Map<string, Promise<LessonLoadResult>>();
-const lessonListCache = new Map<number, LessonListLoadResult>();
-const lessonListRequests = new Map<number, Promise<LessonListLoadResult>>();
 
 const toText = (value: unknown): string => (typeof value === 'string' ? value.trim() : '');
-
+const toNullableText = (value: unknown): string | null => {
+  const text = toText(value);
+  return text || null;
+};
 const toOrder = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-function normalizeBlockType(value: unknown): LessonBlockType | null {
-  const normalized = toText(value).toLowerCase() as LessonBlockType;
-  return VALID_BLOCK_TYPES.has(normalized) ? normalized : null;
-}
-
-function extractBlockContent(value: unknown): string {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => extractBlockContent(item))
-      .filter(Boolean)
-      .join('\n');
-  }
-
-  if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>;
-    const preferredKeys = ['title', 'body', 'text', 'content', 'description', 'example', 'tip', 'rule', 'definition'];
-    const orderedValues = [
-      ...preferredKeys.map((key) => record[key]),
-      ...Object.entries(record)
-        .filter(([key]) => !preferredKeys.includes(key))
-        .map(([, entryValue]) => entryValue),
-    ];
-
-    return orderedValues
-      .map((entryValue) => extractBlockContent(entryValue))
-      .filter(Boolean)
-      .join('\n');
-  }
-
-  return '';
-}
-
-function parseLesson(row: LessonRow): Omit<Lesson, 'blocks'> | null {
-  const title = toText(row.title);
+function parseLessonSummary(row: LessonRow, topicsById: Map<number | string, string>): LessonSummary | null {
+  if (row.id === null || row.id === undefined) return null;
+  const title = toText(row.title_eu);
   const slug = toText(row.slug);
-  if (!title || !slug || row.id === null || row.id === undefined) return null;
+  if (!title || !slug) return null;
 
   return {
     id: row.id,
     title,
     slug,
-    section: toText(row.section) || null,
-    topic: toText(row.topic) || null,
-    level: toText(row.level) || null,
+    section: row.topic_id !== null && row.topic_id !== undefined ? topicsById.get(row.topic_id) ?? null : null,
+    topic: toNullableText(row.subtitle_eu),
+    level: toNullableText(row.level)?.toUpperCase() ?? null,
     published: row.published !== false,
-    orderIndex: toOrder(row.order_index),
+    orderIndex: toOrder(row.sort_order),
     createdAt: row.created_at ?? null,
   };
 }
 
-function parseLessonSummary(row: LessonRow): LessonSummary | null {
-  const lesson = parseLesson(row);
-  if (!lesson) return null;
-  return lesson;
-}
-
-function parseLessonBlock(row: LessonBlockRow): LessonBlock | null {
-  const blockType = normalizeBlockType(row.block_type);
-  const content = extractBlockContent(row.content);
-
-  if (!blockType || !content || row.id === null || row.id === undefined || row.lesson_id === null || row.lesson_id === undefined) {
-    return null;
-  }
-
+function buildLegacyLessonFromSummary(summary: LessonSummary): Lesson {
   return {
-    id: row.id,
-    lessonId: row.lesson_id,
-    blockType,
-    content,
-    orderIndex: toOrder(row.order_index),
-    createdAt: row.created_at ?? null,
+    ...summary,
+    blocks: [],
   };
 }
 
 export async function loadLessonBySlug(slug: string): Promise<LessonLoadResult> {
-  const normalizedSlug = slug.trim();
-  if (!normalizedSlug) {
+  const result = await loadLessonFlowBySlug(slug);
+  if (!result.ok || !result.lesson) {
     return {
       ok: false,
       lesson: null,
-      message: 'Slug hutsik dago.',
+      message: result.message,
     };
   }
 
-  const cached = lessonCache.get(normalizedSlug);
-  if (cached) return cached;
-
-  const pending = lessonRequests.get(normalizedSlug);
-  if (pending) return pending;
-
-  const request = (async (): Promise<LessonLoadResult> => {
-    if (!supabase) {
-      return {
-        ok: false,
-        lesson: null,
-        message: 'Supabase ez dago prest; ezin da ikasgaia kargatu.',
-      };
-    }
-
-    const { data: lessonData, error: lessonError } = await supabase
-      .from(lessonsTable)
-      .select(LESSON_SELECT)
-      .eq('slug', normalizedSlug)
-      .eq('published', true)
-      .order('order_index', { ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-    if (lessonError) {
-      return {
-        ok: false,
-        lesson: null,
-        message: lessonError.message || 'Ezin izan da ikasgaia kargatu.',
-      };
-    }
-
-    const lesson = parseLesson((lessonData as LessonRow | null) ?? ({} as LessonRow));
-    if (!lesson) {
-      return {
-        ok: false,
-        lesson: null,
-        message: 'Ez dago ikasgai argitaraturik slug horrekin.',
-      };
-    }
-
-    const { data: blockData, error: blockError } = await supabase
-      .from(lessonBlocksTable)
-      .select(LESSON_BLOCK_SELECT)
-      .eq('lesson_id', lesson.id)
-      .order('order_index', { ascending: true })
-      .order('id', { ascending: true });
-
-    if (blockError) {
-      return {
-        ok: false,
-        lesson: null,
-        message: blockError.message || 'Ezin izan dira ikasgai-blokeak kargatu.',
-      };
-    }
-
-    const blocks = ((blockData ?? []) as LessonBlockRow[])
-      .map(parseLessonBlock)
-      .filter((entry): entry is LessonBlock => Boolean(entry))
-      .sort((left, right) => left.orderIndex - right.orderIndex);
-
-    return {
-      ok: true,
-      lesson: {
-        ...lesson,
-        blocks,
-      },
-      message: blocks.length > 0 ? `${blocks.length} bloke kargatuta.` : 'Ikasgaia kargatuta dago, baina oraindik ez du blokerik.',
-    };
-  })();
-
-  lessonRequests.set(normalizedSlug, request);
-  const result = await request;
-  lessonRequests.delete(normalizedSlug);
-  lessonCache.set(normalizedSlug, result);
-  return result;
+  return {
+    ok: true,
+    lesson: buildLegacyLessonFromSummary({
+      id: result.lesson.id,
+      title: result.lesson.titleEu,
+      slug: result.lesson.slug,
+      section: result.lesson.topic?.titleEu ?? null,
+      topic: result.lesson.subtitleEu,
+      level: result.lesson.level?.toUpperCase() ?? null,
+      published: result.lesson.published,
+      orderIndex: result.lesson.sortOrder,
+      createdAt: null,
+    }),
+    message: result.message,
+  };
 }
 
 export async function loadFirstPublishedLesson(): Promise<LessonLoadResult> {
-  if (!supabase) {
+  const result = await loadFirstPublishedLessonFlow();
+  if (!result.ok || !result.lesson) {
     return {
       ok: false,
       lesson: null,
-      message: 'Supabase ez dago prest; ezin da ikasgaia kargatu.',
+      message: result.message,
     };
   }
 
-  const { data: lessonData, error: lessonError } = await supabase
-    .from(lessonsTable)
-    .select(LESSON_SELECT)
-    .eq('published', true)
-    .order('order_index', { ascending: true })
-    .order('id', { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (lessonError) {
-    return {
-      ok: false,
-      lesson: null,
-      message: lessonError.message || 'Ezin izan da lehen ikasgaia kargatu.',
-    };
-  }
-
-  const lesson = parseLesson((lessonData as LessonRow | null) ?? ({} as LessonRow));
-  if (!lesson) {
-    return {
-      ok: false,
-      lesson: null,
-      message: 'Ez dago ikasgai argitaraturik.',
-    };
-  }
-
-  return loadLessonBySlug(lesson.slug);
+  return {
+    ok: true,
+    lesson: buildLegacyLessonFromSummary({
+      id: result.lesson.id,
+      title: result.lesson.titleEu,
+      slug: result.lesson.slug,
+      section: result.lesson.topic?.titleEu ?? null,
+      topic: result.lesson.subtitleEu,
+      level: result.lesson.level?.toUpperCase() ?? null,
+      published: result.lesson.published,
+      orderIndex: result.lesson.sortOrder,
+      createdAt: null,
+    }),
+    message: result.message,
+  };
 }
 
 export async function loadPublishedLessons(limit = 10): Promise<LessonListLoadResult> {
   const normalizedLimit = Math.max(1, limit);
-  const cached = lessonListCache.get(normalizedLimit);
-  if (cached) return cached;
 
-  const pending = lessonListRequests.get(normalizedLimit);
-  if (pending) return pending;
-
-  const request = (async (): Promise<LessonListLoadResult> => {
-    if (!supabase) {
-      return {
-        ok: false,
-        lessons: [],
-        message: 'Supabase ez dago prest; ezin dira ikasgaiak kargatu.',
-      };
-    }
-
-    const { data, error } = await supabase
-      .from(lessonsTable)
-      .select(LESSON_SELECT)
-      .eq('published', true)
-      .order('order_index', { ascending: true })
-      .order('id', { ascending: true })
-      .limit(normalizedLimit);
-
-    if (error || !data) {
-      return {
-        ok: false,
-        lessons: [],
-        message: error?.message || 'Ezin izan dira ikasgaiak kargatu.',
-      };
-    }
-
-    const lessons = (data as LessonRow[])
-      .map(parseLessonSummary)
-      .filter((entry): entry is LessonSummary => Boolean(entry))
-      .sort((left, right) => left.orderIndex - right.orderIndex);
-
+  if (!isSupabaseConfigured) {
     return {
-      ok: true,
-      lessons,
-      message: lessons.length > 0 ? `${lessons.length} ikasgai kargatuta.` : 'Ez dago ikasgai argitaraturik.',
+      ok: false,
+      lessons: [],
+      message: 'Supabase ez dago prest; ezin dira ikasgaiak kargatu.',
     };
-  })();
-
-  lessonListRequests.set(normalizedLimit, request);
-  const result = await request;
-  lessonListRequests.delete(normalizedLimit);
-  lessonListCache.set(normalizedLimit, result);
-  return result;
-}
-
-export function getLessonSnapshot(slug: string): LessonLoadResult | null {
-  return lessonCache.get(slug.trim()) ?? null;
-}
-
-export function clearLessonCache(slug?: string): void {
-  if (slug) {
-    lessonCache.delete(slug.trim());
-    lessonRequests.delete(slug.trim());
-    return;
   }
 
-  lessonCache.clear();
-  lessonRequests.clear();
-  lessonListCache.clear();
-  lessonListRequests.clear();
+  const lessonResult = await selectSupabaseRows<LessonRow>(lessonsTable, {
+    select: 'id, topic_id, slug, title_eu, subtitle_eu, level, published, sort_order, created_at',
+    filters: [{ column: 'published', operator: 'eq', value: true }],
+    order: [{ column: 'sort_order', ascending: true }],
+    limit: normalizedLimit,
+  });
+
+  if (lessonResult.error || !lessonResult.data) {
+    return {
+      ok: false,
+      lessons: [],
+      message: lessonResult.error?.message || 'Ezin izan dira ikasgaiak kargatu.',
+    };
+  }
+
+  const lessonRows = lessonResult.data as LessonRow[];
+  const topicIds = Array.from(new Set(lessonRows.map((row) => row.topic_id).filter((value): value is number | string => value !== null && value !== undefined)));
+  const topicResult = topicIds.length > 0
+    ? await selectSupabaseRows<TopicRow>(grammarTopicsTable, {
+        select: 'id, title_eu',
+        filters: [{ column: 'id', operator: 'in', value: topicIds }],
+      })
+    : { data: [] as TopicRow[], error: null };
+
+  if (topicResult.error) {
+    return {
+      ok: false,
+      lessons: [],
+      message: topicResult.error.message || 'Ezin izan dira ikasgaiaren gaiak kargatu.',
+    };
+  }
+
+  const topicsById = new Map(
+    ((topicResult.data ?? []) as TopicRow[])
+      .filter((row) => row.id !== null && row.id !== undefined && toText(row.title_eu))
+      .map((row) => [row.id as number | string, toText(row.title_eu)] as const)
+  );
+
+  const lessons = lessonRows
+    .map((row) => parseLessonSummary(row, topicsById))
+    .filter((entry): entry is LessonSummary => Boolean(entry))
+    .sort((left, right) => left.orderIndex - right.orderIndex);
+
+  return {
+    ok: true,
+    lessons,
+    message: lessons.length > 0 ? `${lessons.length} ikasgai kargatuta.` : 'Ez dago ikasgai argitaraturik.',
+  };
 }

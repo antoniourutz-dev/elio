@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import clsx from 'clsx';
 
 interface BottomTabButtonProps {
@@ -18,11 +17,10 @@ function BottomTabButton({
   disabled = false,
 }: BottomTabButtonProps) {
   return (
-    <motion.button
+    <button
       type="button"
-      whileTap={disabled ? undefined : { scale: 0.97 }}
       className={clsx(
-        'relative inline-flex flex-1 flex-col items-center justify-center gap-[4px] min-h-[54px] border-none px-1 py-1.5 transition-colors duration-150 ease-out',
+        'relative inline-flex min-h-[54px] flex-1 flex-col items-center justify-center gap-[4px] border-none px-1 py-1.5 transition-[color,transform] duration-150 ease-out active:scale-[0.97]',
         active ? 'text-[var(--primary-deep)]' : 'text-[var(--muted)]',
         disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
       )}
@@ -49,7 +47,7 @@ function BottomTabButton({
       )}>
         {label}
       </span>
-    </motion.button>
+    </button>
   );
 }
 
@@ -67,12 +65,11 @@ function BottomActionButton({
   variant = 'secondary',
 }: BottomActionButtonProps) {
   return (
-    <motion.button
+    <button
       type="button"
-      whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={clsx(
-        'inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border px-4 text-[0.92rem] font-bold transition-[transform,box-shadow,border-color,color,background] duration-150 ease-out',
+        'inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full border px-4 text-[0.92rem] font-bold transition-[transform,box-shadow,border-color,color,background] duration-150 ease-out active:scale-[0.98]',
         variant === 'primary'
           ? 'border-[rgba(90,190,177,0.28)] bg-[linear-gradient(135deg,#45b9b4_0%,#73cbb2_52%,#c8dc75_100%)] text-white shadow-[0_12px_24px_rgba(93,186,166,0.22)]'
           : 'border-[rgba(214,222,229,0.92)] bg-[rgba(255,255,255,0.94)] text-[var(--text)] shadow-[0_8px_20px_rgba(99,117,135,0.08)]'
@@ -80,7 +77,7 @@ function BottomActionButton({
     >
       <span className="h-[18px] w-[18px] [&_svg]:h-full [&_svg]:w-full">{icon}</span>
       <span>{label}</span>
-    </motion.button>
+    </button>
   );
 }
 

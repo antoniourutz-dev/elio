@@ -228,18 +228,18 @@ export const VocabularyView = memo(function VocabularyView({ isActive }: Vocabul
     <section className="grid gap-4 rounded-[34px] border border-[rgba(216,224,231,0.88)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,249,0.95))] p-6 shadow-[var(--shadow-card)]">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.08fr)_minmax(270px,0.92fr)] lg:items-start">
         <div className="grid gap-2">
-          <p className="m-0 text-[0.74rem] font-extrabold uppercase tracking-[0.18em] text-[#d49a2d]">Hiztegia</p>
+          <p className="m-0 text-[0.74rem] font-extrabold uppercase tracking-[0.18em] text-[#4f85c7]">Gaiak</p>
           <h2 className="m-0 max-w-[10ch] font-display text-[clamp(1.8rem,4vw,2.55rem)] leading-[0.92] tracking-[-0.06em] text-[var(--text)]">
-            Gai bidezko hiztegia
+            Gaika antolatutako hiztegia
           </h2>
           <p className="m-0 max-w-[28rem] text-[0.9rem] font-medium leading-relaxed text-[var(--muted)]">
-            Bilatu gaiak eta ireki kategoriak modu bisual eta azkarrean.
+            Arakatu gaiak eta ireki kategoriak modu bisual eta antolatuan.
           </p>
         </div>
 
         <div className="grid gap-3 rounded-[26px] border border-[rgba(223,183,79,0.24)] bg-[linear-gradient(135deg,rgba(255,252,243,0.98),rgba(252,245,220,0.96))] p-3.5 shadow-[0_14px_30px_rgba(118,137,154,0.07)]">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[0.7rem] font-extrabold uppercase tracking-[0.16em] text-[#af7b15]">Bilaketa</span>
+            <span className="text-[0.7rem] font-extrabold uppercase tracking-[0.16em] text-[#4f85c7]">Bilaketa</span>
             <span className="rounded-full border border-[rgba(214,181,102,0.26)] bg-white/78 px-2.5 py-1 text-[0.72rem] font-extrabold text-[#a87011]">
               {topics.length} gai
             </span>

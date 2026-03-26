@@ -1,14 +1,12 @@
-import { memo, useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { memo, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
-import { BookOpen, ChevronDown, CirclePlay, Languages, LibraryBig, Medal, Sigma } from 'lucide-react';
+import { BookOpen, ChevronDown, CirclePlay, Languages, Medal, Search, Sigma } from 'lucide-react';
 import type { DailyResult, DailyRankingEntry, DailyWeeklyRankingEntry } from '../appTypes';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { getFallbackDailyPill, loadDailyPill, PILL_CATEGORY_LABELS } from '../lib/pills';
 
 interface DailyHomeViewProps {
   dayKey: string;
-  playerName?: string;
   dailyResult: DailyResult | null;
   weekHistory: DailyResult[];
   ranking: DailyRankingEntry[];
@@ -24,6 +22,49 @@ interface DailyHomeViewProps {
   onGoVocabulary: () => void;
   onGoVerbs: () => void;
 }
+
+const LEARN_ACTION_STYLES = [
+  {
+    id: 'synonyms',
+    title: 'Sinonimoak',
+    icon: BookOpen,
+    accent: 'from-[#e8fbf5] to-[#eefbf8]',
+    iconTone: 'text-[#199b8c]',
+    iconBorder: 'border-[rgba(105,206,186,0.34)]',
+    iconBg: 'bg-[linear-gradient(180deg,rgba(244,255,251,0.98),rgba(229,249,242,0.98))]',
+    tag: 'Lotu hitzak',
+  },
+  {
+    id: 'grammar',
+    title: 'Gramatika',
+    icon: Languages,
+    accent: 'from-[#edf5ff] to-[#f2f8ff]',
+    iconTone: 'text-[#4b86c8]',
+    iconBorder: 'border-[rgba(125,168,223,0.34)]',
+    iconBg: 'bg-[linear-gradient(180deg,rgba(247,251,255,0.98),rgba(235,243,255,0.98))]',
+    tag: 'Eraiki arauak',
+  },
+  {
+    id: 'vocabulary',
+    title: 'Hiztegia',
+    icon: Search,
+    accent: 'from-[#fff7df] to-[#fffaf0]',
+    iconTone: 'text-[#b88618]',
+    iconBorder: 'border-[rgba(232,191,85,0.34)]',
+    iconBg: 'bg-[linear-gradient(180deg,rgba(255,252,243,0.98),rgba(255,246,220,0.98))]',
+    tag: 'Zabaldu hizt.',
+  },
+  {
+    id: 'verbs',
+    title: 'Aditzak',
+    icon: Sigma,
+    accent: 'from-[#fff0ea] to-[#fff6f3]',
+    iconTone: 'text-[#cf6a53]',
+    iconBorder: 'border-[rgba(233,145,117,0.34)]',
+    iconBg: 'bg-[linear-gradient(180deg,rgba(255,248,245,0.98),rgba(255,236,229,0.98))]',
+    tag: 'Mugitu esald.',
+  },
+] as const;
 
 const BASQUE_DAYS = ['Igandea', 'Astelehena', 'Asteartea', 'Asteazkena', 'Osteguna', 'Ostirala', 'Larunbata'];
 const BASQUE_MONTHS = ['urt.', 'ots.', 'mar.', 'api.', 'mai.', 'eka.', 'uzt.', 'abu.', 'ira.', 'urr.', 'aza.', 'abe.'];
@@ -151,7 +192,6 @@ function EmptyRankingState({ title, body }: { title: string; body: string }) {
 
 export const DailyHomeView = memo(function DailyHomeView({
   dayKey,
-  playerName,
   dailyResult,
   weekHistory,
   ranking,
@@ -173,19 +213,25 @@ export const DailyHomeView = memo(function DailyHomeView({
   const [isStartWarningOpen, setIsStartWarningOpen] = useState(false);
   const [countdownValue, setCountdownValue] = useState<number | null>(null);
 
-  const top5Daily = ranking.slice(0, 5);
-  const myDailyOutside = myRankEntry && myRankEntry.rank > 5;
-  const top5Weekly = weeklyRanking.slice(0, 5);
-  const myWeeklyOutside = myWeekRankEntry && myWeekRankEntry.rank > 5;
-  const weekDays = getWeekDays(dayKey);
-  const playedKeys = new Set(weekHistory.map((result) => result.dayKey));
-  const playedCount = weekDays.filter(({ key }) => playedKeys.has(key)).length;
-  const learnActions = [
-    { id: 'synonyms',  title: 'Sinonimoak', icon: BookOpen,   onClick: onGoSynonyms,   accent: 'from-[#e8fbf5] to-[#eefbf8]', iconTone: 'text-[#199b8c]', iconBorder: 'border-[rgba(105,206,186,0.34)]', iconBg: 'bg-[linear-gradient(180deg,rgba(244,255,251,0.98),rgba(229,249,242,0.98))]', tag: 'Lotu hitzak' },
-    { id: 'grammar',   title: 'Gramatika',  icon: Languages,  onClick: onGoGrammar,    accent: 'from-[#edf5ff] to-[#f2f8ff]', iconTone: 'text-[#4b86c8]', iconBorder: 'border-[rgba(125,168,223,0.34)]', iconBg: 'bg-[linear-gradient(180deg,rgba(247,251,255,0.98),rgba(235,243,255,0.98))]', tag: 'Eraiki arauak' },
-    { id: 'vocabulary',title: 'Hiztegia',   icon: LibraryBig, onClick: onGoVocabulary, accent: 'from-[#fff7df] to-[#fffaf0]', iconTone: 'text-[#b88618]', iconBorder: 'border-[rgba(232,191,85,0.34)]', iconBg: 'bg-[linear-gradient(180deg,rgba(255,252,243,0.98),rgba(255,246,220,0.98))]', tag: 'Zabaldu hiztegia' },
-    { id: 'verbs',     title: 'Aditzak',    icon: Sigma,      onClick: onGoVerbs,      accent: 'from-[#fff0ea] to-[#fff6f3]', iconTone: 'text-[#cf6a53]', iconBorder: 'border-[rgba(233,145,117,0.34)]', iconBg: 'bg-[linear-gradient(180deg,rgba(255,248,245,0.98),rgba(255,236,229,0.98))]', tag: 'Mugitu esaldiak' },
-  ] as const;
+  const top5Daily = useMemo(() => ranking.slice(0, 5), [ranking]);
+  const myDailyOutside = useMemo(() => Boolean(myRankEntry && myRankEntry.rank > 5), [myRankEntry]);
+  const top5Weekly = useMemo(() => weeklyRanking.slice(0, 5), [weeklyRanking]);
+  const myWeeklyOutside = useMemo(() => Boolean(myWeekRankEntry && myWeekRankEntry.rank > 5), [myWeekRankEntry]);
+  const weekDays = useMemo(() => getWeekDays(dayKey), [dayKey]);
+  const playedKeys = useMemo(() => new Set(weekHistory.map((result) => result.dayKey)), [weekHistory]);
+  const playedCount = useMemo(
+    () => weekDays.filter(({ key }) => playedKeys.has(key)).length,
+    [weekDays, playedKeys]
+  );
+  const learnActions = useMemo(
+    () => [
+      { ...LEARN_ACTION_STYLES[0], onClick: onGoSynonyms },
+      { ...LEARN_ACTION_STYLES[1], onClick: onGoGrammar },
+      { ...LEARN_ACTION_STYLES[2], onClick: onGoVocabulary },
+      { ...LEARN_ACTION_STYLES[3], onClick: onGoVerbs },
+    ],
+    [onGoSynonyms, onGoGrammar, onGoVocabulary, onGoVerbs]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -237,12 +283,7 @@ export const DailyHomeView = memo(function DailyHomeView({
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.04 }}
-        className="grid gap-0"
-      >
+      <div className="grid gap-0 animate-[fade-up_220ms_ease-out]">
       <section className="relative overflow-hidden rounded-[34px] border border-[rgba(132,206,194,0.26)] bg-[linear-gradient(140deg,#36b8b4_0%,#58c6b4_34%,#8cd39f_68%,#d6e879_100%)] p-[0.85rem] shadow-[0_20px_44px_rgba(80,167,154,0.18),0_6px_18px_rgba(80,167,154,0.08)] sm:p-[0.95rem]">
         <div className="absolute inset-x-0 top-0 h-px bg-white/40" />
         <div className="absolute -right-12 -top-14 h-36 w-36 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.2),transparent_68%)]" aria-hidden="true" />
@@ -281,24 +322,15 @@ export const DailyHomeView = memo(function DailyHomeView({
                   playedCount >= 7 && 'w-[85.71%]',
                 )} />
               )}
-              <motion.div
-                className="relative grid grid-cols-7"
-                initial="initial"
-                animate="animate"
-                variants={{ animate: { transition: { staggerChildren: 0.05 } } }}
-              >
+              <div className="relative grid grid-cols-7">
                 {weekDays.map(({ key, label }) => {
                   const played = playedKeys.has(key);
                   const isToday = key === dayKey;
 
                   return (
-                    <motion.div
+                    <div
                       key={key}
-                      className="flex flex-col items-center gap-1.25 will-change-transform"
-                      variants={{
-                        initial: { opacity: 0, y: 12, scale: 0.82 },
-                        animate: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', damping: 12, stiffness: 200 } },
-                      }}
+                      className="flex flex-col items-center gap-1.25"
                     >
                       <div
                         className={clsx(
@@ -322,10 +354,10 @@ export const DailyHomeView = memo(function DailyHomeView({
                       )}>
                         {label}
                       </span>
-                    </motion.div>
+                    </div>
                   );
                 })}
-              </motion.div>
+              </div>
             </div>
           </div>
 
@@ -362,7 +394,7 @@ export const DailyHomeView = memo(function DailyHomeView({
       </section>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        {learnActions.map(({ id, title, icon: Icon, onClick, accent, iconTone, iconBorder, iconBg, tag }) => (
+        {learnActions.map(({ id, title, icon: Icon, onClick, accent, iconTone, iconBorder, iconBg }) => (
           <button
             key={id}
             type="button"
@@ -394,9 +426,6 @@ export const DailyHomeView = memo(function DailyHomeView({
               <strong className="block font-display text-[clamp(0.98rem,3.4vw,1.14rem)] font-extrabold leading-[0.92] tracking-[-0.05em] text-[var(--text)] text-balance">
                 {title}
               </strong>
-              <span className="block text-[0.62rem] font-extrabold uppercase tracking-[0.12em] text-[var(--muted)]">
-                {tag}
-              </span>
             </span>
           </button>
         ))}
@@ -525,15 +554,7 @@ export const DailyHomeView = memo(function DailyHomeView({
         </div>
 
         {rankTab === 'daily' && (
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key="daily-ranking"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="flex flex-col gap-2"
-            >
+          <div className="flex flex-col gap-2">
               {isLoadingData && <RankingSkeleton />}
               {!isLoadingData && ranking.length === 0 && (
                 <EmptyRankingState
@@ -571,20 +592,11 @@ export const DailyHomeView = memo(function DailyHomeView({
                   </div>
                 </>
               )}
-            </motion.div>
-          </AnimatePresence>
+            </div>
         )}
 
         {rankTab === 'weekly' && (
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key="weekly-ranking"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="flex flex-col gap-2"
-            >
+          <div className="flex flex-col gap-2">
               {isLoadingData && <RankingSkeleton />}
               {!isLoadingData && weeklyRanking.length === 0 && (
                 <EmptyRankingState
@@ -622,11 +634,10 @@ export const DailyHomeView = memo(function DailyHomeView({
                   </div>
                 </>
               )}
-            </motion.div>
-          </AnimatePresence>
+            </div>
         )}
       </section>
-      </motion.div>
+      </div>
 
       <ConfirmModal
         isOpen={isStartWarningOpen}
@@ -638,35 +649,21 @@ export const DailyHomeView = memo(function DailyHomeView({
         onCancel={() => setIsStartWarningOpen(false)}
       />
 
-      <AnimatePresence>
-        {countdownValue !== null && (
-          <motion.div
-            className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-[rgba(13,27,38,0.56)] backdrop-blur-md"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-          >
+      {countdownValue !== null && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[rgba(13,27,38,0.56)] p-6 backdrop-blur-md animate-[fade-in_160ms_ease-out]">
             <div className="relative flex flex-col items-center gap-3">
               <div className="absolute inset-0 rounded-full blur-3xl bg-[radial-gradient(circle,rgba(112,233,206,0.4),transparent_68%)]" aria-hidden="true" />
               <span className="relative text-[0.88rem] font-black uppercase tracking-[0.22em] text-white/72">Prestatu</span>
-              <AnimatePresence mode="wait">
-                <motion.span
+                <span
                   key={countdownValue}
-                  className="relative font-display text-[6.4rem] leading-none font-black tracking-[-0.08em] text-white drop-shadow-[0_18px_38px_rgba(7,20,31,0.38)]"
-                  initial={{ opacity: 0, scale: 0.6, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 1.12, y: -14 }}
-                  transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative font-display text-[6.4rem] leading-none font-black tracking-[-0.08em] text-white drop-shadow-[0_18px_38px_rgba(7,20,31,0.38)] animate-[countdown-pop_240ms_cubic-bezier(0.22,1,0.36,1)]"
                 >
                   {countdownValue}
-                </motion.span>
-              </AnimatePresence>
+                </span>
               <span className="relative text-[0.92rem] font-bold text-white/82">Eguneko erronka hastear dago</span>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </>
   );
 });

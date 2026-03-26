@@ -1,401 +1,469 @@
-import { memo } from 'react';
-import type { ReactNode } from 'react';
-import { AlertCircle, BookOpenText, CheckCircle2, ChevronRight, Lightbulb, Sparkles } from 'lucide-react';
-import { useLesson } from '../hooks/useLesson';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { AlertCircle } from 'lucide-react';
+import type { PlayerIdentity } from '../lib/types';
+import { useLessonFlow } from '../hooks/useLessonFlow';
 import { usePublishedLessons } from '../hooks/usePublishedLessons';
-import type { LessonBlock, LessonBlockType } from '../lib/lessons';
+import { useLessonProgress } from '../hooks/useLessonProgress';
+import type { ExerciseFeedbackMapping, LessonCard, LessonExercise, LessonExerciseOption } from '../lib/lessonFlow';
+import { LessonExerciseCard } from '../components/lessons/LessonExerciseCard';
+import { LessonFeedbackCard } from '../components/lessons/LessonFeedbackCard';
+import { LessonIntroCard } from '../components/lessons/LessonIntroCard';
+import { ProgressIndicator } from '../components/lessons/ProgressIndicator';
+import { LessonSummaryCard } from '../components/lessons/LessonSummaryCard';
+
+const GRAMMAR_STOP_TOWNS = [
+  'Gasteiz',
+  'Argomaniz',
+  'Alegria-Dulantzi',
+  'Agurain',
+  'Zalduondo',
+  'Araia',
+  'Maeztu',
+  'Antoñana',
+  'Kanpezu',
+  'Bernedo',
+] as const;
 
 interface GrammarLessonViewProps {
   lessonSlug: string | null;
+  activePlayer: PlayerIdentity;
   completedStops: number;
   onCompleteStop: () => void;
+  onOpenLesson: (slug?: string | null) => void;
 }
 
-const PARTICLE_STYLES: Record<
-  string,
-  {
-    strongClassName: string;
-    subtleClassName: string;
-    arrowClassName: string;
-  }
-> = {
-  '-la': {
-    strongClassName:
-      'inline-flex items-center rounded-full border border-[rgba(144,195,138,0.32)] bg-[linear-gradient(180deg,rgba(245,252,236,0.98),rgba(234,246,223,0.96))] px-2.5 py-1 font-black tracking-[-0.02em] text-[#4e8650] shadow-[0_4px_10px_rgba(131,176,121,0.08)]',
-    subtleClassName: 'rounded-[0.45rem] bg-[rgba(192,225,183,0.22)] px-[0.28rem] py-[0.02rem] font-bold text-[#5b8d5d]',
-    arrowClassName: 'text-[#6d9b6a]',
-  },
-  '-nik': {
-    strongClassName:
-      'inline-flex items-center rounded-full border border-[rgba(227,148,148,0.3)] bg-[linear-gradient(180deg,rgba(255,244,244,0.98),rgba(252,232,232,0.96))] px-2.5 py-1 font-black tracking-[-0.02em] text-[#b55353] shadow-[0_4px_10px_rgba(203,126,126,0.08)]',
-    subtleClassName: 'rounded-[0.45rem] bg-[rgba(244,199,199,0.22)] px-[0.28rem] py-[0.02rem] font-bold text-[#b66363]',
-    arrowClassName: 'text-[#bc7070]',
-  },
+type LessonStage = 'intro' | 'exercise' | 'feedback' | 'summary';
+
+interface FeedbackState {
+  title: string;
+  isCorrect: boolean;
+  message: string;
+  helperText: string | null;
+}
+
+interface SessionStats {
+  attempts: number;
+  correctCount: number;
+  wrongCount: number;
+}
+
+const EMPTY_STATS: SessionStats = {
+  attempts: 0,
+  correctCount: 0,
+  wrongCount: 0,
 };
 
-function getParticleStyle(particle: string) {
-  return PARTICLE_STYLES[particle.toLowerCase()] ?? {
-    strongClassName:
-      'inline-flex items-center rounded-full border border-[rgba(124,169,226,0.26)] bg-[linear-gradient(180deg,rgba(242,248,255,0.96),rgba(233,242,254,0.94))] px-2 py-[0.12rem] font-black tracking-[-0.02em] text-[#2f5f9d] shadow-[0_4px_10px_rgba(116,151,204,0.08)]',
-    subtleClassName: 'rounded-[0.45rem] bg-[rgba(176,208,235,0.18)] px-[0.28rem] py-[0.02rem] font-bold text-[#5479a8]',
-    arrowClassName: 'text-[#6f8eb3]',
-  };
+function readNumericMetadata(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function renderParticleBadge(particle: string, variant: 'strong' | 'subtle' = 'strong') {
-  const style = getParticleStyle(particle);
-  return <span className={variant === 'strong' ? style.strongClassName : style.subtleClassName}>{particle}</span>;
+function resolveHookCard(cards: LessonCard[]): LessonCard | null {
+  return cards.find((card) => card.cardType === 'hook') ?? cards[0] ?? null;
 }
 
-const BLOCK_STYLES: Record<
-  LessonBlockType,
-  {
-    label: string;
-    icon: typeof BookOpenText;
-    accentClassName: string;
-    iconClassName: string;
-    bodyClassName: string;
-  }
-> = {
-  definition: {
-    label: 'Definizioa',
-    icon: BookOpenText,
-    accentClassName: 'bg-[linear-gradient(180deg,#68d5cb,#a9e5c8)]',
-    iconClassName: 'border-[rgba(112,208,193,0.28)] bg-[rgba(255,255,255,0.86)] text-[#1a9183]',
-    bodyClassName: 'text-[var(--text)]',
-  },
-  rule: {
-    label: 'Arau',
-    icon: Sparkles,
-    accentClassName: 'bg-[linear-gradient(180deg,#8dc1f0,#b6d2f7)]',
-    iconClassName: 'border-[rgba(124,169,226,0.28)] bg-[rgba(255,255,255,0.86)] text-[#4f82bd]',
-    bodyClassName: 'text-[var(--text)]',
-  },
-  example: {
-    label: 'Adibidea',
-    icon: ChevronRight,
-    accentClassName: 'bg-[linear-gradient(180deg,#f1d476,#f4e1a5)]',
-    iconClassName: 'border-[rgba(239,198,91,0.26)] bg-[rgba(255,255,255,0.86)] text-[#b27b16]',
-    bodyClassName: 'italic text-[var(--text-2)]',
-  },
-  tip: {
-    label: 'Oharra',
-    icon: Lightbulb,
-    accentClassName: 'bg-[linear-gradient(180deg,#b7df85,#d6edb1)]',
-    iconClassName: 'border-[rgba(165,206,113,0.28)] bg-[rgba(255,255,255,0.86)] text-[#6c9851]',
-    bodyClassName: 'text-[var(--text)]',
-  },
-};
+function resolveSummaryCard(cards: LessonCard[]): LessonCard | null {
+  return cards.find((card) => card.cardType === 'summary') ?? null;
+}
 
-function renderRuleLine(line: string): ReactNode {
-  const parts = line.split(/\s*(?:→|->)\s*/);
-  if (parts.length < 2) {
-    return <>{line}</>;
-  }
+function resolveHintCard(cards: LessonCard[]): LessonCard | null {
+  return cards.find((card) => card.cardType === 'micro_hint') ?? null;
+}
 
-  const left = parts[0]?.trim() ?? '';
-  const right = parts.slice(1).join(' → ').trim();
-  const particleStyle = getParticleStyle(right);
-
+function resolveFeedbackRule(
+  mappings: ExerciseFeedbackMapping[],
+  option: LessonExerciseOption
+): ExerciseFeedbackMapping | null {
   return (
-    <span className="flex flex-wrap items-center gap-2">
-      {left ? <span>{left}</span> : null}
-      <span className={particleStyle.arrowClassName}>→</span>
-      <span className={particleStyle.strongClassName}>
-        {right}
-      </span>
-    </span>
+    mappings.find((mapping) => mapping.wrongOptionValue?.toLowerCase() === option.optionValue.toLowerCase()) ??
+    mappings[0] ??
+    null
   );
 }
 
-function renderInlineParticles(text: string, variant: 'default' | 'subtle' = 'default'): ReactNode {
-  const matches = Array.from(text.matchAll(/(^|[\s([{'"«])(-[A-Za-zÀ-ÿ]+)/g));
-  if (matches.length === 0) {
-    return text;
+function resolveImmediateFeedbackMessage(
+  exercise: LessonExercise,
+  option: LessonExerciseOption,
+  isCorrect: boolean
+): string {
+  const normalize = (value: string | null | undefined) => (value ?? '').trim();
+  const optionCorrect = normalize(option.feedbackCorrectEu);
+  const optionIncorrect = normalize(option.feedbackIncorrectEu);
+  const exerciseCorrect = normalize(exercise.feedbackCorrect);
+  const exerciseIncorrect = normalize(exercise.feedbackIncorrect);
+
+  if (isCorrect) {
+    if (exerciseCorrect) return exerciseCorrect;
+    if (optionCorrect && !/^zuzen!?$/i.test(optionCorrect)) return optionCorrect;
+    return 'Ondo! Hor hemen forma egokia da.';
   }
 
-  const nodes: ReactNode[] = [];
-  let cursor = 0;
-
-  matches.forEach((match, index) => {
-    const fullMatch = match[0] ?? '';
-    const prefix = match[1] ?? '';
-    const particle = match[2] ?? '';
-    const start = match.index ?? 0;
-    const prefixOffset = fullMatch.length - particle.length;
-    const particleStart = start + prefixOffset;
-
-    if (particleStart > cursor) {
-      nodes.push(text.slice(cursor, particleStart));
-    }
-
-    nodes.push(
-      <span
-        key={`particle-${particleStart}-${index}`}
-        className={variant === 'subtle' ? getParticleStyle(particle).subtleClassName : getParticleStyle(particle).strongClassName}
-      >
-        {particle}
-      </span>
-    );
-
-    cursor = particleStart + particle.length;
-  });
-
-  if (cursor < text.length) {
-    nodes.push(text.slice(cursor));
-  }
-
-  return nodes;
+  if (exerciseIncorrect) return exerciseIncorrect;
+  if (optionIncorrect && !/^hemen/i.test(optionIncorrect)) return optionIncorrect;
+  return optionIncorrect || 'Begiratu berriro.';
 }
 
-function renderExampleLine(text: string): ReactNode {
-  const suffixRegex = /\b([A-Za-zÀ-ÿ]+?)(la|nik)\b/g;
-  const matches = Array.from(text.matchAll(suffixRegex));
-
-  if (matches.length === 0) {
-    return renderInlineParticles(text, 'subtle');
+function resolveStreakFeedbackTitle(isCorrect: boolean, correctStreak: number): string {
+  if (!isCorrect) {
+    return correctStreak >= 2 ? 'Ia! Ez galdu erritmoa' : 'Ia! Saiatu berriro';
   }
 
-  const nodes: ReactNode[] = [];
-  let cursor = 0;
-
-  matches.forEach((match, index) => {
-    const fullWord = match[0] ?? '';
-    const stem = match[1] ?? '';
-    const suffix = match[2] ?? '';
-    const start = match.index ?? 0;
-
-    if (start > cursor) {
-      nodes.push(renderInlineParticles(text.slice(cursor, start), 'subtle'));
-    }
-
-    nodes.push(
-      <span key={`example-word-${start}-${index}`}>
-        {stem}
-        <span className={getParticleStyle(`-${suffix}`).subtleClassName}>
-          {suffix}
-        </span>
-      </span>
-    );
-
-    cursor = start + fullWord.length;
-  });
-
-  if (cursor < text.length) {
-    nodes.push(renderInlineParticles(text.slice(cursor), 'subtle'));
-  }
-
-  return nodes;
+  if (correctStreak >= 3) return 'Primeran! 🔥';
+  if (correctStreak >= 2) return 'Ondo! ⚡';
+  return 'Zuzena! 👏';
 }
 
-function groupLessonBlocks(blocks: LessonBlock[]): LessonBlock[][] {
-  return blocks.reduce<LessonBlock[][]>((groups, block) => {
-    const lastGroup = groups.at(-1);
-    if (!lastGroup || lastGroup[0]?.blockType !== block.blockType) {
-      groups.push([block]);
-      return groups;
-    }
-
-    lastGroup.push(block);
-    return groups;
-  }, []);
-}
-
-function LessonBlockGroup({ blocks }: { blocks: LessonBlock[] }) {
-  const blockType = blocks[0]?.blockType ?? 'definition';
-  const Icon = BLOCK_STYLES[blockType].icon;
-  const style = BLOCK_STYLES[blockType];
-
+function resolveHelperThreshold(exercise: LessonExercise, lessonRetryThreshold: number): number {
   return (
-    <article className="relative overflow-hidden px-4 py-4">
-      <div className={`absolute left-0 top-3 bottom-3 w-[3px] rounded-full ${style.accentClassName}`} aria-hidden="true" />
-      <div className="flex items-start gap-3 pl-1">
-        <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[15px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.72)] ${style.iconClassName}`}>
-          <Icon className="h-[1rem] w-[1rem]" />
-        </span>
-        <div className="min-w-0 grid gap-1">
-          <span className="text-[0.63rem] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">{style.label}</span>
-          <div className="grid gap-2.5">
-            {blocks.map((block, blockIndex) => (
-              <div key={block.id} className="grid gap-1.5">
-                {block.content.split('\n').filter(Boolean).map((line, index) => (
-                  <p key={`${block.id}-${index}`} className={`m-0 text-[0.92rem] font-semibold leading-[1.5] ${style.bodyClassName}`}>
-                    {block.blockType === 'rule'
-                      ? renderRuleLine(line)
-                      : block.blockType === 'example'
-                        ? renderExampleLine(line)
-                        : renderInlineParticles(line)}
-                  </p>
-                ))}
-                {blockIndex < blocks.length - 1 ? (
-                  <div className="h-px bg-[linear-gradient(90deg,rgba(224,232,238,0.12),rgba(224,232,238,0.82),rgba(224,232,238,0.12))]" />
-                ) : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </article>
+    readNumericMetadata(exercise.metadata.retry_limit_before_hint) ??
+    lessonRetryThreshold
   );
 }
 
-function LessonContrastBlock() {
+function resolveAdditionalHelper(
+  exercise: LessonExercise,
+  selectedOption: LessonExerciseOption,
+  mapping: ExerciseFeedbackMapping | null,
+  hintCard: LessonCard | null
+): string | null {
   return (
-    <section className="px-4 py-4">
-      <div className="grid gap-3 rounded-[22px] border border-[rgba(220,228,235,0.72)] bg-[linear-gradient(180deg,rgba(251,252,252,0.98),rgba(246,249,249,0.96))] px-4 py-4">
-        <span className="text-[0.63rem] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">Kontrastea</span>
-        <div className="grid gap-3">
-          <div className="flex items-center gap-3">
-            {renderParticleBadge('-la')}
-            <span className="text-[0.92rem] font-semibold text-[var(--text)]">ziurtasuna</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {renderParticleBadge('-nik')}
-            <span className="text-[0.92rem] font-semibold text-[var(--text)]">zalantza</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function LessonCorrectionBlock() {
-  return (
-    <section className="px-4 py-4">
-      <div className="grid gap-3 rounded-[22px] border border-[rgba(220,228,235,0.72)] bg-[linear-gradient(180deg,rgba(251,252,252,0.98),rgba(246,249,249,0.96))] px-4 py-4">
-        <span className="text-[0.63rem] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">Zuzenketa</span>
-        <div className="grid gap-2.5">
-          <div className="flex items-start gap-3">
-            <span className="pt-[0.12rem] text-[1rem]">❌</span>
-            <p className="m-0 text-[0.94rem] font-semibold italic leading-[1.55] text-[var(--text-2)]">
-              Ez dut uste etorriko naize
-              <span className={getParticleStyle('-la').subtleClassName}>la</span>
-            </p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="pt-[0.12rem] text-[1rem]">✅</span>
-            <p className="m-0 text-[0.94rem] font-semibold italic leading-[1.55] text-[var(--text-2)]">
-              Ez dut uste etorriko naize
-              <span className={getParticleStyle('-nik').subtleClassName}>nik</span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+    exercise.explanationOnFail ||
+    mapping?.rule?.feedbackShortEu ||
+    mapping?.rule?.feedbackLongEu ||
+    selectedOption.feedbackIncorrectEu ||
+    hintCard?.bodyEu ||
+    null
   );
 }
 
 export const GrammarLessonView = memo(function GrammarLessonView({
   lessonSlug,
+  activePlayer,
   completedStops,
   onCompleteStop,
+  onOpenLesson,
 }: GrammarLessonViewProps) {
-  const { lesson, isLoading, message, refresh } = useLesson(lessonSlug, true);
+  const { lesson, isLoading, message, refresh, prefetch } = useLessonFlow(lessonSlug, true);
   const { lessons } = usePublishedLessons(10, true);
-  const shouldShowCertaintyContrast = lesson?.blocks.some((block) => /-(la|nik)\b/i.test(block.content)) ?? false;
-  const groupedBlocks = lesson ? groupLessonBlocks(lesson.blocks) : [];
-  const lessonIndex = lesson ? lessons.findIndex((entry) => entry.slug === lesson.slug) : -1;
-  const isCurrentActiveLesson = lessonIndex >= 0 && lessonIndex === completedStops;
-  const isAlreadyCompleted = lessonIndex >= 0 && lessonIndex < completedStops;
+  const {
+    progress,
+    isLoading: isProgressLoading,
+    message: progressMessage,
+    markInProgress,
+    recordAttempt,
+    completeLesson,
+  } = useLessonProgress(activePlayer.userId, lesson?.id ?? null, Boolean(lesson));
+
+  const [stage, setStage] = useState<LessonStage>('intro');
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [selectedOptionId, setSelectedOptionId] = useState<number | string | null>(null);
+  const [feedbackState, setFeedbackState] = useState<FeedbackState | null>(null);
+  const [attemptCounts, setAttemptCounts] = useState<Record<string, number>>({});
+  const [sessionStats, setSessionStats] = useState<SessionStats>(EMPTY_STATS);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [isCompletionStored, setIsCompletionStored] = useState(false);
+  const [hasStartedRemoteProgress, setHasStartedRemoteProgress] = useState(false);
+  const [correctStreak, setCorrectStreak] = useState(0);
+
+  const lessonIndex = useMemo(
+    () => (lesson ? lessons.findIndex((entry) => entry.slug === lesson.slug) : -1),
+    [lesson, lessons]
+  );
+  const nextLesson = useMemo(
+    () => (lessonIndex >= 0 ? lessons[lessonIndex + 1] ?? null : null),
+    [lessonIndex, lessons]
+  );
+  const nextStopTown = useMemo(
+    () => (lessonIndex >= 0 ? GRAMMAR_STOP_TOWNS[lessonIndex + 1] ?? null : null),
+    [lessonIndex]
+  );
+  const isCurrentActiveLesson = useMemo(
+    () => lessonIndex >= 0 && lessonIndex === completedStops,
+    [lessonIndex, completedStops]
+  );
+  const isAlreadyCompleted = useMemo(
+    () => lessonIndex >= 0 && lessonIndex < completedStops,
+    [lessonIndex, completedStops]
+  );
+  const hookCard = useMemo(() => (lesson ? resolveHookCard(lesson.cards) : null), [lesson]);
+  const summaryCard = useMemo(() => (lesson ? resolveSummaryCard(lesson.cards) : null), [lesson]);
+  const hintCard = useMemo(() => (lesson ? resolveHintCard(lesson.cards) : null), [lesson]);
+  const currentExercise = lesson?.exercises[currentExerciseIndex] ?? null;
+  const lessonRetryThreshold = useMemo(
+    () => readNumericMetadata(lesson?.metadata.retry_until_explanation) ?? 2,
+    [lesson]
+  );
+  const displayStats = useMemo<SessionStats>(
+    () => ({
+      attempts: Math.max(progress?.attempts ?? 0, sessionStats.attempts),
+      correctCount: Math.max(progress?.correctCount ?? 0, sessionStats.correctCount),
+      wrongCount: Math.max(progress?.wrongCount ?? 0, sessionStats.wrongCount),
+    }),
+    [progress, sessionStats]
+  );
+
+  useEffect(() => {
+    setStage('intro');
+    setCurrentExerciseIndex(0);
+    setSelectedOptionId(null);
+    setFeedbackState(null);
+    setAttemptCounts({});
+    setSessionStats(EMPTY_STATS);
+    setSaveMessage(null);
+    setIsCompletionStored(false);
+    setHasStartedRemoteProgress(false);
+    setCorrectStreak(0);
+  }, [lesson?.id]);
+
+  useEffect(() => {
+    if (!lesson) return;
+    if (isProgressLoading) return;
+    if (hasStartedRemoteProgress) return;
+    if (progress?.status === 'completed') return;
+
+    void markInProgress(progress).then((result) => {
+      setHasStartedRemoteProgress(true);
+      if (!result.ok) {
+        setSaveMessage(result.message);
+      }
+    });
+  }, [lesson, progress, markInProgress, isProgressLoading, hasStartedRemoteProgress]);
+
+  useEffect(() => {
+    if (!nextLesson?.slug) return;
+    void prefetch(nextLesson.slug);
+  }, [nextLesson?.slug, prefetch]);
+
+  const handleStart = () => {
+    if (!lesson) return;
+    if (lesson.exercises.length === 0) {
+      setStage('summary');
+      return;
+    }
+    setStage('exercise');
+  };
+
+  const handleRestartLesson = () => {
+    setStage('intro');
+    setCurrentExerciseIndex(0);
+    setSelectedOptionId(null);
+    setFeedbackState(null);
+    setAttemptCounts({});
+    setSessionStats(EMPTY_STATS);
+    setIsCompletionStored(false);
+    setSaveMessage(null);
+    setCorrectStreak(0);
+  };
+
+  const handleSelectOption = (optionId: number | string) => {
+    setSelectedOptionId(optionId);
+  };
+
+  const handleExerciseAnswer = async () => {
+    if (!lesson || !currentExercise || selectedOptionId === null) return;
+    const selectedOption = currentExercise.options.find((option) => option.id === selectedOptionId);
+    if (!selectedOption) return;
+
+    const nextAttemptCount = (attemptCounts[String(currentExercise.id)] ?? 0) + 1;
+    const isCorrect = selectedOption.isCorrect;
+    const mapping = !isCorrect ? resolveFeedbackRule(currentExercise.feedbackMappings, selectedOption) : null;
+    const threshold = resolveHelperThreshold(currentExercise, lessonRetryThreshold);
+    const helperText = !isCorrect && nextAttemptCount >= threshold
+      ? resolveAdditionalHelper(currentExercise, selectedOption, mapping, hintCard)
+      : null;
+    const nextStats: SessionStats = {
+      attempts: sessionStats.attempts + 1,
+      correctCount: sessionStats.correctCount + (isCorrect ? 1 : 0),
+      wrongCount: sessionStats.wrongCount + (isCorrect ? 0 : 1),
+    };
+    const nextCorrectStreak = isCorrect ? correctStreak + 1 : 0;
+
+    setAttemptCounts((previous) => ({
+      ...previous,
+      [String(currentExercise.id)]: nextAttemptCount,
+    }));
+    setSessionStats(nextStats);
+    setCorrectStreak(nextCorrectStreak);
+
+    const attemptResult = await recordAttempt({
+      exerciseId: currentExercise.id,
+      selectedOptionId: selectedOption.id,
+      isCorrect,
+      feedbackRuleId: mapping?.feedbackRuleId ?? null,
+    });
+
+    if (!attemptResult.ok) {
+      setSaveMessage(attemptResult.message);
+    }
+
+    setFeedbackState({
+      title: resolveStreakFeedbackTitle(isCorrect, nextCorrectStreak),
+      isCorrect,
+      message: resolveImmediateFeedbackMessage(currentExercise, selectedOption, isCorrect),
+      helperText,
+    });
+    setStage('feedback');
+  };
+
+  const handleFeedbackContinue = async () => {
+    if (!feedbackState) return;
+
+    if (!feedbackState.isCorrect) {
+      setSelectedOptionId(null);
+      setStage('exercise');
+      return;
+    }
+
+    const nextIndex = currentExerciseIndex + 1;
+    if (!lesson || nextIndex < lesson.exercises.length) {
+      setCurrentExerciseIndex(nextIndex);
+      setSelectedOptionId(null);
+      setStage('exercise');
+      return;
+    }
+
+    if (!isCompletionStored) {
+      const completionResult = await completeLesson({
+        stats: sessionStats,
+        previousProgress: progress,
+      });
+      if (!completionResult.ok) {
+        setSaveMessage(completionResult.message);
+      } else {
+        setIsCompletionStored(true);
+      }
+    }
+
+    setStage('summary');
+  };
+
+  const handleSummaryPrimaryAction = () => {
+    if (isCurrentActiveLesson && !isAlreadyCompleted) {
+      onCompleteStop();
+    }
+
+    if (nextLesson?.slug) {
+      onOpenLesson(nextLesson.slug);
+    }
+  };
 
   return (
-    <section className="grid">
+    <section className="flex min-h-full flex-col gap-4">
       {isLoading ? (
-        <div className="grid gap-0 overflow-hidden rounded-[34px] border border-[rgba(216,224,231,0.88)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,249,0.95))] shadow-[var(--shadow-card)] animate-pulse">
-          <div className="grid gap-2 px-5 py-5">
-            <div className="h-3 w-20 rounded-full bg-slate-200/80" />
-            <div className="h-10 w-44 rounded-[18px] bg-slate-100/90" />
-            <div className="h-4 w-56 rounded-full bg-slate-200/80" />
-          </div>
-          <div className="h-px bg-[rgba(224,232,238,0.9)]" />
-          <div className="h-24 bg-slate-100/70" />
-          <div className="h-px bg-[rgba(224,232,238,0.9)]" />
-          <div className="h-24 bg-slate-100/70" />
-          <div className="h-px bg-[rgba(224,232,238,0.9)]" />
-          <div className="h-24 bg-slate-100/70" />
+        <div className="grid gap-4 overflow-hidden rounded-[2rem] border border-[rgba(216,224,231,0.88)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,249,249,0.95))] px-5 py-5 shadow-[var(--shadow-card)] animate-pulse">
+          <div className="h-3 w-20 rounded-full bg-slate-200/80" />
+          <div className="h-10 w-44 rounded-[18px] bg-slate-100/90" />
+          <div className="h-32 rounded-[22px] bg-slate-100/80" />
+          <div className="h-12 rounded-full bg-slate-100/80" />
         </div>
       ) : lesson ? (
-        <article className="overflow-hidden rounded-[34px] border border-[rgba(216,224,231,0.88)] bg-[linear-gradient(180deg,rgba(255,255,255,0.985),rgba(247,249,249,0.96))] shadow-[var(--shadow-card)]">
-          <header className="relative overflow-hidden px-5 py-5">
-            <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#62d7ce,#b8e284)]" aria-hidden="true" />
-            <div className="absolute -right-10 top-0 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(187,229,144,0.18),transparent_66%)] blur-2xl" aria-hidden="true" />
-            <div className="relative grid gap-2">
-              <span className="text-[0.66rem] font-extrabold uppercase tracking-[0.18em] text-[#17897d]">
-                {lesson.level || lesson.section || 'Gramatika'}
+        <>
+          <ProgressIndicator
+            current={stage === 'summary' ? lesson.exercises.length : Math.min(currentExerciseIndex + (stage === 'feedback' && feedbackState?.isCorrect ? 1 : 0), lesson.exercises.length)}
+            total={Math.max(lesson.exercises.length, 1)}
+            label="Ikasgaiaren bidea"
+          />
+
+          {saveMessage || (!isProgressLoading && progressMessage && !progress) ? (
+            <div className="flex items-start gap-3 rounded-[1.5rem] border border-[rgba(236,187,92,0.26)] bg-[linear-gradient(180deg,rgba(255,250,240,0.98),rgba(255,247,232,0.96))] px-4 py-4">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[15px] border border-[rgba(236,187,92,0.26)] bg-white/84 text-[#b47b10]">
+                <AlertCircle className="h-[1rem] w-[1rem]" />
               </span>
-              <h2 className="m-0 font-display text-[clamp(1.9rem,5vw,2.5rem)] leading-[0.92] tracking-[-0.06em] text-[var(--text)]">
-                {lesson.title}
-              </h2>
-              {lesson.topic ? (
-                <p className="m-0 max-w-[28rem] text-[0.92rem] font-medium leading-relaxed text-[var(--muted)]">
-                  {lesson.topic}
-                </p>
-              ) : null}
+              <p className="m-0 text-[0.9rem] font-semibold leading-relaxed text-[var(--text)]">
+                {saveMessage || progressMessage}
+              </p>
             </div>
-          </header>
+          ) : null}
 
-          <div className="h-px bg-[linear-gradient(90deg,rgba(219,228,234,0.25),rgba(219,228,234,0.95),rgba(219,228,234,0.25))]" />
+          {stage === 'intro' ? (
+            <LessonIntroCard
+              lesson={lesson}
+              hookCard={hookCard}
+              onStart={handleStart}
+            />
+          ) : null}
 
-          <div className="grid">
-            {groupedBlocks.map((group, index) => (
-              <div key={`${group[0]?.id ?? index}`}>
-                <LessonBlockGroup blocks={group} />
-                {index < groupedBlocks.length - 1 ? (
-                  <div className="mx-4 h-px bg-[linear-gradient(90deg,rgba(224,232,238,0.18),rgba(224,232,238,0.9),rgba(224,232,238,0.18))]" />
-                ) : null}
-              </div>
-            ))}
-            {shouldShowCertaintyContrast ? (
-              <>
-                <div className="mx-4 h-px bg-[linear-gradient(90deg,rgba(224,232,238,0.18),rgba(224,232,238,0.9),rgba(224,232,238,0.18))]" />
-                <LessonContrastBlock />
-                <div className="mx-4 h-px bg-[linear-gradient(90deg,rgba(224,232,238,0.18),rgba(224,232,238,0.9),rgba(224,232,238,0.18))]" />
-                <LessonCorrectionBlock />
-              </>
-            ) : null}
-            {lessonIndex >= 0 ? (
-              <>
-                <div className="mx-4 h-px bg-[linear-gradient(90deg,rgba(224,232,238,0.18),rgba(224,232,238,0.9),rgba(224,232,238,0.18))]" />
-                <section className="px-4 py-4">
-                  {isCurrentActiveLesson ? (
-                    <div className="grid gap-3 rounded-[22px] border border-[rgba(136,211,174,0.32)] bg-[linear-gradient(180deg,rgba(245,252,245,0.98),rgba(238,248,239,0.96))] px-4 py-4">
-                      <span className="text-[0.63rem] font-extrabold uppercase tracking-[0.16em] text-[#4f8a60]">Hurrengo herria</span>
-                      <p className="m-0 text-[0.94rem] font-semibold leading-relaxed text-[var(--text)]">
-                        Ikasgai hau ulertutzat ematean, hurrengo herria desblokeatuko da mapan.
+          {(stage === 'exercise' || stage === 'feedback') && currentExercise ? (
+            <LessonExerciseCard
+              exercise={currentExercise}
+              selectedOptionId={selectedOptionId}
+              isLocked={stage === 'feedback'}
+              revealFeedback={stage === 'feedback'}
+              isAnswerCorrect={feedbackState?.isCorrect ?? false}
+              onSelect={handleSelectOption}
+              footer={
+                stage === 'exercise' ? (
+                  <>
+                    {selectedOptionId === null ? (
+                      <p className="m-0 text-center text-[0.78rem] font-semibold text-[var(--muted)]">
+                        Aukera bat aukeratu
                       </p>
-                      <button
-                        type="button"
-                        onClick={onCompleteStop}
-                        className="inline-flex min-h-[2.85rem] w-fit items-center justify-center rounded-full bg-[linear-gradient(180deg,#108073,#149186)] px-5 text-[0.84rem] font-black text-white shadow-[0_12px_22px_rgba(20,145,134,0.18)] transition-transform duration-150 hover:-translate-y-[1px]"
-                      >
-                        Ikasgaia ulertuta
-                      </button>
-                    </div>
-                  ) : isAlreadyCompleted ? (
-                    <div className="flex items-start gap-3 rounded-[22px] border border-[rgba(151,215,181,0.26)] bg-[linear-gradient(180deg,rgba(246,252,247,0.98),rgba(239,248,241,0.96))] px-4 py-4">
-                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[15px] border border-[rgba(151,215,181,0.28)] bg-white/90 text-[#4b9867]">
-                        <CheckCircle2 className="h-[1rem] w-[1rem]" />
-                      </span>
-                      <div className="grid gap-1.5">
-                        <span className="text-[0.63rem] font-extrabold uppercase tracking-[0.16em] text-[#5b9270]">Aurrera eginda</span>
-                        <p className="m-0 text-[0.92rem] font-semibold leading-relaxed text-[var(--text)]">
-                          Ikasgai hau jada emanda dago ulertutzat. Hurrengo herria mapan irekita daukazu.
-                        </p>
-                      </div>
-                    </div>
-                  ) : null}
-                </section>
-              </>
-            ) : null}
-          </div>
-        </article>
+                    ) : null}
+                    <button
+                      type="button"
+                      disabled={selectedOptionId === null}
+                      onClick={() => void handleExerciseAnswer()}
+                      className="inline-flex min-h-[3rem] w-full items-center justify-center rounded-full bg-[linear-gradient(180deg,#0b6f69,#0c847b)] px-6 text-[0.98rem] font-black text-white shadow-[0_14px_26px_rgba(12,132,123,0.2)] disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Saiatu!
+                    </button>
+                  </>
+                ) : stage === 'feedback' && feedbackState ? (
+                  <LessonFeedbackCard
+                    compact
+                    embedded
+                    title={feedbackState.title}
+                    isCorrect={feedbackState.isCorrect}
+                    message={feedbackState.message}
+                    helperText={feedbackState.helperText}
+                    onContinue={() => void handleFeedbackContinue()}
+                  />
+                ) : null
+              }
+            />
+          ) : null}
+
+          {stage === 'summary' ? (
+            <LessonSummaryCard
+              lesson={lesson}
+              summaryCard={summaryCard}
+              stats={displayStats}
+              isAlreadyCompleted={isAlreadyCompleted}
+              nextStopLabel={nextStopTown}
+              onPrimaryAction={nextLesson?.slug || (isCurrentActiveLesson && !isAlreadyCompleted) ? handleSummaryPrimaryAction : null}
+              primaryLabel={nextLesson?.slug ? 'Hurrengo ikasgaia' : 'Ikasgaia ulertuta'}
+              onSecondaryAction={handleRestartLesson}
+              secondaryLabel="Berriro egin"
+            />
+          ) : null}
+
+          {lesson.exercises.length === 0 && stage !== 'summary' ? (
+            <div className="flex items-start gap-3 rounded-[1.5rem] border border-[rgba(236,187,92,0.26)] bg-[linear-gradient(180deg,rgba(255,250,240,0.98),rgba(255,247,232,0.96))] px-4 py-4">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[15px] border border-[rgba(236,187,92,0.26)] bg-white/84 text-[#b47b10]">
+                <AlertCircle className="h-[1rem] w-[1rem]" />
+              </span>
+              <div className="grid gap-2">
+                <p className="m-0 text-[0.92rem] font-semibold leading-relaxed text-[var(--text)]">
+                  Ikasgai honek oraindik ez dauka ariketarik. Sarrera bakarrik dago prestatuta.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStage('summary')}
+                  className="inline-flex min-h-[2.5rem] w-fit items-center justify-center rounded-full border border-[rgba(220,228,235,0.9)] bg-white px-4 text-[0.82rem] font-extrabold text-[var(--text)]"
+                >
+                  Ikusi laburpena
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </>
       ) : (
-        <div className="flex items-start gap-3 rounded-[24px] border border-[rgba(236,187,92,0.26)] bg-[linear-gradient(180deg,rgba(255,250,240,0.98),rgba(255,247,232,0.96))] px-4 py-4">
+        <div className="flex items-start gap-3 rounded-[1.5rem] border border-[rgba(236,187,92,0.26)] bg-[linear-gradient(180deg,rgba(255,250,240,0.98),rgba(255,247,232,0.96))] px-4 py-4">
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[15px] border border-[rgba(236,187,92,0.26)] bg-white/84 text-[#b47b10]">
             <AlertCircle className="h-[1rem] w-[1rem]" />
           </span>
           <div className="grid gap-2">
-            <p className="m-0 text-[0.94rem] font-semibold leading-relaxed text-[var(--text)]">{message}</p>
+            <p className="m-0 text-[0.92rem] font-semibold leading-relaxed text-[var(--text)]">{message}</p>
             <button
               type="button"
               onClick={() => void refresh()}

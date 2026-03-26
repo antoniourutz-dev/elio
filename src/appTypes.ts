@@ -1,4 +1,4 @@
-import type { GameLevel, SynonymEntry } from './euskeraLearning';
+import type { GameLevel, SynonymEntry } from './lib/types';
 
 export interface GameWord {
   id: number;

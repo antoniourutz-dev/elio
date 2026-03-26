@@ -1,5 +1,4 @@
-import { memo, useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { motion } from 'framer-motion';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import clsx from 'clsx';
 import { CheckCircle2, CirclePlay, Eye, SendHorizontal, XCircle } from 'lucide-react';
 import { SegmentBar } from '../components/SegmentBar';
@@ -31,8 +30,11 @@ export const DailyGameRunner = memo(function DailyGameRunner({
   onSolve,
   onAdvance,
 }: DailyGameRunnerProps) {
-  const currentQuestion = session.questions[session.currentIndex];
-  const currentAnswer: DailyAnswer | undefined = session.answers[session.currentIndex];
+  const currentQuestion = useMemo(() => session.questions[session.currentIndex], [session.currentIndex, session.questions]);
+  const currentAnswer: DailyAnswer | undefined = useMemo(
+    () => session.answers[session.currentIndex],
+    [session.answers, session.currentIndex]
+  );
   const isAnswered = Boolean(currentAnswer);
   const isLastQuestion = session.currentIndex === session.questions.length - 1;
   const advanceLabel = isLastQuestion ? 'Amaitu' : 'Hurrengoa';
@@ -41,7 +43,21 @@ export const DailyGameRunner = memo(function DailyGameRunner({
   const firstOptionRef = useRef<HTMLButtonElement | null>(null);
   const answerInputRef = useRef<HTMLInputElement | null>(null);
   const advanceRef = useRef<HTMLButtonElement | null>(null);
-  const typedAnswer = currentQuestion.type === 'eroglifico' && typedAnswerState.questionId === currentQuestion.id ? typedAnswerState.value : '';
+  const typedAnswer = useMemo(
+    () => (currentQuestion.type === 'eroglifico' && typedAnswerState.questionId === currentQuestion.id ? typedAnswerState.value : ''),
+    [currentQuestion.id, currentQuestion.type, typedAnswerState]
+  );
+  const segmentAnswers = useMemo(
+    () =>
+      session.answers.map((answer) => ({
+        questionId: answer.questionId,
+        word: '',
+        selectedAnswer: answer.selectedAnswer,
+        correctAnswer: answer.correctAnswer,
+        isCorrect: answer.isCorrect,
+      })),
+    [session.answers]
+  );
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -62,36 +78,25 @@ export const DailyGameRunner = memo(function DailyGameRunner({
     return () => cancelAnimationFrame(frame);
   }, [isAnswered]);
 
-  const submitTypedAnswer = () => {
+  const submitTypedAnswer = useCallback(() => {
     const next = typedAnswer.trim();
     if (!next || isAnswered || currentQuestion.type !== 'eroglifico') return;
     onAnswer(next);
-  };
+  }, [typedAnswer, isAnswered, currentQuestion.type, onAnswer]);
 
-  const handleHieroglyphKeyDown = (event: { key: string; preventDefault: () => void }) => {
+  const handleHieroglyphKeyDown = useCallback((event: { key: string; preventDefault: () => void }) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       submitTypedAnswer();
     }
-  };
+  }, [submitTypedAnswer]);
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.04 }}
-      className="grid w-full h-full gap-3 px-[18px] pt-2 pb-[18px] rounded-[36px] max-w-[680px] mx-auto content-start auto-rows-min"
-    >
+    <section className="grid w-full h-full max-w-[680px] mx-auto content-start auto-rows-min gap-3 rounded-[36px] px-[18px] pt-2 pb-[18px] animate-[fade-up_220ms_ease-out]">
       <div className="flex items-center justify-start pt-0.5">
         <SegmentBar
           total={session.questions.length}
-          answers={session.answers.map((a) => ({
-            questionId: a.questionId,
-            word: '',
-            selectedAnswer: a.selectedAnswer,
-            correctAnswer: a.correctAnswer,
-            isCorrect: a.isCorrect,
-          }))}
+          answers={segmentAnswers}
           currentIndex={session.currentIndex}
         />
       </div>
@@ -371,6 +376,6 @@ export const DailyGameRunner = memo(function DailyGameRunner({
           <span className="text-[1.1rem]">{advanceLabel}</span>
         </button>
       </div>
-    </motion.section>
+    </section>
   );
 });

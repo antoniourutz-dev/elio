@@ -49,4 +49,5 @@ export interface LevelQuestionSeed {
   promptWord: string;
   answerTerms: string[];
   sourceEntry: SynonymEntry;
+  pairTerms?: [string, string];
 }

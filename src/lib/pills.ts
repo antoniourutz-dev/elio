@@ -1,4 +1,5 @@
-import { dailyPillsTable, isSupabaseConfigured, supabase } from '../supabaseClient';
+import { dailyPillsTable, isSupabaseConfigured } from './supabaseConfig';
+import { selectSupabaseRows } from './supabaseRest';
 
 function fnv1a(str: string): number {
   let hash = 2166136261;
@@ -86,14 +87,15 @@ let cachedRemotePills: DailyPill[] | null = null;
 
 const loadRemotePills = async (): Promise<DailyPill[] | null> => {
   if (cachedRemotePills) return cachedRemotePills;
-  if (!supabase || !isSupabaseConfigured) return null;
+  if (!isSupabaseConfigured) return null;
 
-  const { data, error } = await supabase
-    .from(dailyPillsTable)
-    .select('*')
-    .eq('activo', true)
-    .eq('idioma', 'eu')
-    .order('id', { ascending: true });
+  const { data, error } = await selectSupabaseRows<DailyPillRow>(dailyPillsTable, {
+    filters: [
+      { column: 'activo', operator: 'eq', value: true },
+      { column: 'idioma', operator: 'eq', value: 'eu' },
+    ],
+    order: [{ column: 'id', ascending: true }],
+  });
 
   if (error) return null;
 

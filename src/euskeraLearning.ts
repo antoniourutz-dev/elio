@@ -28,10 +28,9 @@ export { buildPlayerEmail } from './lib/parsing';
 
 export { isTeacherPlayer, isSuperPlayer, loadPlayerSessionState, signOutPlayer, accessPlayer } from './lib/auth';
 
-export { savePlayerProgress } from './lib/storage';
+export { createInitialProgress, savePlayerProgress } from './lib/storage';
 
 export {
-  createInitialProgress,
   getLevelRecord,
   getResolvedLevelRecord,
   isLevelUnlocked,
@@ -53,15 +52,10 @@ export {
 
 export { loadSynonymBank } from './lib/bank';
 
-export {
-  getDayKey,
-  loadGameWords,
-  buildDailyGame,
-  calculateDailyScore,
-  loadMyDailyResult,
-  saveDailyResult,
-  loadDailyRanking,
-} from './lib/daily';
+export { getDayKey } from './lib/dailyDates';
+export { calculateDailyScore } from './lib/dailyScoring';
+export { buildDailyGame } from './lib/dailyGameEngine';
+export { loadGameWords, loadMyDailyResult, saveDailyResult, loadDailyRanking } from './lib/dailyRepository';
 
 export {
   loadTeacherPlayers,

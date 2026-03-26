@@ -1,5 +1,4 @@
 import type { MouseEvent } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -20,22 +19,13 @@ export const ConfirmModal = ({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        className="fixed inset-0 z-[100] bg-[#142837]/48 backdrop-blur-md flex items-center justify-center p-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.18 }}
+  isOpen ? (
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-[#142837]/48 p-6 backdrop-blur-md animate-[fade-in_160ms_ease-out]"
         onClick={onCancel}
       >
-        <motion.div
-          className="bg-white/98 border border-[#d1dfe5]/90 rounded-[28px] p-7 max-w-[340px] w-full shadow-[0_32px_80px_rgba(30,60,90,0.22),0_8px_24px_rgba(30,60,90,0.1)]"
-          initial={{ opacity: 0, scale: 0.95, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 12 }}
-          transition={{ duration: 0.18, ease: 'easeOut' }}
+        <div
+          className="w-full max-w-[340px] rounded-[28px] border border-[#d1dfe5]/90 bg-white/98 p-7 shadow-[0_32px_80px_rgba(30,60,90,0.22),0_8px_24px_rgba(30,60,90,0.1)] animate-[modal-rise_180ms_ease-out]"
           onClick={(e: MouseEvent) => e.stopPropagation()}
         >
           <p className="text-[1.1rem] font-black tracking-[-0.02em] text-[var(--text)] mb-2">{title}</p>
@@ -56,8 +46,7 @@ export const ConfirmModal = ({
               {confirmLabel}
             </button>
           </div>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
+        </div>
+      </div>
+    ) : null
 );

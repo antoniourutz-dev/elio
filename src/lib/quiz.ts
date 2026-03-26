@@ -55,20 +55,24 @@ const buildLevelQuestionSeeds = (entries: SynonymEntry[], levelIndex: number): L
     .filter((entry) => entry.levelOrder === levelIndex)
     .flatMap((entry) => {
       const terms = buildEntryTerms(entry);
+      const seeds: LevelQuestionSeed[] = [];
 
-      return terms
-        .map((term) => {
-          const answerTerms = terms.filter((candidate) => normalizeTextKey(candidate) !== normalizeTextKey(term));
-          if (answerTerms.length === 0) return null;
+      for (let leftIndex = 0; leftIndex < terms.length; leftIndex += 1) {
+        for (let rightIndex = leftIndex + 1; rightIndex < terms.length; rightIndex += 1) {
+          const leftTerm = terms[leftIndex];
+          const rightTerm = terms[rightIndex];
 
-          return {
-            id: `${entry.id}::${normalizeTextKey(term)}`,
-            promptWord: term,
-            answerTerms,
+          seeds.push({
+            id: `${entry.id}::${normalizeTextKey(leftTerm)}<>${normalizeTextKey(rightTerm)}`,
+            promptWord: leftTerm,
+            answerTerms: [rightTerm],
+            pairTerms: [leftTerm, rightTerm],
             sourceEntry: entry,
-          } satisfies LevelQuestionSeed;
-        })
-        .filter((seed): seed is LevelQuestionSeed => seed !== null);
+          } satisfies LevelQuestionSeed);
+        }
+      }
+
+      return seeds;
     });
 
 const buildSupportText = (entry: SynonymEntry): string => {
@@ -157,8 +161,10 @@ const buildQuestionFromSeed = (
   allEntries: SynonymEntry[],
   rng: () => number
 ): QuizQuestion | null => {
-  const correctAnswer = shuffleWithRng(seed.answerTerms, rng)[0];
-  const forbidden = new Set([seed.promptWord, ...seed.answerTerms].map(normalizeTextKey));
+  const pairTerms = seed.pairTerms ? shuffleWithRng([...seed.pairTerms], rng) as [string, string] : null;
+  const promptWord = pairTerms?.[0] ?? seed.promptWord;
+  const correctAnswer = pairTerms?.[1] ?? shuffleWithRng(seed.answerTerms, rng)[0];
+  const forbidden = new Set((pairTerms ?? [seed.promptWord, ...seed.answerTerms]).map(normalizeTextKey));
 
   const distractorPool = uniqueNonEmptyStrings(
     allEntries.flatMap((candidate) => buildEntryTerms(candidate))
@@ -172,8 +178,8 @@ const buildQuestionFromSeed = (
 
   return {
     id: seed.id,
-    word: seed.promptWord,
-    prompt: buildPrompt(seed.promptWord),
+    word: promptWord,
+    prompt: buildPrompt(promptWord),
     supportText: buildSupportText(seed.sourceEntry),
     correctAnswer,
     options,

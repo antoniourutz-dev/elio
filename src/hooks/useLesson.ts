@@ -1,87 +1,36 @@
-import { useEffect, useState } from 'react';
-import { clearLessonCache, getLessonSnapshot, loadFirstPublishedLesson, loadLessonBySlug } from '../lib/lessons';
-import type { Lesson } from '../lib/lessons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { loadFirstPublishedLesson, loadLessonBySlug } from '../lib/lessons';
+import { measureAsyncOperation } from '../lib/performanceMetrics';
 
-interface LessonState {
-  isLoading: boolean;
-  isReady: boolean;
-  lesson: Lesson | null;
-  message: string;
-}
-
-const initialState: LessonState = {
-  isLoading: true,
-  isReady: false,
-  lesson: null,
-  message: 'Ikasgaia kargatzen...',
+const lessonQueryKeys = {
+  detail: (slug: string | null) => ['lessons', 'detail', slug ?? 'first-published'] as const,
 };
 
 export function useLesson(slug: string | null, isEnabled: boolean) {
-  const [state, setState] = useState<LessonState>(() => {
-    const snapshot = slug ? getLessonSnapshot(slug) : null;
-    if (!snapshot) return initialState;
-
-    return {
-      isLoading: false,
-      isReady: snapshot.ok,
-      lesson: snapshot.lesson,
-      message: snapshot.message,
-    };
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: lessonQueryKeys.detail(slug),
+    queryFn: () =>
+      measureAsyncOperation(
+        'query',
+        'lesson-detail',
+        () => (slug ? loadLessonBySlug(slug) : loadFirstPublishedLesson()),
+        { details: { slug: slug ?? 'first-published' } }
+      ),
+    enabled: isEnabled,
+    staleTime: 5 * 60_000,
   });
 
-  useEffect(() => {
-    if (!isEnabled) {
-      setState(initialState);
-      return;
-    }
-
-    let active = true;
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.lesson ? current.message : 'Ikasgaia kargatzen...',
-    }));
-
-    const request = slug ? loadLessonBySlug(slug) : loadFirstPublishedLesson();
-
-    void request.then((result) => {
-      if (!active) return;
-      setState({
-        isLoading: false,
-        isReady: result.ok,
-        lesson: result.lesson,
-        message: result.message,
-      });
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [isEnabled, slug]);
-
   const refresh = async () => {
-    if (slug) {
-      clearLessonCache(slug);
-    } else {
-      clearLessonCache();
-    }
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.lesson ? current.message : 'Ikasgaia kargatzen...',
-    }));
-
-    const result = slug ? await loadLessonBySlug(slug) : await loadFirstPublishedLesson();
-    setState({
-      isLoading: false,
-      isReady: result.ok,
-      lesson: result.lesson,
-      message: result.message,
-    });
+    await queryClient.invalidateQueries({ queryKey: lessonQueryKeys.detail(slug) });
+    await query.refetch();
   };
 
   return {
-    ...state,
+    isLoading: query.isLoading || query.isFetching,
+    isReady: query.data?.ok ?? false,
+    lesson: query.data?.lesson ?? null,
+    message: query.data?.message ?? 'Ikasgaia kargatzen...',
     refresh,
   };
 }

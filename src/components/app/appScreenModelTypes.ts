@@ -8,8 +8,8 @@ import type {
   DailyWeeklyRankingEntry,
   LevelSummary,
 } from '../../appTypes';
-import type { GameLevel, GameProgress, PlayerIdentity } from '../../euskeraLearning';
-import type { DockAction, DockActionItemConfig, DockItemConfig, MainScreen, TopBarState } from './appChrome';
+import type { GameLevel, GameProgress } from '../../lib/types';
+import type { DockAction, DockActionItemConfig, DockItemConfig, TopBarState } from './appChrome';
 
 export interface AccessViewModel {
   code: string;
@@ -24,37 +24,59 @@ export interface AccessViewModel {
 }
 
 export interface MainViewModel {
-  dayKey: string;
-  dailyResult: DailyResult | null;
-  canStartDailyGame: boolean;
-  ranking: DailyRankingEntry[];
-  weeklyRanking: DailyWeeklyRankingEntry[];
-  weekHistory: DailyResult[];
-  myRankEntry: DailyRankingEntry | null;
-  myWeekRankEntry: DailyWeeklyRankingEntry | null;
-  isLoadingData: boolean;
   bankState: BankState;
   progress: GameProgress;
   currentTargetLevel: number;
-  homeNotice: string | null;
-  isDemoMode: boolean;
-  uiMessage: string | null;
   isTeacher: boolean;
   isSuperUser: boolean;
   activeGrammarLessonSlug: string | null;
   grammarCompletedStops: number;
-  onStartDailyGame: () => void;
-  onGoLearn: () => void;
   onGoSynonyms: () => void;
   onGoGrammar: () => void;
   onOpenGrammarLesson: (slug?: string | null) => void;
   onCompleteGrammarStop: () => void;
   onGoVocabulary: () => void;
+  onGoTopics: () => void;
   onGoVerbs: () => void;
   onStartOrthographyPractice: () => void;
   onStartLevel: (level: GameLevel) => void;
   onRefreshBank: () => Promise<void>;
   onScrollTop: () => void;
+  onLogout: () => void | Promise<void>;
+}
+
+export interface DailyHomeViewModel {
+  dayKey: string;
+  dailyResult: DailyResult | null;
+  weekHistory: DailyResult[];
+  ranking: DailyRankingEntry[];
+  weeklyRanking: DailyWeeklyRankingEntry[];
+  myRankEntry: DailyRankingEntry | null;
+  myWeekRankEntry: DailyWeeklyRankingEntry | null;
+  isLoadingData: boolean;
+  canStartGame: boolean;
+  onStartGame: () => void;
+  onGoLearn: () => void;
+  onGoSynonyms: () => void;
+  onGoGrammar: () => void;
+  onGoVocabulary: () => void;
+  onGoVerbs: () => void;
+}
+
+export interface StatsViewModel {
+  progress: GameProgress;
+  entries: BankState['entries'];
+  currentTargetLevel: number;
+  homeNotice: string | null;
+  isDemoMode: boolean;
+  uiMessage: string | null;
+}
+
+export interface ProfileViewModel {
+  weekHistory: DailyResult[];
+  isLoadingData: boolean;
+  progress: GameProgress;
+  entries: BankState['entries'];
   onLogout: () => void | Promise<void>;
 }
 
@@ -85,98 +107,4 @@ export interface DockViewModel {
 
 export interface AppTopBarViewModel extends TopBarState {
   title: string;
-}
-
-export interface AppScreenModel {
-  isSessionLoading: boolean;
-  access: AccessViewModel;
-  main: MainViewModel;
-  dailyGame: DailyGameViewModel;
-  synonymGame: SynonymGameViewModel;
-  topBar: AppTopBarViewModel;
-  dock: DockViewModel;
-}
-
-export interface BuildAppScreenModelArgs {
-  isSessionLoading: boolean;
-  access: AccessViewModel;
-  main: MainViewModel;
-  dailyGame: DailyGameViewModel;
-  synonymGame: SynonymGameViewModel;
-  topBar: AppTopBarViewModel;
-  dock: DockViewModel;
-}
-
-export interface UseAppScreenModelArgs {
-  activePlayer: PlayerIdentity | null;
-  mainScreen: MainScreen;
-  isSessionLoading: boolean;
-  dailySessionProgress: string | null;
-  dailyElapsed: string | null;
-  quizProgress: string | null;
-  accessCode: string;
-  setAccessCode: (value: string) => void;
-  accessPassword: string;
-  setAccessPassword: (value: string) => void;
-  accessMessage: string | null;
-  isPasswordVisible: boolean;
-  togglePasswordVisibility: () => void;
-  isSubmittingAccess: boolean;
-  submitAccess: (event?: FormEvent<HTMLFormElement>) => void | Promise<void>;
-  dayKey: string;
-  dailySession: DailyGameSession | null;
-  dailyResult: DailyResult | null;
-  canStartDailyGame: boolean;
-  ranking: DailyRankingEntry[];
-  weeklyRanking: DailyWeeklyRankingEntry[];
-  weekHistory: DailyResult[];
-  myRankEntry: DailyRankingEntry | null;
-  myWeekRankEntry: DailyWeeklyRankingEntry | null;
-  elapsedSeconds: number;
-  isLoadingData: boolean;
-  bankState: BankState;
-  progress: GameProgress;
-  currentTargetLevel: number;
-  homeNotice: string | null;
-  isDemoMode: boolean;
-  uiMessage: string | null;
-  isTeacher: boolean;
-  isSuperUser: boolean;
-  activeGrammarLessonSlug: string | null;
-  grammarCompletedStops: number;
-  quiz: ActiveQuiz | null;
-  currentQuestion: ActiveQuiz['questions'][number] | null;
-  currentAnswer: ActiveQuiz['answers'][number] | null;
-  quizAdvanceLabel: string;
-  summary: LevelSummary | null;
-  summaryErrors: LevelSummary['answers'];
-  completedLevels: number;
-  totalLevels: number;
-  consecutivePlayDays: number;
-  streakTone: string;
-  currentSessionMeters: number;
-  nextLevel: GameLevel | null;
-  nextLevelUnlocked: boolean;
-  startDailyGame: () => void;
-  startOrthographyPractice: () => void;
-  answerDailyQuestion: (selectedAnswer: string) => void;
-  solveDailyQuestion: () => void;
-  advanceDailyQuestion: () => void;
-  startLevel: (level: GameLevel) => void;
-  refreshBank: () => Promise<void>;
-  scrollTop: () => void;
-  logoutPlayer: () => void | Promise<void>;
-  answerCurrentQuestion: (selectedAnswer: string) => void;
-  advanceQuiz: () => void;
-  goHome: () => void;
-  goLearn: () => void;
-  goSynonyms: () => void;
-  goGrammar: () => void;
-  openGrammarLesson: (slug?: string | null) => void;
-  completeGrammarStop: () => void;
-  goVocabulary: () => void;
-  goVerbs: () => void;
-  goStats: () => void;
-  goAdmin: () => void;
-  goProfile: () => void;
 }

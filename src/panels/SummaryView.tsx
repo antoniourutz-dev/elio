@@ -1,7 +1,6 @@
-import { memo, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { memo } from 'react';
 import { ArrowUpRight, CheckCircle2, Flag } from 'lucide-react';
-import { getLevelMetersForProgress } from '../euskeraLearning';
+import { getLevelMetersForProgress } from '../lib/stats';
 import { SegmentBar } from '../components/SegmentBar';
 import { formatMeterProgress, formatMeters, formatPercentage } from '../formatters';
 import type { LevelSummary, SessionAnswer } from '../appTypes';
@@ -12,28 +11,13 @@ interface SummaryViewProps {
 }
 
 export const SummaryView = memo(function SummaryView({ summary, summaryErrors }: SummaryViewProps) {
-  const headingRef = useRef<HTMLHeadingElement | null>(null);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      headingRef.current?.focus();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
   const climbedMeters = getLevelMetersForProgress(summary.level, summary.masteredCount, summary.levelTotalQuestions);
   const nextTargetMeters = getLevelMetersForProgress(summary.level, summary.unlockTargetCount, summary.levelTotalQuestions);
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.04 }}
-      className="grid gap-[18px] max-w-[600px] mx-auto p-[24px] rounded-[36px]"
-    >
+    <section className="grid max-w-[600px] mx-auto gap-[18px] rounded-[36px] p-[24px] animate-[fade-up_220ms_ease-out]">
       <div className="grid gap-[6px]">
         <h2
-          ref={headingRef}
           tabIndex={-1}
           className="font-display text-[clamp(2rem,4vw,2.8rem)] leading-[0.96] tracking-[-0.05em] text-[var(--text)] m-0 outline-none"
         >
@@ -100,6 +84,6 @@ export const SummaryView = memo(function SummaryView({ summary, summaryErrors }:
           ))}
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 });

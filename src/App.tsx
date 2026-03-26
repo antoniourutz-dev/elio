@@ -2,69 +2,55 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import {
   GAME_LEVELS,
-  getLevelMetersForProgress,
-  getConsecutivePlayDays,
-  getResolvedLevelRecord,
-  getUnlockedLevels,
-  isSuperPlayer,
-  isTeacherPlayer,
-  isLevelUnlocked,
   LEVELS_TOTAL,
-} from './euskeraLearning';
-import type { GameLevel } from './euskeraLearning';
-import type { MainScreen } from './components/app/appChrome';
+} from './lib/constants';
+import { isSuperPlayer, isTeacherPlayer } from './lib/auth';
+import { getResolvedLevelRecord, getUnlockedLevels } from './lib/progress';
+import { getLevelMetersForProgress, getConsecutivePlayDays } from './lib/stats';
+import type { GameLevel } from './lib/types';
 import { AppRouterView } from './components/app/AppRouterView';
 import { ConfirmModal } from './components/ConfirmModal';
 import { AppShell } from './components/shared/AppShell';
 import { AppTopBar } from './components/shared/AppTopBar';
 import { BottomActionBar, BottomActionButton, BottomTabBar, BottomTabButton } from './components/shared/AppBottomDock';
 import { useAppAuth } from './hooks/useAppAuth';
+import { useAppDock } from './hooks/useAppDock';
+import { useAppNavigation } from './hooks/useAppNavigation';
 import { useDailyGame } from './hooks/useDailyGame';
-import { useAppScreenModel } from './hooks/useAppScreenModel';
+import { useAppTopBar } from './hooks/useAppTopBar';
 import { useSynonymBank } from './hooks/useSynonymBank';
 import { useSynonymGame } from './hooks/useSynonymGame';
 import { getAvatarForPlayer } from './lib/avatars';
+import { readGrammarProgress } from './lib/grammarProgress';
+import { useAppUiStore } from './stores/useAppUiStore';
+import type { DailyHomeViewModel, ProfileViewModel, StatsViewModel } from './components/app/appScreenModelTypes';
 
 const App = () => {
-  const GRAMMAR_PROGRESS_KEY = 'grammar-map-progress-v1';
   const [uiMessage, setUiMessage] = useState<string | null>(null);
-  const [mainScreen, setMainScreen] = useState<MainScreen>('daily');
-  const [isDailyExitWarningOpen, setIsDailyExitWarningOpen] = useState(false);
-  const [studyLevel, setStudyLevel] = useState<GameLevel | null>(null);
-  const [activeGrammarLessonSlug, setActiveGrammarLessonSlug] = useState<string | null>(null);
-  const [grammarCompletedStops, setGrammarCompletedStops] = useState(0);
   const shellRef = useRef<HTMLDivElement | null>(null);
-
-  const readGrammarProgress = useCallback((playerId: string | null | undefined) => {
-    if (typeof window === 'undefined' || !playerId) return 0;
-
-    try {
-      const raw = window.localStorage.getItem(`${GRAMMAR_PROGRESS_KEY}:${playerId}`);
-      const parsed = Number(raw);
-      return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-    } catch {
-      return 0;
-    }
-  }, []);
-
-  const writeGrammarProgress = useCallback((playerId: string | null | undefined, value: number) => {
-    if (typeof window === 'undefined' || !playerId) return;
-
-    try {
-      window.localStorage.setItem(`${GRAMMAR_PROGRESS_KEY}:${playerId}`, String(Math.max(0, value)));
-    } catch {
-      // Ignore storage failures and keep in-memory progress.
-    }
-  }, []);
+  const mainScreen = useAppUiStore((state) => state.mainScreen);
+  const studyLevel = useAppUiStore((state) => state.studyLevel);
+  const isDailyExitWarningOpen = useAppUiStore((state) => state.isDailyExitWarningOpen);
+  const activeGrammarLessonSlug = useAppUiStore((state) => state.activeGrammarLessonSlug);
+  const grammarCompletedStops = useAppUiStore((state) => state.grammarCompletedStops);
+  const setMainScreen = useAppUiStore((state) => state.setMainScreen);
+  const setStudyLevel = useAppUiStore((state) => state.setStudyLevel);
+  const setDailyExitWarningOpen = useAppUiStore((state) => state.setDailyExitWarningOpen);
+  const setActiveGrammarLessonSlug = useAppUiStore((state) => state.setActiveGrammarLessonSlug);
+  const setGrammarCompletedStops = useAppUiStore((state) => state.setGrammarCompletedStops);
+  const resetNavigationState = useAppUiStore((state) => state.resetNavigationState);
 
   const handleLoginSuccess = useCallback(() => {
     setMainScreen('daily');
-  }, []);
+    setStudyLevel(null);
+    setActiveGrammarLessonSlug(null);
+    setDailyExitWarningOpen(false);
+  }, [setActiveGrammarLessonSlug, setDailyExitWarningOpen, setMainScreen, setStudyLevel]);
 
   const handleLogoutSuccess = useCallback(() => {
-    setMainScreen('daily');
+    resetNavigationState();
     setUiMessage(null);
-  }, []);
+  }, [resetNavigationState]);
 
   const {
     activePlayer,
@@ -92,6 +78,7 @@ const App = () => {
   const {
     dayKey,
     gameWords,
+    dailySynonymCount,
     orthographyExercises,
     hieroglyphs,
     dailySession,
@@ -109,7 +96,7 @@ const App = () => {
     solveDailyQuestion,
     advanceDailyQuestion,
     abandonDailyGame,
-  } = useDailyGame({ activePlayer, synonymEntries: bankState.entries });
+  } = useDailyGame({ activePlayer });
 
   const {
     quiz,
@@ -126,101 +113,33 @@ const App = () => {
     setUiMessage,
     setMainScreen,
   });
-
-  const openMainScreen = useCallback((screen: MainScreen) => {
-    setMainScreen(screen);
-    shellRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  const scrollTop = useCallback(() => {
-    shellRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  const goHome = useCallback(() => openMainScreen('daily'), [openMainScreen]);
-  const goLearn = useCallback(() => {
-    leaveGame();
-    setStudyLevel(null);
-    openMainScreen('learn');
-  }, [leaveGame, openMainScreen]);
-  const goSynonyms = useCallback(() => {
-    leaveGame();
-    setStudyLevel(null);
-    openMainScreen('synonyms');
-  }, [leaveGame, openMainScreen]);
-  const goGrammar = useCallback(() => {
-    if (!isSuperPlayer(activePlayer)) {
-      return;
-    }
-    leaveGame();
-    setStudyLevel(null);
-    setActiveGrammarLessonSlug(null);
-    openMainScreen('grammar');
-  }, [activePlayer, leaveGame, openMainScreen]);
-  const openGrammarLesson = useCallback((slug?: string | null) => {
-    if (!isSuperPlayer(activePlayer)) {
-      return;
-    }
-    leaveGame();
-    setStudyLevel(null);
-    setActiveGrammarLessonSlug(slug ?? null);
-    openMainScreen('grammar-lesson');
-  }, [activePlayer, leaveGame, openMainScreen]);
-  const completeGrammarStop = useCallback(() => {
-    if (!activePlayer?.userId) return;
-
-    setGrammarCompletedStops((current) => {
-      const next = Math.min(current + 1, 10);
-      writeGrammarProgress(activePlayer.userId, next);
-      return next;
-    });
-  }, [activePlayer?.userId, writeGrammarProgress]);
-  const goVocabulary = useCallback(() => {
-    leaveGame();
-    setStudyLevel(null);
-    openMainScreen('vocabulary');
-  }, [leaveGame, openMainScreen]);
-  const goVerbs = useCallback(() => {
-    leaveGame();
-    setStudyLevel(null);
-    openMainScreen('verbs');
-  }, [leaveGame, openMainScreen]);
-  const goOrthographyPractice = useCallback(() => {
-    leaveGame();
-    setStudyLevel(null);
-    openMainScreen('learn');
-    startOrthographyPractice();
-  }, [leaveGame, openMainScreen, startOrthographyPractice]);
-  const goStats = useCallback(() => openMainScreen('stats'), [openMainScreen]);
-  const goAdmin = useCallback(() => openMainScreen('admin'), [openMainScreen]);
-  const goProfile = useCallback(() => openMainScreen('profile'), [openMainScreen]);
+  const {
+    scrollTop,
+    goHome,
+    goLearn,
+    goSynonyms,
+    goGrammar,
+    openGrammarLesson,
+    completeGrammarStop,
+    goVocabulary,
+    goTopics,
+    goVerbs,
+    goOrthographyPractice,
+    goStats,
+    goAdmin,
+    goProfile,
+    handleTopBarBack,
+    confirmDailyExit,
+  } = useAppNavigation({
+    shellRef,
+    activePlayer,
+    dailySession,
+    grammarCompletedStops,
+    leaveGame,
+    startOrthographyPractice,
+    abandonDailyGame,
+  });
   const handleLogout = logoutPlayer;
-  const handleBackFromSynonymsGame = useCallback(() => {
-    leaveGame();
-    setMainScreen('synonyms');
-    shellRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [leaveGame]);
-  const handleTopBarBack = useCallback(() => {
-    if (dailySession) {
-      if (dailySession.mode === 'orthography_practice') {
-        abandonDailyGame();
-        return;
-      }
-
-      setIsDailyExitWarningOpen(true);
-      return;
-    }
-
-    if (mainScreen === 'grammar-lesson') {
-      setMainScreen('grammar');
-      return;
-    }
-
-    handleBackFromSynonymsGame();
-  }, [abandonDailyGame, dailySession, handleBackFromSynonymsGame, mainScreen]);
-  const confirmDailyExit = useCallback(() => {
-    setIsDailyExitWarningOpen(false);
-    abandonDailyGame();
-  }, [abandonDailyGame]);
 
   const resolvedLevelRecords = useMemo(
     () => GAME_LEVELS.map((level) => ({ level, record: getResolvedLevelRecord(progress, bankState.entries, level) })),
@@ -242,7 +161,8 @@ const App = () => {
   const quizAdvanceLabel = quiz ? (quiz.currentIndex === quiz.questions.length - 1 ? 'Amaitu' : 'Hurrengoa') : 'Hurrengoa';
   const quizProgress = quiz ? `${quiz.currentIndex + 1}/${quiz.questions.length}` : null;
   const currentTargetLevel = unlockedLevels.at(-1)?.index ?? 1;
-  const canStartDailyGame = bankState.entries.length >= 5 && gameWords.length >= 3 && orthographyExercises.length >= 2 && hieroglyphs.length >= 2;
+  const canStartDailyGame =
+    dailySynonymCount >= 5 && gameWords.length >= 3 && orthographyExercises.length >= 2 && hieroglyphs.length >= 2;
   const dailySessionProgress = dailySession ? `${dailySession.currentIndex + 1}/${dailySession.questions.length}` : null;
   const dailyElapsedLabel = dailySession
     ? (() => {
@@ -262,22 +182,20 @@ const App = () => {
           : consecutivePlayDays >= 1
             ? 'streak-1'
             : 'streak-0';
-  const homeNotice = uiMessage ?? (isDemoMode ? 'Demoko hitzak erabiltzen ari dira.' : null);
+  const homeNotice =
+    uiMessage ??
+    (!bankState.isLoading && !bankState.isReady
+      ? bankState.message
+      : isDemoMode
+        ? 'Demoko hitzak erabiltzen ari dira.'
+        : null);
   const summaryErrors = useMemo(
     () => (summary ? summary.answers.filter((answer) => !answer.isCorrect) : []),
     [summary]
   );
-  const nextLevel = summary && summary.level.index < LEVELS_TOTAL ? GAME_LEVELS[summary.level.index] : null;
-  const nextLevelUnlocked = nextLevel ? isLevelUnlocked(progress, nextLevel.index, bankState.entries) : false;
   const isTeacher = isTeacherPlayer(activePlayer);
   const isSuperUser = isSuperPlayer(activePlayer);
   const topBarAvatar = useMemo(() => (activePlayer ? getAvatarForPlayer(activePlayer) : null), [activePlayer]);
-
-  useEffect(() => {
-    if (!isSuperUser && (mainScreen === 'grammar' || mainScreen === 'grammar-lesson')) {
-      setMainScreen('learn');
-    }
-  }, [isSuperUser, mainScreen]);
 
   useEffect(() => {
     if (!activePlayer?.userId) {
@@ -286,86 +204,200 @@ const App = () => {
     }
 
     setGrammarCompletedStops(readGrammarProgress(activePlayer.userId));
-  }, [activePlayer?.userId, readGrammarProgress]);
+  }, [activePlayer?.userId, setGrammarCompletedStops]);
 
-  const screenModel = useAppScreenModel({
-    activePlayer,
+  const topBar = useAppTopBar({
+    playerCode: activePlayer?.code,
     mainScreen,
-    isSessionLoading,
+    dailySessionMode: dailySession?.mode ?? (dailySession ? 'daily' : null),
     dailySessionProgress,
     dailyElapsed: dailyElapsedLabel,
-    quizProgress,
-    accessCode,
-    setAccessCode,
-    accessPassword,
-    setAccessPassword,
-    accessMessage,
-    isPasswordVisible,
-    togglePasswordVisibility,
-    isSubmittingAccess,
-    submitAccess,
-    dayKey,
-    dailySession,
-    dailyResult,
-    canStartDailyGame,
-    ranking,
-    weeklyRanking,
-    weekHistory,
-    myRankEntry,
-    myWeekRankEntry,
-    elapsedSeconds,
-    isLoadingData,
-    bankState,
-    progress,
-    currentTargetLevel,
-    homeNotice,
-    isDemoMode,
-    uiMessage,
-    isTeacher,
-    isSuperUser,
-    activeGrammarLessonSlug,
-    grammarCompletedStops,
     quiz,
-    currentQuestion,
-    currentAnswer,
-    quizAdvanceLabel,
+    quizProgress,
     summary,
-    summaryErrors,
     completedLevels,
     totalLevels: LEVELS_TOTAL,
     consecutivePlayDays,
     streakTone,
     currentSessionMeters,
-    nextLevel,
-    nextLevelUnlocked,
-      startDailyGame,
-      startOrthographyPractice: goOrthographyPractice,
-      answerDailyQuestion,
-    solveDailyQuestion,
-    advanceDailyQuestion,
-    startLevel,
-    refreshBank,
-    scrollTop,
-    logoutPlayer: handleLogout,
-    answerCurrentQuestion,
-    advanceQuiz,
-    goHome,
-    goLearn,
-    goSynonyms,
-    goGrammar,
-    openGrammarLesson,
-    completeGrammarStop,
-    goVocabulary,
-    goVerbs,
-    goStats,
-    goAdmin,
-    goProfile,
   });
+
+  const dock = useAppDock({
+    isTeacher,
+    mainScreen,
+    dailySession: Boolean(dailySession),
+    quiz,
+    summary,
+    onLearn: goLearn,
+    onHome: goHome,
+    onStats: goStats,
+    onAdmin: goAdmin,
+    onProfile: goProfile,
+    onRetryLevel: () => {
+      if (summary) startLevel(summary.level);
+    },
+  });
+
+  const accessViewModel = useMemo(
+    () => ({
+      code: accessCode,
+      password: accessPassword,
+      message: accessMessage,
+      isPasswordVisible,
+      isSubmitting: isSubmittingAccess,
+      onCodeChange: setAccessCode,
+      onPasswordChange: setAccessPassword,
+      onPasswordVisibilityToggle: togglePasswordVisibility,
+      onSubmit: submitAccess,
+    }),
+    [
+      accessCode,
+      accessPassword,
+      accessMessage,
+      isPasswordVisible,
+      isSubmittingAccess,
+      setAccessCode,
+      setAccessPassword,
+      togglePasswordVisibility,
+      submitAccess,
+    ]
+  );
+
+  const mainViewModel = useMemo(
+    () => ({
+      bankState,
+      progress,
+      currentTargetLevel,
+      isTeacher,
+      isSuperUser,
+      activeGrammarLessonSlug,
+      grammarCompletedStops,
+      onStartOrthographyPractice: goOrthographyPractice,
+      onGoSynonyms: goSynonyms,
+      onGoGrammar: goGrammar,
+      onOpenGrammarLesson: openGrammarLesson,
+      onCompleteGrammarStop: completeGrammarStop,
+      onGoVocabulary: goVocabulary,
+      onGoTopics: goTopics,
+      onGoVerbs: goVerbs,
+      onStartLevel: startLevel,
+      onRefreshBank: refreshBank,
+      onScrollTop: scrollTop,
+      onLogout: handleLogout,
+    }),
+    [
+      bankState,
+      progress,
+      currentTargetLevel,
+      isTeacher,
+      isSuperUser,
+      activeGrammarLessonSlug,
+      grammarCompletedStops,
+      goOrthographyPractice,
+      goSynonyms,
+      goGrammar,
+      openGrammarLesson,
+      completeGrammarStop,
+      goVocabulary,
+      goTopics,
+      goVerbs,
+      startLevel,
+      refreshBank,
+      scrollTop,
+      handleLogout,
+    ]
+  );
+
+  const dailyHomeViewModel = useMemo<DailyHomeViewModel>(
+    () => ({
+      dayKey,
+      dailyResult,
+      weekHistory,
+      ranking,
+      weeklyRanking,
+      myRankEntry,
+      myWeekRankEntry,
+      isLoadingData,
+      canStartGame: canStartDailyGame,
+      onStartGame: startDailyGame,
+      onGoLearn: goLearn,
+      onGoSynonyms: goSynonyms,
+      onGoGrammar: goGrammar,
+      onGoVocabulary: goVocabulary,
+      onGoVerbs: goVerbs,
+    }),
+    [
+      dayKey,
+      dailyResult,
+      weekHistory,
+      ranking,
+      weeklyRanking,
+      myRankEntry,
+      myWeekRankEntry,
+      isLoadingData,
+      canStartDailyGame,
+      startDailyGame,
+      goLearn,
+      goSynonyms,
+      goGrammar,
+      goVocabulary,
+      goVerbs,
+    ]
+  );
+
+  const statsViewModel = useMemo<StatsViewModel>(
+    () => ({
+      progress,
+      entries: bankState.entries,
+      currentTargetLevel,
+      homeNotice,
+      isDemoMode,
+      uiMessage,
+    }),
+    [progress, bankState.entries, currentTargetLevel, homeNotice, isDemoMode, uiMessage]
+  );
+
+  const profileViewModel = useMemo<ProfileViewModel>(
+    () => ({
+      weekHistory,
+      isLoadingData,
+      progress,
+      entries: bankState.entries,
+      onLogout: handleLogout,
+    }),
+    [weekHistory, isLoadingData, progress, bankState.entries, handleLogout]
+  );
+
+  const dailyGameViewModel = useMemo(
+    () => ({
+      session: dailySession,
+      elapsedSeconds,
+      onAnswer: answerDailyQuestion,
+      onSolve: solveDailyQuestion,
+      onAdvance: advanceDailyQuestion,
+    }),
+    [dailySession, elapsedSeconds, answerDailyQuestion, solveDailyQuestion, advanceDailyQuestion]
+  );
+
+  const synonymGameViewModel = useMemo(
+    () => ({
+      quiz,
+      currentQuestion,
+      currentAnswer,
+      quizAdvanceLabel,
+      summary,
+      summaryErrors,
+      onAnswer: answerCurrentQuestion,
+      onAdvance: advanceQuiz,
+    }),
+    [quiz, currentQuestion, currentAnswer, quizAdvanceLabel, summary, summaryErrors, answerCurrentQuestion, advanceQuiz]
+  );
+
   const bottomBarMode: 'tabs' | 'actions' | null =
     activePlayer
-      ? screenModel.dock.actions.length > 0
+      ? dock.actions.length > 0
         ? 'actions'
-        : screenModel.dock.tabs.length > 0
+        : dock.tabs.length > 0
           ? 'tabs'
           : null
       : null;
@@ -374,12 +406,12 @@ const App = () => {
     <div className="app-frame grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
       {activePlayer && (
         <AppTopBar
-          title={screenModel.topBar.title}
-          subtitle={screenModel.topBar.subtitle}
-          showBackButton={screenModel.topBar.showBackButton}
+          title={topBar.title}
+          subtitle={topBar.subtitle}
+          showBackButton={topBar.showBackButton}
           onBack={handleTopBarBack}
-          metric={screenModel.topBar.metric}
-          secondaryMetric={screenModel.topBar.secondaryMetric}
+          metric={topBar.metric}
+          secondaryMetric={topBar.secondaryMetric}
           backIcon={<ChevronLeft />}
           avatarSrc={topBarAvatar?.src ?? null}
           avatarAlt={topBarAvatar?.label}
@@ -388,13 +420,16 @@ const App = () => {
 
       <AppShell shellRef={shellRef} isLocked={Boolean(quiz || dailySession)} bottomBarMode={bottomBarMode}>
         <AppRouterView
-          isSessionLoading={screenModel.isSessionLoading}
+          isSessionLoading={isSessionLoading}
           activePlayer={activePlayer}
-          access={screenModel.access}
+          access={accessViewModel}
           mainScreen={mainScreen}
-          main={screenModel.main}
-          dailyGame={screenModel.dailyGame}
-          synonymGame={screenModel.synonymGame}
+          dailyHome={dailyHomeViewModel}
+          stats={statsViewModel}
+          profile={profileViewModel}
+          main={mainViewModel}
+          dailyGame={dailyGameViewModel}
+          synonymGame={synonymGameViewModel}
           studyLevel={studyLevel}
           onStudyLevel={setStudyLevel}
           onCloseStudy={() => setStudyLevel(null)}
@@ -403,14 +438,14 @@ const App = () => {
 
       {bottomBarMode === 'tabs' ? (
         <BottomTabBar>
-          {screenModel.dock.tabs.map((item) => {
+          {dock.tabs.map((item) => {
             const Icon = item.icon;
             return (
               <span key={item.id} className="contents">
                 <BottomTabButton
                   label={item.label}
                   icon={<Icon />}
-                  onClick={() => screenModel.dock.onItemClick(item.action)}
+                  onClick={() => dock.onItemClick(item.action)}
                   active={item.active}
                 />
               </span>
@@ -421,14 +456,14 @@ const App = () => {
 
       {bottomBarMode === 'actions' ? (
         <BottomActionBar>
-          {screenModel.dock.actions.map((item) => {
+          {dock.actions.map((item) => {
             const Icon = item.icon;
             return (
               <span key={item.id} className="contents">
                 <BottomActionButton
                   label={item.label}
                   icon={<Icon />}
-                  onClick={() => screenModel.dock.onItemClick(item.action)}
+                  onClick={() => dock.onItemClick(item.action)}
                   variant={item.variant}
                 />
               </span>
@@ -444,7 +479,7 @@ const App = () => {
         confirmLabel="Irten"
         cancelLabel="Jarraitu"
         onConfirm={confirmDailyExit}
-        onCancel={() => setIsDailyExitWarningOpen(false)}
+        onCancel={() => setDailyExitWarningOpen(false)}
       />
     </div>
   );

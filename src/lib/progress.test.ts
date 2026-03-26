@@ -3,6 +3,7 @@ import { getLevelRecord, getResolvedLevelRecord, isLevelUnlocked, getUnlockedLev
 import { createInitialProgress } from './storage';
 import { GAME_LEVELS } from './constants';
 import type { GameProgress, SynonymEntry } from './types';
+import { buildLevelQuestionSeeds } from './quiz';
 
 // Minimal synonym entries that produce question seeds for level 1
 const makeEntries = (levelIndex: number, count: number): SynonymEntry[] =>
@@ -58,11 +59,7 @@ describe('getResolvedLevelRecord', () => {
 
   it('reflects isCompleted based on current question count', () => {
     // Build enough mastered IDs to exceed 70% threshold
-    const seeds = entries1.flatMap((e) => [
-      `${e.id}::${e.word}`,
-      `${e.id}::${e.synonyms[0]}`,
-      `${e.id}::${e.synonyms[1]}`,
-    ]);
+    const seeds = buildLevelQuestionSeeds(entries1, 1).map((seed) => seed.id);
     const progress = recordLevelResult(createInitialProgress(), level1, 100, seeds.length, seeds.length, seeds.length, seeds, []);
     const record = getResolvedLevelRecord(progress, entries1, level1);
     expect(record?.isCompleted).toBe(true);
@@ -86,11 +83,7 @@ describe('isLevelUnlocked', () => {
   });
 
   it('level 2 unlocks when level 1 is completed', () => {
-    const seeds = entries1.flatMap((e) => [
-      `${e.id}::${e.word}`,
-      `${e.id}::${e.synonyms[0]}`,
-      `${e.id}::${e.synonyms[1]}`,
-    ]);
+    const seeds = buildLevelQuestionSeeds(entries1, 1).map((seed) => seed.id);
     const progress = recordLevelResult(createInitialProgress(), level1, 100, seeds.length, seeds.length, seeds.length, seeds, []);
     expect(isLevelUnlocked(progress, 2, entries1)).toBe(true);
   });

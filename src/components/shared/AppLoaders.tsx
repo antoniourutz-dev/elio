@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion';
-
 interface LoadingPanelProps {
   minHeightClass?: string;
   roundedClass?: string;
@@ -21,12 +19,7 @@ export function LoadingPanel({
 
 export function SessionLoadingView() {
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.04 }}
-      className="grid content-center justify-center min-h-[60dvh] p-6 text-center"
-    >
+    <section className="grid min-h-[60dvh] content-center justify-center p-6 text-center animate-[fade-up_220ms_ease-out]">
       <div className="mb-4 text-[#6bb8d9] font-display text-4xl font-black tracking-[-0.05em]">
         <strong>Elio</strong>
       </div>
@@ -36,6 +29,6 @@ export function SessionLoadingView() {
           <p className="mt-2 text-[0.92rem] font-semibold text-[var(--muted)]">Datuak prestatzen ari gara.</p>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

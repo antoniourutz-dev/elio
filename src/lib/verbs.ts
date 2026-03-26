@@ -1,4 +1,5 @@
-import { supabase } from '../supabaseClient';
+import { isSupabaseConfigured } from './supabaseConfig';
+import { selectSupabaseRows } from './supabaseRest';
 
 export type VerbType = 'nor' | 'nor_nork' | 'nor_nori' | 'nor_nori_nork';
 
@@ -31,9 +32,6 @@ export interface VerbFormsLoadResult {
   forms: VerbFormRecord[];
   message: string;
 }
-
-let verbFormsCache: VerbFormsLoadResult | null = null;
-let verbFormsRequest: Promise<VerbFormsLoadResult> | null = null;
 
 const VERB_FORMS_TABLE = 'verb_forms';
 const VERB_FORMS_SELECT = [
@@ -107,16 +105,7 @@ export function sortArgumentValues(values: string[], kind: keyof typeof ARGUMENT
 }
 
 export async function loadVerbForms(): Promise<VerbFormsLoadResult> {
-  if (verbFormsCache) {
-    return verbFormsCache;
-  }
-
-  if (verbFormsRequest) {
-    return verbFormsRequest;
-  }
-
-  verbFormsRequest = (async (): Promise<VerbFormsLoadResult> => {
-    if (!supabase) {
+    if (!isSupabaseConfigured) {
       return {
         ok: false,
         forms: [],
@@ -124,16 +113,18 @@ export async function loadVerbForms(): Promise<VerbFormsLoadResult> {
       };
     }
 
-    const { data, error } = await supabase
-      .from(VERB_FORMS_TABLE)
-      .select(VERB_FORMS_SELECT)
-      .order('verb_type', { ascending: true })
-      .order('tense', { ascending: true })
-      .order('number_type', { ascending: true, nullsFirst: true })
-      .order('nor', { ascending: true, nullsFirst: true })
-      .order('nori', { ascending: true, nullsFirst: true })
-      .order('nork', { ascending: true, nullsFirst: true })
-      .limit(5000);
+    const { data, error } = await selectSupabaseRows<VerbFormRow>(VERB_FORMS_TABLE, {
+      select: VERB_FORMS_SELECT,
+      order: [
+        { column: 'verb_type', ascending: true },
+        { column: 'tense', ascending: true },
+        { column: 'number_type', ascending: true, nullsFirst: true },
+        { column: 'nor', ascending: true, nullsFirst: true },
+        { column: 'nori', ascending: true, nullsFirst: true },
+        { column: 'nork', ascending: true, nullsFirst: true },
+      ],
+      limit: 5000,
+    });
 
     if (error || !data) {
       return {
@@ -181,23 +172,4 @@ export async function loadVerbForms(): Promise<VerbFormsLoadResult> {
       forms,
       message: forms.length > 0 ? `${forms.length} aditz forma kargatuta.` : 'Ez dago aditz formarik oraindik.',
     };
-  })();
-
-  const result = await verbFormsRequest;
-  verbFormsCache = result;
-  verbFormsRequest = null;
-  return result;
-}
-
-export function preloadVerbForms(): void {
-  void loadVerbForms();
-}
-
-export function getVerbFormsSnapshot(): VerbFormsLoadResult | null {
-  return verbFormsCache;
-}
-
-export function clearVerbFormsCache(): void {
-  verbFormsCache = null;
-  verbFormsRequest = null;
 }

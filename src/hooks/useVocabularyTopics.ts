@@ -1,11 +1,7 @@
-import { useEffect, useState } from 'react';
-import {
-  clearVocabularyTopicsCache,
-  getVocabularyTopicsSnapshot,
-  loadVocabularyTopics,
-  preloadVocabularyTopics,
-} from '../lib/vocabulary';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { loadVocabularyTopics } from '../lib/vocabulary';
 import type { VocabularyTopic } from '../lib/vocabulary';
+import { measureAsyncOperation } from '../lib/performanceMetrics';
 
 interface VocabularyState {
   isLoading: boolean;
@@ -21,66 +17,33 @@ const initialState: VocabularyState = {
   isReady: false,
 };
 
-preloadVocabularyTopics();
+const vocabularyTopicsQueryKey = ['vocabulary', 'topics'] as const;
 
 export function useVocabularyTopics(isEnabled: boolean) {
-  const [state, setState] = useState<VocabularyState>(() => {
-    const snapshot = getVocabularyTopicsSnapshot();
-    if (!snapshot) return initialState;
-
-    return {
-      isLoading: false,
-      topics: snapshot.topics,
-      message: snapshot.message,
-      isReady: snapshot.ok,
-    };
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: vocabularyTopicsQueryKey,
+    queryFn: () => measureAsyncOperation('query', 'vocabulary-topics', loadVocabularyTopics),
+    enabled: isEnabled,
+    staleTime: 10 * 60_000,
   });
 
-  useEffect(() => {
-    if (!isEnabled) {
-      setState(initialState);
-      return;
-    }
-
-    let active = true;
-
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.topics.length > 0 ? current.message : 'Hiztegia kargatzen...',
-    }));
-
-    void loadVocabularyTopics().then((result) => {
-      if (!active) return;
-      setState({
-        isLoading: false,
-        topics: result.topics,
-        message: result.message,
-        isReady: result.ok,
-      });
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [isEnabled]);
-
   const refresh = async () => {
-    clearVocabularyTopicsCache();
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.topics.length > 0 ? current.message : 'Hiztegia kargatzen...',
-    }));
-
-    const result = await loadVocabularyTopics();
-    setState({
-      isLoading: false,
-      topics: result.topics,
-      message: result.message,
-      isReady: result.ok,
-    });
+    await queryClient.invalidateQueries({ queryKey: vocabularyTopicsQueryKey });
+    await query.refetch();
   };
+
+  const state: VocabularyState = query.data
+    ? {
+        isLoading: query.isLoading || query.isFetching,
+        topics: query.data.topics,
+        message: query.data.message,
+        isReady: query.data.ok,
+      }
+    : {
+        ...initialState,
+        isLoading: isEnabled,
+      };
 
   return {
     ...state,

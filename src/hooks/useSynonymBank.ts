@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { loadSynonymBank } from '../euskeraLearning';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { loadSynonymBank } from '../lib/bank';
 import type { BankState } from '../appTypes';
+import { measureAsyncOperation } from '../lib/performanceMetrics';
 
 const initialBankState: BankState = {
   isLoading: true,
@@ -9,38 +10,36 @@ const initialBankState: BankState = {
   message: 'Supabasera konektatzen...',
 };
 
+const synonymBankQueryKey = (playerUserId: string | null | undefined) => ['synonym-bank', playerUserId ?? 'guest'] as const;
+
 export function useSynonymBank(playerUserId: string | null | undefined, isSessionLoading: boolean) {
-  const [bankState, setBankState] = useState<BankState>(initialBankState);
-  const hydratedUserIdRef = useRef<string | null | undefined>(undefined);
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: synonymBankQueryKey(playerUserId),
+    queryFn: () =>
+      measureAsyncOperation('query', 'synonym-bank', loadSynonymBank, {
+        details: { playerUserId: playerUserId ?? 'guest' },
+      }),
+    enabled: !isSessionLoading && Boolean(playerUserId),
+    staleTime: 5 * 60_000,
+  });
 
-  const refreshBank = useCallback(async () => {
-    setBankState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.entries.length > 0 ? current.message : 'Supabasera konektatzen...',
-    }));
+  const refreshBank = async () => {
+    await queryClient.invalidateQueries({ queryKey: synonymBankQueryKey(playerUserId) });
+    await query.refetch();
+  };
 
-    const result = await loadSynonymBank();
-
-    setBankState({
-      isLoading: false,
-      isReady: result.ok,
-      entries: result.entries,
-      message: result.message,
-    });
-  }, []);
-
-  useEffect(() => {
-    if (isSessionLoading) return;
-
-    const nextUserId = playerUserId ?? null;
-    if (hydratedUserIdRef.current === nextUserId) return;
-
-    hydratedUserIdRef.current = nextUserId;
-    queueMicrotask(() => {
-      void refreshBank();
-    });
-  }, [isSessionLoading, playerUserId, refreshBank]);
+  const bankState: BankState = query.data
+    ? {
+        isLoading: query.isLoading || query.isFetching,
+        isReady: query.data.ok,
+        entries: query.data.entries,
+        message: query.data.message,
+      }
+    : {
+        ...initialBankState,
+        isLoading: !isSessionLoading && Boolean(playerUserId),
+      };
 
   return {
     bankState,

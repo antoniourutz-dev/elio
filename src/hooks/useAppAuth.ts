@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import {
   accessPlayer,
-  createInitialProgress,
   loadPlayerSessionState,
   signOutPlayer,
-} from '../euskeraLearning';
-import type { GameProgress, PlayerIdentity } from '../euskeraLearning';
+} from '../lib/auth';
+import type { GameProgress, PlayerIdentity } from '../lib/types';
+import { createInitialProgress } from '../lib/storage';
+import { clearCachedSessionState, readCachedSessionState, writeCachedSessionState } from '../lib/authCache';
+import { clearSupabaseRestAuthCache } from '../lib/supabaseRest';
 
 export interface UseAppAuthProps {
   onLoginSuccess: () => Promise<void> | void;
@@ -14,28 +16,50 @@ export interface UseAppAuthProps {
 }
 
 export function useAppAuth({ onLoginSuccess, onLogoutSuccess, setUiMessage }: UseAppAuthProps) {
-  const [activePlayer, setActivePlayer] = useState<PlayerIdentity | null>(null);
-  const [progress, setProgress] = useState<GameProgress>(createInitialProgress());
+  const [cachedSession] = useState(() => readCachedSessionState());
+  const [activePlayer, setActivePlayer] = useState<PlayerIdentity | null>(cachedSession.player);
+  const [progress, setProgress] = useState<GameProgress>(cachedSession.progress);
   
   const [accessCode, setAccessCode] = useState('');
   const [accessPassword, setAccessPassword] = useState('');
   const [accessMessage, setAccessMessage] = useState<string | null>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isSubmittingAccess, setIsSubmittingAccess] = useState(false);
-  const [isSessionLoading, setIsSessionLoading] = useState(true);
+  const [isSessionLoading, setIsSessionLoading] = useState(cachedSession.player === null);
 
   useEffect(() => {
     const hydrateSession = async () => {
-      setIsSessionLoading(true);
+      if (!cachedSession.player) {
+        setIsSessionLoading(true);
+      }
       const sessionState = await loadPlayerSessionState();
+      clearSupabaseRestAuthCache();
       setActivePlayer(sessionState.player);
       setProgress(sessionState.progress);
       setUiMessage(sessionState.message);
+      if (sessionState.player) {
+        writeCachedSessionState(sessionState);
+      } else {
+        clearCachedSessionState();
+      }
       setIsSessionLoading(false);
     };
 
     void hydrateSession();
-  }, [setUiMessage]);
+  }, [cachedSession.player, setUiMessage]);
+
+  useEffect(() => {
+    if (activePlayer) {
+      writeCachedSessionState({
+        player: activePlayer,
+        progress,
+        message: null,
+      });
+      return;
+    }
+
+    clearCachedSessionState();
+  }, [activePlayer, progress]);
 
   const togglePasswordVisibility = useCallback(() => {
     setIsPasswordVisible((v) => !v);
@@ -58,6 +82,7 @@ export function useAppAuth({ onLoginSuccess, onLogoutSuccess, setUiMessage }: Us
 
     setActivePlayer(result.player);
     setProgress(result.progress);
+    clearSupabaseRestAuthCache();
     
     // reset local form state
     setAccessCode('');
@@ -67,6 +92,11 @@ export function useAppAuth({ onLoginSuccess, onLogoutSuccess, setUiMessage }: Us
     
     // The message could be a "demo" mode message. We keep it globally or clear it out
     setUiMessage(result.message);
+    writeCachedSessionState({
+      player: result.player,
+      progress: result.progress,
+      message: result.message,
+    });
     
     // Let parent know to refresh banks, clear games, set screen...
     await onLoginSuccess();
@@ -74,12 +104,14 @@ export function useAppAuth({ onLoginSuccess, onLogoutSuccess, setUiMessage }: Us
 
   const logoutPlayer = useCallback(async () => {
     await signOutPlayer();
+    clearSupabaseRestAuthCache();
     setActivePlayer(null);
     setProgress(createInitialProgress());
     setAccessCode('');
     setAccessMessage(null);
     setAccessPassword('');
     setIsPasswordVisible(false);
+    clearCachedSessionState();
     onLogoutSuccess();
   }, [onLogoutSuccess]);
 

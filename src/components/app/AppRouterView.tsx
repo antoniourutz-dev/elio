@@ -1,19 +1,21 @@
 import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
-import type { GameLevel, PlayerIdentity } from '../../euskeraLearning';
+import type { GameLevel, PlayerIdentity } from '../../lib/types';
 import { AccessScreen } from '../../panels/AccessScreen';
-import { DailyHomeView } from '../../panels/DailyHomeView';
-import { GrammarLessonView } from '../../panels/GrammarLessonView';
-import { GrammarMapView } from '../../panels/GrammarMapView';
-import { LearnHubView } from '../../panels/LearnHubView';
-import { VerbsView } from '../../panels/VerbsView';
-import { VocabularyView } from '../../panels/VocabularyView';
 import { LoadingPanel, SessionLoadingView } from '../shared/AppLoaders';
-import type { AccessViewModel, DailyGameViewModel, MainViewModel, SynonymGameViewModel } from './appScreenModelTypes';
+import { PerformanceBoundary } from '../../lib/performanceMetrics';
+import type {
+  AccessViewModel,
+  DailyGameViewModel,
+  DailyHomeViewModel,
+  MainViewModel,
+  ProfileViewModel,
+  StatsViewModel,
+  SynonymGameViewModel,
+} from './appScreenModelTypes';
 
-type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'grammar-lesson' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
+type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'grammar-lesson' | 'vocabulary' | 'topics' | 'verbs' | 'stats' | 'profile' | 'admin';
 
 const AdminPanel = lazy(() => import('../../panels/AdminPanel'));
 
@@ -22,25 +24,24 @@ const lazyNamed = <TModule extends Record<string, unknown>>(
   key: keyof TModule
 ) => lazy(async () => ({ default: (await loader())[key] as never }));
 
+const DailyHomeView = lazyNamed(() => import('../../panels/DailyHomeView'), 'DailyHomeView');
+const DictionaryView = lazyNamed(() => import('../../panels/DictionaryView'), 'DictionaryView');
 const DailyGameRunner = lazyNamed(() => import('../../panels/DailyGameRunner'), 'DailyGameRunner');
+const GrammarLessonView = lazyNamed(() => import('../../panels/GrammarLessonView'), 'GrammarLessonView');
+const GrammarMapView = lazyNamed(() => import('../../panels/GrammarMapView'), 'GrammarMapView');
+const LearnHubView = lazyNamed(() => import('../../panels/LearnHubView'), 'LearnHubView');
 const LevelsView = lazyNamed(() => import('../../panels/LevelsView'), 'LevelsView');
 const ProfileView = lazyNamed(() => import('../../panels/ProfileView'), 'ProfileView');
 const QuizView = lazyNamed(() => import('../../panels/QuizView'), 'QuizView');
 const StatsView = lazyNamed(() => import('../../panels/StatsView'), 'StatsView');
 const SummaryView = lazyNamed(() => import('../../panels/SummaryView'), 'SummaryView');
 const StudyFlashcardsView = lazyNamed(() => import('../../panels/StudyFlashcardsView'), 'StudyFlashcardsView');
+const VerbsView = lazyNamed(() => import('../../panels/VerbsView'), 'VerbsView');
 
 const Page = ({ children, pageKey }: { children: ReactNode; pageKey: string }) => (
-  <motion.section
-    key={pageKey}
-    initial={{ opacity: 0, y: 16, scale: 0.985 }}
-    animate={{ opacity: 1, y: 0, scale: 1 }}
-    exit={{ opacity: 0, y: -16, scale: 0.985 }}
-    transition={{ duration: 0.24, ease: 'easeOut' }}
-    className="grid w-full h-full min-h-full"
-  >
+  <section key={pageKey} className="grid w-full h-full min-h-full animate-[fade-up_220ms_ease-out]">
     {children}
-  </motion.section>
+  </section>
 );
 
 interface AppRouterViewProps {
@@ -48,6 +49,9 @@ interface AppRouterViewProps {
   activePlayer: PlayerIdentity | null;
   access: AccessViewModel;
   mainScreen: MainScreen;
+  dailyHome: DailyHomeViewModel;
+  stats: StatsViewModel;
+  profile: ProfileViewModel;
   main: MainViewModel;
   dailyGame: DailyGameViewModel;
   synonymGame: SynonymGameViewModel;
@@ -61,6 +65,9 @@ export function AppRouterView({
   activePlayer,
   access,
   mainScreen,
+  dailyHome,
+  stats,
+  profile,
   main,
   dailyGame,
   synonymGame,
@@ -73,7 +80,7 @@ export function AppRouterView({
     synonymGame;
 
   return (
-    <AnimatePresence mode="wait">
+    <>
       {isSessionLoading && (
         <Page pageKey="session-loading">
           <SessionLoadingView />
@@ -98,10 +105,7 @@ export function AppRouterView({
 
       {!isSessionLoading && activePlayer && !dailySession && !quiz && !summary && (
         <Page pageKey={`main-${mainScreen}`}>
-          <motion.section
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.04 }}
+          <section
             className={clsx(
               'grid gap-[22px]',
               mainScreen === 'grammar' || mainScreen === 'grammar-lesson' ? 'min-h-full grid-rows-[minmax(0,1fr)]' : 'content-start',
@@ -109,34 +113,40 @@ export function AppRouterView({
             )}
           >
             {mainScreen === 'daily' && (
-              <DailyHomeView
-                dayKey={main.dayKey}
-                playerName={activePlayer?.code}
-                dailyResult={main.dailyResult}
-                weekHistory={main.weekHistory}
-                ranking={main.ranking}
-                weeklyRanking={main.weeklyRanking}
-                myRankEntry={main.myRankEntry}
-                myWeekRankEntry={main.myWeekRankEntry}
-                isLoadingData={main.isLoadingData}
-                canStartGame={main.canStartDailyGame}
-                onStartGame={main.onStartDailyGame}
-                onGoLearn={main.onGoLearn}
-                onGoSynonyms={main.onGoSynonyms}
-                onGoGrammar={main.onGoGrammar}
-                onGoVocabulary={main.onGoVocabulary}
-                onGoVerbs={main.onGoVerbs}
-              />
+              <Suspense fallback={<LoadingPanel />}>
+                <PerformanceBoundary id="DailyHomeView">
+                  <DailyHomeView
+                    dayKey={dailyHome.dayKey}
+                    dailyResult={dailyHome.dailyResult}
+                    weekHistory={dailyHome.weekHistory}
+                    ranking={dailyHome.ranking}
+                    weeklyRanking={dailyHome.weeklyRanking}
+                    myRankEntry={dailyHome.myRankEntry}
+                    myWeekRankEntry={dailyHome.myWeekRankEntry}
+                    isLoadingData={dailyHome.isLoadingData}
+                    canStartGame={dailyHome.canStartGame}
+                    onStartGame={dailyHome.onStartGame}
+                    onGoLearn={dailyHome.onGoLearn}
+                    onGoSynonyms={dailyHome.onGoSynonyms}
+                    onGoGrammar={dailyHome.onGoGrammar}
+                    onGoVocabulary={dailyHome.onGoVocabulary}
+                    onGoVerbs={dailyHome.onGoVerbs}
+                  />
+                </PerformanceBoundary>
+              </Suspense>
             )}
 
             {mainScreen === 'learn' && (
-              <LearnHubView
-                onGoSynonyms={main.onGoSynonyms}
-                onGoGrammar={main.onGoGrammar}
-                onGoVocabulary={main.onGoVocabulary}
-                onGoVerbs={main.onGoVerbs}
-                onStartOrthographyPractice={main.onStartOrthographyPractice}
-              />
+              <Suspense fallback={<LoadingPanel />}>
+                <LearnHubView
+                  onGoSynonyms={main.onGoSynonyms}
+                  onGoGrammar={main.onGoGrammar}
+                  onGoVocabulary={main.onGoVocabulary}
+                  onGoTopics={main.onGoTopics}
+                  onGoVerbs={main.onGoVerbs}
+                  onStartOrthographyPractice={main.onStartOrthographyPractice}
+                />
+              </Suspense>
             )}
 
             {mainScreen === 'synonyms' && (
@@ -153,39 +163,61 @@ export function AppRouterView({
               </Suspense>
             )}
 
-            {mainScreen === 'grammar' && main.isSuperUser && (
-              <GrammarMapView
-                completedStops={main.grammarCompletedStops}
-                onOpenLesson={main.onOpenGrammarLesson}
-              />
+            {mainScreen === 'grammar' && (
+              <Suspense fallback={<LoadingPanel />}>
+                <PerformanceBoundary id="GrammarMapView">
+                  <GrammarMapView
+                    completedStops={main.grammarCompletedStops}
+                    onOpenLesson={main.onOpenGrammarLesson}
+                  />
+                </PerformanceBoundary>
+              </Suspense>
             )}
 
-            {mainScreen === 'grammar-lesson' && main.isSuperUser && (
-              <GrammarLessonView
-                lessonSlug={main.activeGrammarLessonSlug}
-                completedStops={main.grammarCompletedStops}
-                onCompleteStop={main.onCompleteGrammarStop}
-              />
+            {mainScreen === 'grammar-lesson' && (
+              <Suspense fallback={<LoadingPanel />}>
+                <PerformanceBoundary id="GrammarLessonView">
+                  <GrammarLessonView
+                    lessonSlug={main.activeGrammarLessonSlug}
+                    activePlayer={activePlayer}
+                    completedStops={main.grammarCompletedStops}
+                    onCompleteStop={main.onCompleteGrammarStop}
+                    onOpenLesson={main.onOpenGrammarLesson}
+                  />
+                </PerformanceBoundary>
+              </Suspense>
             )}
 
             {mainScreen === 'vocabulary' && (
-              <VocabularyView isActive />
+              <Suspense fallback={<LoadingPanel />}>
+                <DictionaryView isActive playerId={activePlayer.userId} />
+              </Suspense>
+            )}
+
+            {mainScreen === 'topics' && (
+              <Suspense fallback={<LoadingPanel />}>
+                <VocabularyView isActive />
+              </Suspense>
             )}
 
             {mainScreen === 'verbs' && (
-              <VerbsView isActive />
+              <Suspense fallback={<LoadingPanel />}>
+                <VerbsView isActive />
+              </Suspense>
             )}
 
             {mainScreen === 'stats' && (
               <Suspense fallback={<LoadingPanel />}>
-                <StatsView
-                  progress={main.progress}
-                  entries={main.bankState.entries}
-                  currentTargetLevel={main.currentTargetLevel}
-                  homeNotice={main.homeNotice}
-                  isDemoMode={main.isDemoMode}
-                  uiMessage={main.uiMessage}
-                />
+                <PerformanceBoundary id="StatsView">
+                  <StatsView
+                    progress={stats.progress}
+                    entries={stats.entries}
+                    currentTargetLevel={stats.currentTargetLevel}
+                    homeNotice={stats.homeNotice}
+                    isDemoMode={stats.isDemoMode}
+                    uiMessage={stats.uiMessage}
+                  />
+                </PerformanceBoundary>
               </Suspense>
             )}
 
@@ -202,15 +234,17 @@ export function AppRouterView({
 
             {mainScreen === 'profile' && !studyLevel && (
               <Suspense fallback={<LoadingPanel />}>
-                <ProfileView
-                  activePlayer={activePlayer}
-                  weekHistory={main.weekHistory}
-                  isLoadingData={main.isLoadingData}
-                  progress={main.progress}
-                  entries={main.bankState.entries}
-                  onStudyLevel={onStudyLevel}
-                  onLogout={main.onLogout}
-                />
+                <PerformanceBoundary id="ProfileView">
+                  <ProfileView
+                    activePlayer={activePlayer}
+                    weekHistory={profile.weekHistory}
+                    isLoadingData={profile.isLoadingData}
+                    progress={profile.progress}
+                    entries={profile.entries}
+                    onStudyLevel={onStudyLevel}
+                    onLogout={profile.onLogout}
+                  />
+                </PerformanceBoundary>
               </Suspense>
             )}
 
@@ -219,25 +253,27 @@ export function AppRouterView({
                 <StudyFlashcardsView
                   playerId={activePlayer.userId}
                   level={studyLevel}
-                  entries={main.bankState.entries}
+                  entries={profile.entries}
                   onClose={onCloseStudy}
                 />
               </Suspense>
             )}
-          </motion.section>
+          </section>
         </Page>
       )}
 
       {!isSessionLoading && activePlayer && dailySession && (
         <Page pageKey="daily-game">
           <Suspense fallback={<LoadingPanel minHeightClass="min-h-[28rem]" />}>
-            <DailyGameRunner
-              session={dailySession}
-              elapsedSeconds={elapsedSeconds}
-              onAnswer={onAnswerDailyQuestion}
-              onSolve={onSolveDailyQuestion}
-              onAdvance={onAdvanceDailyQuestion}
-            />
+            <PerformanceBoundary id="DailyGameRunner">
+              <DailyGameRunner
+                session={dailySession}
+                elapsedSeconds={elapsedSeconds}
+                onAnswer={onAnswerDailyQuestion}
+                onSolve={onSolveDailyQuestion}
+                onAdvance={onAdvanceDailyQuestion}
+              />
+            </PerformanceBoundary>
           </Suspense>
         </Page>
       )}
@@ -264,6 +300,6 @@ export function AppRouterView({
           </Suspense>
         </Page>
       )}
-    </AnimatePresence>
+    </>
   );
 }

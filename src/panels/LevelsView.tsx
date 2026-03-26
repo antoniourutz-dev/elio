@@ -2,13 +2,12 @@ import { memo, useMemo, type CSSProperties } from 'react';
 import clsx from 'clsx';
 import { CheckCircle2, ChevronRight, Lock, Mountain, RefreshCw } from 'lucide-react';
 import {
-  GAME_LEVELS,
   getResolvedLevelRecord,
-  getLevelMetersForProgress,
-  getLevelQuestionCount,
   isLevelUnlocked,
-} from '../euskeraLearning';
-import type { GameLevel, GameProgress, SynonymEntry } from '../euskeraLearning';
+} from '../lib/progress';
+import { GAME_LEVELS } from '../lib/constants';
+import { getLevelMetersForProgress, getLevelQuestionCount } from '../lib/stats';
+import type { GameLevel, GameProgress, SynonymEntry } from '../lib/types';
 import { formatMeters } from '../formatters';
 
 interface LevelsViewProps {

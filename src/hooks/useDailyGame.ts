@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { SynonymEntry, PlayerIdentity } from '../lib/types';
+import { useQueryClient } from '@tanstack/react-query';
+import type { PlayerIdentity } from '../lib/types';
 import type {
   GameWord,
   OrthographyExercise,
@@ -11,23 +12,19 @@ import type {
   DailyWeeklyRankingEntry,
   DailyStoredAnswer,
 } from '../appTypes';
-import {
-  getDayKey,
-  getWeekRange,
-  loadGameWords,
-  loadOrthographyExercises,
-  loadDailyHieroglyphs,
-  buildDailyGame,
-  buildOrthographyPracticeGame,
-  calculateDailyScore,
-  loadMyDailyResult,
-  saveDailyResult,
-  loadDailyRanking,
-  loadMyWeekHistory,
-  loadWeeklyRanking,
-} from '../lib/daily';
 import { isSuperPlayer } from '../lib/auth';
+import { getDayKey } from '../lib/dailyDates';
+import { buildDailyGame, buildOrthographyPracticeGame } from '../lib/dailyGameEngine';
+import { logWarn } from '../lib/logger';
+import { saveDailyResult } from '../lib/dailyRepository';
+import { calculateDailyScore } from '../lib/dailyScoring';
 import { normalizeTextKey } from '../lib/parsing';
+import { useDailyRemoteData, dailyQueryKeys } from './useDailyRemoteData';
+import {
+  buildAbandonedDailyResult,
+  buildCompletedDailyResult,
+  buildRecoveredAbandonedDailyResult,
+} from '../lib/dailySessionResults';
 
 const DAILY_SESSION_MARKER_KEY = 'lexiko.daily-session-in-progress';
 
@@ -41,12 +38,12 @@ interface DailySessionMarker {
 
 interface UseDailyGameOptions {
   activePlayer: PlayerIdentity | null;
-  synonymEntries: SynonymEntry[];
 }
 
 export interface UseDailyGameReturn {
   dayKey: string;
   gameWords: GameWord[];
+  dailySynonymCount: number;
   orthographyExercises: OrthographyExercise[];
   hieroglyphs: EroglificoEntry[];
   dailySession: DailyGameSession | null;
@@ -98,77 +95,36 @@ function clearDailySessionMarker(): void {
   }
 }
 
-function buildStoredAnswers(session: DailyGameSession): DailyStoredAnswer[] {
-  return session.answers.map((ans, index) => {
-    const question = session.questions[index];
-    const word =
-      question.type === 'spelling'
-        ? question.displayText
-        : question.type === 'orthography'
-          ? `Ariketa ${question.exerciseNumber}`
-          : question.type === 'synonym'
-            ? question.word
-            : question.clue;
-
-    return {
-      type: ans.questionType,
-      word,
-      selected: ans.wasSolved ? 'Ebatzita' : ans.selectedAnswer,
-      correct: ans.correctAnswer,
-      isCorrect: ans.isCorrect,
-      wasSolved: ans.wasSolved,
-    };
-  });
-}
-
-export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptions): UseDailyGameReturn {
+export function useDailyGame({ activePlayer }: UseDailyGameOptions): UseDailyGameReturn {
+  const queryClient = useQueryClient();
   const dayKey = getDayKey();
   const isSuperUser = isSuperPlayer(activePlayer);
-  const [gameWords, setGameWords] = useState<GameWord[]>([]);
-  const [orthographyExercises, setOrthographyExercises] = useState<OrthographyExercise[]>([]);
-  const [hieroglyphs, setHieroglyphs] = useState<EroglificoEntry[]>([]);
   const [dailySession, setDailySession] = useState<DailyGameSession | null>(null);
-  const [dailyResult, setDailyResult] = useState<DailyResult | null>(null);
-  const [ranking, setRanking] = useState<DailyRankingEntry[]>([]);
-  const [weeklyRanking, setWeeklyRanking] = useState<DailyWeeklyRankingEntry[]>([]);
-  const [weekHistory, setWeekHistory] = useState<DailyResult[]>([]);
+  const [sessionResultOverride, setSessionResultOverride] = useState<DailyResult | null | undefined>(undefined);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [isLoadingData, setIsLoadingData] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const { start: weekStart, end: weekEnd } = getWeekRange();
+  const {
+    gameWords,
+    dailySynonymEntries,
+    orthographyExercises,
+    hieroglyphs,
+    dailyResult: remoteDailyResult,
+    ranking,
+    weeklyRanking,
+    weekHistory,
+    isLoadingData,
+    isLoadingDailyResult,
+    weekStart,
+    weekEnd,
+  } = useDailyRemoteData({
+    activePlayer,
+    dayKey,
+  });
+  const dailyResult = isSuperUser ? null : (sessionResultOverride ?? remoteDailyResult);
 
   useEffect(() => {
-    void loadGameWords().then(setGameWords);
-    void loadOrthographyExercises().then(setOrthographyExercises);
-    void loadDailyHieroglyphs().then(setHieroglyphs);
-  }, []);
-
-  useEffect(() => {
-    if (!activePlayer) return;
-    const fetch = async () => {
-      setIsLoadingData(true);
-      const [result, entries, weekEntries, history] = isSuperUser
-        ? await Promise.all([
-            Promise.resolve(null),
-            loadDailyRanking(dayKey),
-            loadWeeklyRanking(weekStart, weekEnd),
-            Promise.resolve([]),
-          ])
-        : await Promise.all([
-            loadMyDailyResult(activePlayer.userId, dayKey),
-            loadDailyRanking(dayKey),
-            loadWeeklyRanking(weekStart, weekEnd),
-            loadMyWeekHistory(activePlayer.userId, weekStart, weekEnd),
-          ]);
-      setDailyResult(result);
-      setRanking(entries);
-      setWeeklyRanking(weekEntries);
-      setWeekHistory(history);
-      setIsLoadingData(false);
-    };
-    void fetch();
-  }, [activePlayer?.userId, dayKey, weekStart, weekEnd, isSuperUser]); // eslint-disable-line react-hooks/exhaustive-deps
+    setSessionResultOverride(undefined);
+  }, [activePlayer?.userId, dayKey]);
 
   useEffect(() => {
     const marker = loadDailySessionMarker();
@@ -184,43 +140,50 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
       return;
     }
 
-    let cancelled = false;
+    if (isLoadingDailyResult) {
+      return;
+    }
 
-    void loadMyDailyResult(activePlayer.userId, dayKey).then((existingResult) => {
+    let cancelled = false;
+    clearDailySessionMarker();
+
+    if (remoteDailyResult) {
+      setSessionResultOverride(remoteDailyResult);
+      return;
+    }
+
+    const abandonedResult = buildRecoveredAbandonedDailyResult(marker);
+
+    setSessionResultOverride(abandonedResult);
+
+    void saveDailyResult(activePlayer.userId, activePlayer.code, abandonedResult).then(async () => {
       if (cancelled) return;
 
-      clearDailySessionMarker();
-
-      if (existingResult) {
-        setDailyResult(existingResult);
-        return;
-      }
-
-      const abandonedResult: DailyResult = {
-        dayKey: marker.dayKey,
-        score: 0,
-        correctCount: 0,
-        totalQuestions: marker.totalQuestions,
-        secondsElapsed: Math.max(0, Math.floor((Date.now() - marker.startedAt) / 1000)),
-        completedAt: new Date().toISOString(),
-        answers: [],
-      };
-
-      setDailyResult(abandonedResult);
-
-      void saveDailyResult(activePlayer.userId, activePlayer.code, abandonedResult).then(() => {
-        void Promise.all([
-          loadDailyRanking(dayKey).then(setRanking),
-          loadWeeklyRanking(weekStart, weekEnd).then(setWeeklyRanking),
-          loadMyWeekHistory(activePlayer.userId, weekStart, weekEnd).then(setWeekHistory),
-        ]);
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.myResult(activePlayer.userId, dayKey) }),
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.ranking(dayKey) }),
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.weeklyRanking(weekStart, weekEnd) }),
+        queryClient.invalidateQueries({
+          queryKey: dailyQueryKeys.weekHistory(activePlayer.userId, weekStart, weekEnd),
+        }),
+      ]);
     });
 
     return () => {
       cancelled = true;
     };
-  }, [activePlayer, dailyResult, dailySession, dayKey, isSuperUser, weekEnd, weekStart]);
+  }, [
+    activePlayer,
+    dailyResult,
+    dailySession,
+    dayKey,
+    isLoadingDailyResult,
+    isSuperUser,
+    queryClient,
+    remoteDailyResult,
+    weekEnd,
+    weekStart,
+  ]);
 
   // Timer while a session is active
   useEffect(() => {
@@ -243,8 +206,8 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
   }, [dailySession]);
 
   const startDailyGame = useCallback(() => {
-    if (synonymEntries.length === 0) return;
-    const questions = buildDailyGame(dayKey, gameWords, orthographyExercises, synonymEntries, hieroglyphs);
+    if (dailySynonymEntries.length === 0) return;
+    const questions = buildDailyGame(dayKey, gameWords, orthographyExercises, dailySynonymEntries, hieroglyphs);
     if (questions.length === 0) return;
     const startedAt = Date.now();
     setElapsedSeconds(0);
@@ -265,11 +228,11 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
       answers: [],
       startedAt,
     });
-  }, [activePlayer, dayKey, gameWords, orthographyExercises, synonymEntries, hieroglyphs, isSuperUser]);
+  }, [activePlayer, dailySynonymEntries, dayKey, gameWords, orthographyExercises, hieroglyphs, isSuperUser]);
 
   const startOrthographyPractice = useCallback(() => {
     if (orthographyExercises.length === 0 && gameWords.length === 0) {
-      console.warn('No orthography or spelling exercises are available.');
+      logWarn('dailyGame', 'No orthography or spelling exercises are available.');
       return;
     }
     const questions = buildOrthographyPracticeGame(dayKey, orthographyExercises, gameWords);
@@ -346,22 +309,13 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
     const correctCount = dailySession.answers.filter((a) => a.isCorrect).length;
     const totalQuestions = dailySession.questions.length;
     const score = calculateDailyScore(correctCount, secondsElapsed);
-    const storedAnswers = buildStoredAnswers(dailySession);
-    const result: DailyResult = {
-      dayKey: dailySession.dayKey,
-      score,
-      correctCount,
-      totalQuestions,
-      secondsElapsed,
-      completedAt: new Date().toISOString(),
-      answers: storedAnswers,
-    };
+    const result = buildCompletedDailyResult(dailySession, score, secondsElapsed);
 
     const isPracticeSession = dailySession.mode === 'orthography_practice';
 
     clearDailySessionMarker();
     if (!isPracticeSession) {
-      setDailyResult(isSuperUser ? null : result);
+      setSessionResultOverride(isSuperUser ? null : result);
     }
     setDailySession(null);
     setElapsedSeconds(0);
@@ -370,16 +324,17 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
       return;
     }
 
-    if (activePlayer) {
-      void saveDailyResult(activePlayer.userId, activePlayer.code, result).then(() => {
-        void Promise.all([
-          loadDailyRanking(dayKey).then(setRanking),
-          loadWeeklyRanking(weekStart, weekEnd).then(setWeeklyRanking),
-          isSuperUser ? Promise.resolve([]).then(setWeekHistory) : loadMyWeekHistory(activePlayer.userId, weekStart, weekEnd).then(setWeekHistory),
-        ]);
-      });
-    }
-  }, [dailySession, activePlayer, dayKey, weekStart, weekEnd, isSuperUser]);
+    void saveDailyResult(activePlayer.userId, activePlayer.code, result).then(async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.myResult(activePlayer.userId, dayKey) }),
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.ranking(dayKey) }),
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.weeklyRanking(weekStart, weekEnd) }),
+        queryClient.invalidateQueries({
+          queryKey: dailyQueryKeys.weekHistory(activePlayer.userId, weekStart, weekEnd),
+        }),
+      ]);
+    });
+  }, [activePlayer, dailySession, dayKey, isSuperUser, queryClient, weekEnd, weekStart]);
 
   const abandonDailyGame = useCallback(() => {
     if (!dailySession) {
@@ -390,36 +345,30 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
 
     const isPracticeSession = dailySession.mode === 'orthography_practice';
     const secondsElapsed = Math.floor((Date.now() - dailySession.startedAt) / 1000);
-    const correctCount = dailySession.answers.filter((answer) => answer.isCorrect).length;
-    const result: DailyResult = {
-      dayKey: dailySession.dayKey,
-      score: 0,
-      correctCount,
-      totalQuestions: dailySession.questions.length,
-      secondsElapsed,
-      completedAt: new Date().toISOString(),
-      answers: buildStoredAnswers(dailySession),
-    };
+    const result = buildAbandonedDailyResult(dailySession);
 
     clearDailySessionMarker();
     setDailySession(null);
     setElapsedSeconds(0);
     if (!isPracticeSession) {
-      setDailyResult(isSuperUser ? null : result);
+      setSessionResultOverride(isSuperUser ? null : result);
     }
 
     if (isPracticeSession || !activePlayer || isSuperUser) {
       return;
     }
 
-    void saveDailyResult(activePlayer.userId, activePlayer.code, result).then(() => {
-      void Promise.all([
-        loadDailyRanking(dayKey).then(setRanking),
-        loadWeeklyRanking(weekStart, weekEnd).then(setWeeklyRanking),
-        loadMyWeekHistory(activePlayer.userId, weekStart, weekEnd).then(setWeekHistory),
+    void saveDailyResult(activePlayer.userId, activePlayer.code, result).then(async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.myResult(activePlayer.userId, dayKey) }),
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.ranking(dayKey) }),
+        queryClient.invalidateQueries({ queryKey: dailyQueryKeys.weeklyRanking(weekStart, weekEnd) }),
+        queryClient.invalidateQueries({
+          queryKey: dailyQueryKeys.weekHistory(activePlayer.userId, weekStart, weekEnd),
+        }),
       ]);
     });
-  }, [activePlayer, dailySession, dayKey, isSuperUser, weekEnd, weekStart]);
+  }, [activePlayer, dailySession, dayKey, isSuperUser, queryClient, weekEnd, weekStart]);
 
   const myRankEntry = activePlayer
     ? (ranking.find((r) => r.playerCode === activePlayer.code) ?? null)
@@ -432,6 +381,7 @@ export function useDailyGame({ activePlayer, synonymEntries }: UseDailyGameOptio
   return {
     dayKey,
     gameWords,
+    dailySynonymCount: dailySynonymEntries.length,
     orthographyExercises,
     hieroglyphs,
     dailySession,

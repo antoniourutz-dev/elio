@@ -34,8 +34,9 @@ describe('resolveTopBarState', () => {
   it('prioritizes daily session state over other shell states', () => {
     const state = resolveTopBarState({
       mainScreen: 'daily',
-      dailySession: true,
+      dailySessionMode: 'daily',
       quiz: null,
+      quizProgress: null,
       summary: null,
       completedLevels: 2,
       totalLevels: 10,
@@ -53,8 +54,9 @@ describe('resolveTopBarState', () => {
   it('shows quiz progress as success metric while a level is active', () => {
     const state = resolveTopBarState({
       mainScreen: 'synonyms',
-      dailySession: false,
+      dailySessionMode: null,
       quiz: sampleQuiz,
+      quizProgress: null,
       summary: null,
       completedLevels: 2,
       totalLevels: 10,
@@ -73,8 +75,9 @@ describe('resolveTopBarState', () => {
   it('shows summary percentage after finishing a level', () => {
     const state = resolveTopBarState({
       mainScreen: 'synonyms',
-      dailySession: false,
+      dailySessionMode: null,
       quiz: null,
+      quizProgress: null,
       summary: sampleSummary,
       completedLevels: 2,
       totalLevels: 10,
@@ -93,8 +96,9 @@ describe('resolveTopBarState', () => {
   it('falls back to streak metric on regular screens', () => {
     const state = resolveTopBarState({
       mainScreen: 'stats',
-      dailySession: false,
+      dailySessionMode: null,
       quiz: null,
+      quizProgress: null,
       summary: null,
       completedLevels: 4,
       totalLevels: 10,

@@ -1,5 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { animate, motion, useMotionValue, useTransform } from 'framer-motion';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { ArrowLeft, CheckCircle2, RotateCcw } from 'lucide-react';
 import type { GameLevel, SynonymEntry } from '../euskeraLearning';
 import {
@@ -28,115 +27,192 @@ interface SwipeCardProps {
 
 function SwipeCard({ card, onRate }: SwipeCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
-  const isDragging = useRef(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isThrowing, setIsThrowing] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const pointerStateRef = useRef<{
+    pointerId: number | null;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  }>({
+    pointerId: null,
+    startX: 0,
+    startY: 0,
+    moved: false,
+  });
+  const throwTimerRef = useRef<number | null>(null);
 
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotate = useTransform([x, y], ([currentX, currentY]) => Number(currentX) / 12 - Number(currentY) / 28);
-  const goodOpacity = useTransform(x, [40, 110], [0, 1]);
-  const againOpacity = useTransform(x, [-110, -40], [1, 0]);
-  const easyOpacity = useTransform(y, [-120, -45], [1, 0]);
-  const hardOpacity = useTransform(y, [45, 120], [0, 1]);
+  const rotate = useMemo(() => dragOffset.x / 12 - dragOffset.y / 28, [dragOffset.x, dragOffset.y]);
+  const goodOpacity = useMemo(() => Math.max(0, Math.min(1, (dragOffset.x - 40) / 70)), [dragOffset.x]);
+  const againOpacity = useMemo(() => Math.max(0, Math.min(1, (-dragOffset.x - 40) / 70)), [dragOffset.x]);
+  const easyOpacity = useMemo(() => Math.max(0, Math.min(1, (-dragOffset.y - 45) / 75)), [dragOffset.y]);
+  const hardOpacity = useMemo(() => Math.max(0, Math.min(1, (dragOffset.y - 45) / 75)), [dragOffset.y]);
+
+  useEffect(() => {
+    setIsFlipped(false);
+    setDragOffset({ x: 0, y: 0 });
+    setIsThrowing(false);
+
+    return () => {
+      if (throwTimerRef.current !== null) {
+        window.clearTimeout(throwTimerRef.current);
+      }
+    };
+  }, [card.id]);
 
   const throwCard = useCallback(
-    async (rating: StudyRating) => {
+    (rating: StudyRating) => {
       const xTarget = rating === 'good' ? 520 : rating === 'again' ? -520 : 0;
       const yTarget = rating === 'easy' ? -420 : rating === 'hard' ? 420 : 0;
 
-      await Promise.all([
-        animate(x, xTarget, { duration: 0.28, ease: 'easeIn' }),
-        animate(y, yTarget, { duration: 0.28, ease: 'easeIn' }),
-      ]);
+      setIsThrowing(true);
+      setDragOffset({ x: xTarget, y: yTarget });
 
-      onRate(card.id, rating);
+      if (throwTimerRef.current !== null) {
+        window.clearTimeout(throwTimerRef.current);
+      }
+
+      throwTimerRef.current = window.setTimeout(() => {
+        onRate(card.id, rating);
+      }, 280);
     },
-    [card.id, onRate, x, y]
+    [card.id, onRate]
   );
 
-  const handleDragEnd = useCallback(
-    (_: never, info: { offset: { x: number; y: number } }) => {
-      isDragging.current = false;
-      const absX = Math.abs(info.offset.x);
-      const absY = Math.abs(info.offset.y);
-
-      if (absY > absX && info.offset.y < -90) {
-        void throwCard('easy');
-        return;
-      }
-
-      if (absY > absX && info.offset.y > 90) {
-        void throwCard('hard');
-        return;
-      }
-
-      if (info.offset.x > 100) {
-        void throwCard('good');
-        return;
-      }
-
-      if (info.offset.x < -100) {
-        void throwCard('again');
-        return;
-      }
-
-      void Promise.all([
-        animate(x, 0, { duration: 0.2, ease: 'easeOut' }),
-        animate(y, 0, { duration: 0.2, ease: 'easeOut' }),
-      ]);
-    },
-    [throwCard, x, y]
-  );
-
-  const handleTap = useCallback(() => {
-    if (!isDragging.current) {
-      setIsFlipped((current) => !current);
-    }
+  const snapBack = useCallback(() => {
+    setIsThrowing(false);
+    setDragOffset({ x: 0, y: 0 });
   }, []);
 
+  const resolveGesture = useCallback(
+    (offsetX: number, offsetY: number, moved: boolean) => {
+      const absX = Math.abs(offsetX);
+      const absY = Math.abs(offsetY);
+
+      if (absY > absX && offsetY < -90) {
+        throwCard('easy');
+        return;
+      }
+
+      if (absY > absX && offsetY > 90) {
+        throwCard('hard');
+        return;
+      }
+
+      if (offsetX > 100) {
+        throwCard('good');
+        return;
+      }
+
+      if (offsetX < -100) {
+        throwCard('again');
+        return;
+      }
+
+      if (!moved) {
+        setIsFlipped((current) => !current);
+      }
+
+      snapBack();
+    },
+    [snapBack, throwCard]
+  );
+
+  const handlePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (isThrowing) {
+      return;
+    }
+
+    pointerStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+    };
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsThrowing(false);
+  }, [isThrowing]);
+
+  const handlePointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const pointerState = pointerStateRef.current;
+    if (pointerState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const nextX = event.clientX - pointerState.startX;
+    const nextY = event.clientY - pointerState.startY;
+
+    if (Math.abs(nextX) > 6 || Math.abs(nextY) > 6) {
+      pointerState.moved = true;
+    }
+
+    setDragOffset({ x: nextX, y: nextY });
+  }, []);
+
+  const finishPointerInteraction = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const pointerState = pointerStateRef.current;
+    if (pointerState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const nextX = event.clientX - pointerState.startX;
+    const nextY = event.clientY - pointerState.startY;
+
+    if (cardRef.current?.hasPointerCapture(event.pointerId)) {
+      cardRef.current.releasePointerCapture(event.pointerId);
+    }
+
+    pointerStateRef.current.pointerId = null;
+    resolveGesture(nextX, nextY, pointerState.moved);
+  }, [resolveGesture]);
+
   return (
-    <motion.div
-      drag
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.9}
-      style={{ x, y, rotate }}
-      initial={{ opacity: 0, scale: 0.9, y: 16 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.26, ease: 'easeOut' }}
-      onDragStart={() => {
-        isDragging.current = true;
+    <div
+      ref={cardRef}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={finishPointerInteraction}
+      onPointerCancel={finishPointerInteraction}
+      style={{
+        transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${rotate}deg)`,
+        opacity: isThrowing ? 0 : 1,
+        transition: isThrowing
+          ? 'transform 280ms ease-in, opacity 220ms ease-in'
+          : pointerStateRef.current.pointerId === null
+            ? 'transform 200ms ease-out, opacity 200ms ease-out'
+            : 'none',
       }}
-      onDragEnd={handleDragEnd}
-      onTap={handleTap}
-      className="relative w-full touch-none cursor-grab active:cursor-grabbing select-none"
+      className="relative w-full touch-none select-none cursor-grab active:cursor-grabbing animate-[fade-up_220ms_ease-out] will-change-transform"
     >
-      <motion.div style={{ opacity: goodOpacity }} className="pointer-events-none absolute left-5 top-5 z-20">
+      <div style={{ opacity: goodOpacity }} className="pointer-events-none absolute left-5 top-5 z-20 transition-opacity duration-100">
         <span className="-rotate-12 inline-block rounded-xl border-[3px] border-[#1d8b7f] bg-[rgba(255,255,255,0.92)] px-3 py-1.5 text-[0.88rem] font-black uppercase tracking-[0.12em] text-[#1d8b7f]">
           Eskuina / Badakit
         </span>
-      </motion.div>
+      </div>
 
-      <motion.div style={{ opacity: againOpacity }} className="pointer-events-none absolute right-5 top-5 z-20">
+      <div style={{ opacity: againOpacity }} className="pointer-events-none absolute right-5 top-5 z-20 transition-opacity duration-100">
         <span className="rotate-12 inline-block rounded-xl border-[3px] border-[#d05060] bg-[rgba(255,255,255,0.92)] px-3 py-1.5 text-[0.88rem] font-black uppercase tracking-[0.12em] text-[#d05060]">
           Ezkerra / Berriz
         </span>
-      </motion.div>
+      </div>
 
-      <motion.div style={{ opacity: easyOpacity }} className="pointer-events-none absolute inset-x-0 top-5 z-20 flex justify-center">
+      <div style={{ opacity: easyOpacity }} className="pointer-events-none absolute inset-x-0 top-5 z-20 flex justify-center transition-opacity duration-100">
         <span className="inline-block rounded-xl border-[3px] border-[#1d8b7f] bg-[rgba(255,255,255,0.94)] px-3 py-1.5 text-[0.82rem] font-black uppercase tracking-[0.12em] text-[#1d8b7f]">
           Gora / Erraza
         </span>
-      </motion.div>
+      </div>
 
-      <motion.div style={{ opacity: hardOpacity }} className="pointer-events-none absolute inset-x-0 bottom-5 z-20 flex justify-center">
+      <div style={{ opacity: hardOpacity }} className="pointer-events-none absolute inset-x-0 bottom-5 z-20 flex justify-center transition-opacity duration-100">
         <span className="inline-block rounded-xl border-[3px] border-[#c27a1d] bg-[rgba(255,255,255,0.94)] px-3 py-1.5 text-[0.82rem] font-black uppercase tracking-[0.12em] text-[#a76410]">
           Behera / Zaila
         </span>
-      </motion.div>
+      </div>
 
       <div style={{ perspective: '1200px' }}>
-        <motion.div
-          animate={{ rotateY: isFlipped ? 180 : 0 }}
-          transition={{ duration: 0.42, ease: [0.4, 0, 0.2, 1] }}
+        <div
+          style={{ transform: `rotateY(${isFlipped ? 180 : 0}deg)` }}
           className="flip-preserve-3d relative w-full"
         >
           <div className="face-hidden flex min-h-[280px] w-full flex-col items-center justify-center gap-3 rounded-[28px] border border-[rgba(216,226,241,0.76)] bg-white p-8 shadow-[0_14px_40px_rgba(100,140,160,0.13)]">
@@ -175,9 +251,9 @@ function SwipeCard({ card, onRate }: SwipeCardProps) {
               Ezkerra / Berriz - Behera / Zaila - Eskuina / Badakit - Gora / Erraza
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

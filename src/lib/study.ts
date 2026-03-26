@@ -211,11 +211,14 @@ export const buildStudyCardSeeds = (entries: SynonymEntry[], levelIndex: number)
     .filter((entry) => entry.levelOrder === levelIndex)
     .flatMap((entry) => {
       const terms = buildEntryTerms(entry);
+      const seeds: StudyCardSeed[] = [];
 
-      return terms.flatMap((promptWord) =>
-        terms
-          .filter((candidate) => normalizeTextKey(candidate) !== normalizeTextKey(promptWord))
-          .map((answerWord) => ({
+      for (let leftIndex = 0; leftIndex < terms.length; leftIndex += 1) {
+        for (let rightIndex = leftIndex + 1; rightIndex < terms.length; rightIndex += 1) {
+          const promptWord = terms[leftIndex];
+          const answerWord = terms[rightIndex];
+
+          seeds.push({
             id: `${entry.id}::${normalizeTextKey(promptWord)}::${normalizeTextKey(answerWord)}`,
             promptWord,
             answerWord,
@@ -223,8 +226,11 @@ export const buildStudyCardSeeds = (entries: SynonymEntry[], levelIndex: number)
             theme: entry.theme ?? null,
             translation: entry.translation ?? null,
             example: entry.example ?? null,
-          }))
-      );
+          });
+        }
+      }
+
+      return seeds;
     });
 
 export const loadStudyDeck = (playerId: string, levelId: string, seeds: StudyCardSeed[], now = new Date()): StudyCard[] => {

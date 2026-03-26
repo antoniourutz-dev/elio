@@ -4,10 +4,48 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+function isReactRuntimeModule(id: string): boolean {
+  return (
+    id.includes('/react/') ||
+    id.includes('\\react\\') ||
+    id.includes('/react-dom/') ||
+    id.includes('\\react-dom\\') ||
+    id.includes('/scheduler/') ||
+    id.includes('\\scheduler\\') ||
+    id.includes('/use-sync-external-store/') ||
+    id.includes('\\use-sync-external-store\\')
+  );
+}
+
+function isMotionRuntimeModule(id: string): boolean {
+  return (
+    id.includes('framer-motion') ||
+    id.includes('/motion-dom/') ||
+    id.includes('\\motion-dom\\') ||
+    id.includes('/motion-utils/') ||
+    id.includes('\\motion-utils\\') ||
+    id.includes('/motion/') ||
+    id.includes('\\motion\\')
+  );
+}
+
+function isTanStackQueryModule(id: string): boolean {
+  return (
+    id.includes('@tanstack/react-query') ||
+    id.includes('/@tanstack/query-core/') ||
+    id.includes('\\@tanstack\\query-core\\')
+  );
+}
+
 export default defineConfig({
   server: {
     port: 3000,
-    host: '0.0.0.0',
+    host: 'localhost',
+    hmr: {
+      host: 'localhost',
+      clientPort: 3000,
+      protocol: 'ws',
+    },
   },
   build: {
     rollupOptions: {
@@ -15,12 +53,16 @@ export default defineConfig({
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
 
-          if (id.includes('react-dom') || id.includes('react/')) {
+          if (isReactRuntimeModule(id)) {
             return 'vendor-react';
           }
 
-          if (id.includes('framer-motion')) {
+          if (isMotionRuntimeModule(id)) {
             return 'vendor-motion';
+          }
+
+          if (isTanStackQueryModule(id)) {
+            return 'vendor-query';
           }
 
           if (id.includes('@supabase')) {
@@ -57,6 +99,7 @@ export default defineConfig({
     }),
   ],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, '.'),
     },

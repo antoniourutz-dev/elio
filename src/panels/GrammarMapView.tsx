@@ -1,6 +1,5 @@
-import { memo } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { AlertCircle, Building2, Check, ChevronRight, Lock } from 'lucide-react';
+import { memo, useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Building2, Check, ChevronRight, Home, Lock } from 'lucide-react';
 import { usePublishedLessons } from '../hooks/usePublishedLessons';
 import type { LessonSummary } from '../lib/lessons';
 
@@ -11,6 +10,7 @@ interface GrammarStop {
   town: string;
   distance: string;
   district: string;
+  placeType: 'city' | 'town';
 }
 
 interface GrammarMapViewProps {
@@ -19,16 +19,16 @@ interface GrammarMapViewProps {
 }
 
 const GRAMMAR_STOPS: GrammarStop[] = [
-  { id: 'gasteiz', town: 'Gasteiz', distance: 'Hasiera', district: 'Arabako Lautada' },
-  { id: 'argomaniz', town: 'Argomaniz', distance: '12 km', district: 'Arabako Lautada' },
-  { id: 'dulantzi', town: 'Alegria-Dulantzi', distance: '5 km', district: 'Arabako Lautada' },
-  { id: 'agurain', town: 'Agurain', distance: '14 km', district: 'Arabako Lautada' },
-  { id: 'zalduondo', town: 'Zalduondo', distance: '10 km', district: 'Arabako Lautada' },
-  { id: 'araia', town: 'Araia', distance: '5 km', district: 'Asparrena' },
-  { id: 'maeztu', town: 'Maeztu', distance: '24 km', district: 'Arabako Mendialdea' },
-  { id: 'antonana', town: 'Antonana', distance: '12 km', district: 'Arabako Mendialdea' },
-  { id: 'kanpezu', town: 'Kanpezu', distance: '8 km', district: 'Arabako Mendialdea' },
-  { id: 'bernedo', town: 'Bernedo', distance: '15 km', district: 'Arabako Mendialdea' },
+  { id: 'gasteiz', town: 'Gasteiz', distance: 'Hasiera', district: 'Arabako Lautada', placeType: 'city' },
+  { id: 'argomaniz', town: 'Argomaniz', distance: '12 km', district: 'Arabako Lautada', placeType: 'town' },
+  { id: 'dulantzi', town: 'Alegria-Dulantzi', distance: '5 km', district: 'Arabako Lautada', placeType: 'town' },
+  { id: 'agurain', town: 'Agurain', distance: '14 km', district: 'Arabako Lautada', placeType: 'town' },
+  { id: 'zalduondo', town: 'Zalduondo', distance: '10 km', district: 'Arabako Lautada', placeType: 'town' },
+  { id: 'araia', town: 'Araia', distance: '5 km', district: 'Asparrena', placeType: 'town' },
+  { id: 'maeztu', town: 'Maeztu', distance: '24 km', district: 'Arabako Mendialdea', placeType: 'town' },
+  { id: 'antonana', town: 'Antonana', distance: '12 km', district: 'Arabako Mendialdea', placeType: 'town' },
+  { id: 'kanpezu', town: 'Kanpezu', distance: '8 km', district: 'Arabako Mendialdea', placeType: 'town' },
+  { id: 'bernedo', town: 'Bernedo', distance: '15 km', district: 'Arabako Mendialdea', placeType: 'town' },
 ];
 
 const activeRowHeight = 'h-[14.3rem]';
@@ -36,13 +36,14 @@ const compactRowHeight = 'h-[6.1rem]';
 const railXMobile = '1.95rem';
 
 function getStopLessonSummary(stop: GrammarStop, lesson: LessonSummary | null): string {
+  if (lesson?.section) return lesson.section;
   if (lesson?.title) return lesson.title;
   return stop.district;
 }
 
 function getStopLessonMeta(stop: GrammarStop, lesson: LessonSummary | null): string {
+  if (lesson?.title) return lesson.title;
   if (lesson?.topic) return lesson.topic;
-  if (lesson?.section) return lesson.section;
   if (lesson?.level) return lesson.level;
   return stop.district;
 }
@@ -65,17 +66,34 @@ export const GrammarMapView = memo(function GrammarMapView({
   completedStops,
   onOpenLesson,
 }: GrammarMapViewProps) {
-  const systemPrefersReducedMotion = useReducedMotion();
-  const prefersReducedMotion = import.meta.env.DEV ? false : systemPrefersReducedMotion;
   const { lessons, isLoading, isReady, message, refresh } = usePublishedLessons(10, true);
   const totalStops = GRAMMAR_STOPS.length;
+  const activeStopIndex = Math.min(completedStops, Math.max(0, totalStops - 1));
+  const [selectedStopIndex, setSelectedStopIndex] = useState(activeStopIndex);
   const allCompleted = completedStops >= totalStops;
+  const featuredStopIndex = Math.max(0, Math.min(selectedStopIndex, activeStopIndex));
+  const progressPercentage = useMemo(
+    () => Math.round((completedStops / totalStops) * 100),
+    [completedStops, totalStops]
+  );
+  const activeProgressWidth = useMemo(
+    () => Math.max(10, ((completedStops + 1) / totalStops) * 100),
+    [completedStops, totalStops]
+  );
 
-  const stopsWithLessons = GRAMMAR_STOPS.map((stop, index) => ({
-    ...stop,
-    lesson: lessons[index] ?? null,
-    status: getStopStatus(index, completedStops, totalStops),
-  }));
+  useEffect(() => {
+    setSelectedStopIndex((current) => Math.min(current, activeStopIndex));
+  }, [activeStopIndex]);
+
+  const stopsWithLessons = useMemo(
+    () =>
+      GRAMMAR_STOPS.map((stop, index) => ({
+        ...stop,
+        lesson: lessons[index] ?? null,
+        status: getStopStatus(index, completedStops, totalStops),
+      })),
+    [lessons, completedStops, totalStops]
+  );
 
   return (
     <section className="relative min-h-full overflow-hidden px-2 pb-6 pt-3">
@@ -115,17 +133,15 @@ export const GrammarMapView = memo(function GrammarMapView({
           }}
           aria-hidden="true"
         />
-        {!prefersReducedMotion && !allCompleted ? (
-          <motion.div
-            className="absolute w-[3px] rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(218,255,247,0.9),rgba(255,255,255,0))]"
+        {!allCompleted ? (
+          <div
+            className="absolute w-[3px] rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(218,255,247,0.9),rgba(255,255,255,0))] motion-safe:animate-[rail-glow_2.8s_ease-in-out_infinite] motion-reduce:animate-none"
             style={{
               left: railXMobile,
               top: '4.85rem',
               height: '2.4rem',
               transform: 'translateX(-1px)',
             }}
-            animate={{ y: ['0rem', '3.3rem', '0rem'] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
             aria-hidden="true"
           />
         ) : null}
@@ -134,22 +150,35 @@ export const GrammarMapView = memo(function GrammarMapView({
           {stopsWithLessons.map((stop, index) => {
             const isActive = stop.status === 'active';
             const isCompleted = stop.status === 'completed';
+            const isFeatured = index === featuredStopIndex;
+            const ActivePlaceIcon = stop.placeType === 'city' ? Building2 : Home;
+            const showPrimaryCard = isFeatured;
+            const featuredProgressPercentage = isCompleted ? 100 : progressPercentage;
+            const featuredProgressWidth = isCompleted ? 100 : activeProgressWidth;
+            const primaryButtonLabel = isCompleted ? 'Berriro ikusi' : 'Hasi ikasten';
+            const isSelectable = isActive || isCompleted;
 
             return (
-              <div key={stop.id} className={`relative ${isActive ? activeRowHeight : compactRowHeight}`}>
+              <div key={stop.id} className={`relative ${showPrimaryCard ? activeRowHeight : compactRowHeight}`}>
                 <div className="absolute left-8 top-1/2 z-20" style={{ transform: 'translate(-50%, -50%)' }}>
                   {isActive ? (
-                    <motion.div
-                      className="flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full border-[3px] border-[#6edbd3] bg-white text-[#177f76] shadow-[0_0_0_4px_rgba(110,219,211,0.12),0_14px_30px_rgba(46,146,136,0.14)]"
-                      animate={prefersReducedMotion ? undefined : { scale: [1, 1.03, 1] }}
-                      transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStopIndex(index)}
+                      className="flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full border-[3px] border-[#6edbd3] bg-white text-[#177f76] shadow-[0_0_0_4px_rgba(110,219,211,0.12),0_14px_30px_rgba(46,146,136,0.14)] motion-safe:animate-[map-node-pulse_2.6s_ease-in-out_infinite] motion-reduce:animate-none"
+                      aria-label={`${stop.town} hautatu`}
                     >
-                      <Building2 className="h-[1.7rem] w-[1.7rem]" />
-                    </motion.div>
+                      <ActivePlaceIcon className="h-[1.7rem] w-[1.7rem]" />
+                    </button>
                   ) : isCompleted ? (
-                    <div className="flex h-[2.3rem] w-[2.3rem] items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(180deg,#51c9bb,#8fdf93)] text-white shadow-[0_10px_20px_rgba(69,177,157,0.18)]">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStopIndex(index)}
+                      className="flex h-[2.3rem] w-[2.3rem] items-center justify-center rounded-full border-[3px] border-white bg-[linear-gradient(180deg,#51c9bb,#8fdf93)] text-white shadow-[0_10px_20px_rgba(69,177,157,0.18)] transition-transform duration-150 hover:scale-[1.04]"
+                      aria-label={`${stop.town} ikasgaia hautatu`}
+                    >
                       <Check className="h-[1rem] w-[1rem] stroke-[3]" />
-                    </div>
+                    </button>
                   ) : (
                     <div className="flex h-[1.95rem] w-[1.95rem] items-center justify-center rounded-full border-[3px] border-white bg-[#d9e1e6] text-[var(--muted)] shadow-[0_8px_18px_rgba(120,140,158,0.08)]">
                       <Lock className="h-[0.9rem] w-[0.9rem]" />
@@ -158,7 +187,7 @@ export const GrammarMapView = memo(function GrammarMapView({
                 </div>
 
                 <div className="h-full pl-[4.85rem]">
-                  {isActive ? (
+                  {showPrimaryCard ? (
                     <article className="relative w-[min(18.95rem,100%)] overflow-hidden rounded-[1.9rem] border border-[rgba(227,233,238,0.98)] bg-[linear-gradient(180deg,rgba(255,255,255,0.99),rgba(252,253,253,0.97))] px-5 py-4.5 shadow-[0_18px_36px_rgba(107,132,154,0.11)]">
                       <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#62d7ce,#b8e284)]" aria-hidden="true" />
                       <div
@@ -181,19 +210,15 @@ export const GrammarMapView = memo(function GrammarMapView({
                         <div className="grid gap-1.5">
                           <div className="flex items-center justify-between text-[0.68rem] font-extrabold uppercase tracking-[0.09em] text-[var(--muted)]">
                             <span>Aurrerapena</span>
-                            <span className="text-[#17897d]">{Math.round((completedStops / totalStops) * 100)}%</span>
+                            <span className="text-[#17897d]">{featuredProgressPercentage}%</span>
                           </div>
                           <div className="relative h-[0.42rem] overflow-hidden rounded-full bg-[#e3eaee]">
                             <div
                               className="h-full rounded-full bg-[linear-gradient(90deg,#0e7a72,#5ed2c5)]"
-                              style={{ width: `${Math.max(10, ((completedStops + 1) / totalStops) * 100)}%` }}
+                              style={{ width: `${featuredProgressWidth}%` }}
                             />
-                            {!prefersReducedMotion ? (
-                              <motion.div
-                                className="absolute top-0 h-full w-[24%] rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(235,255,251,0.92),rgba(255,255,255,0))]"
-                                animate={{ x: ['-35%', '290%'] }}
-                                transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
-                              />
+                            {!isCompleted ? (
+                              <div className="absolute top-0 h-full w-[24%] rounded-full bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(235,255,251,0.92),rgba(255,255,255,0))] motion-safe:animate-[progress-shimmer_2.5s_linear_infinite] motion-reduce:animate-none" />
                             ) : null}
                           </div>
                         </div>
@@ -204,7 +229,7 @@ export const GrammarMapView = memo(function GrammarMapView({
                           disabled={!stop.lesson}
                           className="inline-flex min-h-[2.85rem] w-fit items-center justify-center gap-2 rounded-full bg-[linear-gradient(180deg,#0b6f69,#0c847b)] px-6 text-[0.9rem] font-black text-white shadow-[0_12px_24px_rgba(12,132,123,0.22)] transition-transform duration-150 hover:-translate-y-[1px] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          Hasi ikasten
+                          {primaryButtonLabel}
                           <ChevronRight className="h-4 w-4" />
                         </button>
                       </div>
@@ -215,8 +240,8 @@ export const GrammarMapView = memo(function GrammarMapView({
                         {isCompleted ? (
                           <button
                             type="button"
-                            onClick={() => onOpenLesson(stop.lesson?.slug ?? null)}
-                            disabled={!stop.lesson}
+                            onClick={() => setSelectedStopIndex(index)}
+                            disabled={!stop.lesson || !isSelectable}
                             className="absolute left-0 top-1/2 grid min-w-0 -translate-y-1/2 gap-0.5 rounded-[1rem] px-1.5 py-1 text-left transition-colors duration-150 hover:bg-white/60 disabled:cursor-not-allowed disabled:opacity-70"
                           >
                             <h3 className="m-0 font-display text-[1.34rem] leading-none tracking-[-0.055em] text-[#71889a]">
@@ -241,14 +266,14 @@ export const GrammarMapView = memo(function GrammarMapView({
                   )}
                 </div>
 
-                {isActive ? (
+                {showPrimaryCard && isActive ? (
                   <div
                     className="absolute left-8 top-[calc(50%+1.95rem)] z-10 h-[4.5rem] w-[3px] -translate-x-1/2 rounded-full bg-[linear-gradient(180deg,#0b8478,rgba(11,132,120,0.08))]"
                     aria-hidden="true"
                   />
                 ) : null}
 
-                {!isActive ? (
+                {!showPrimaryCard ? (
                   <div className="absolute left-8 z-20 -translate-x-1/2" style={{ top: '-0.65rem' }}>
                     <span className="inline-flex w-fit rounded-full border border-[rgba(221,229,235,0.95)] bg-[rgba(255,255,255,0.92)] px-2 py-0.5 text-[0.54rem] font-extrabold uppercase tracking-[0.14em] text-[var(--muted)] shadow-[0_8px_16px_rgba(126,145,160,0.06)]">
                       {stop.distance}

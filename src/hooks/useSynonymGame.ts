@@ -1,14 +1,15 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
-  buildLevelChallenge,
   getResolvedLevelRecord,
-  getLevelUnlockTargetCount,
   isLevelUnlocked,
   recordLevelResult,
-  savePlayerProgress,
-} from '../euskeraLearning';
-import type { GameLevel, GameProgress, PlayerIdentity } from '../euskeraLearning';
+} from '../lib/progress';
+import { getLevelUnlockTargetCount } from '../lib/stats';
+import { buildLevelChallenge } from '../lib/quiz';
+import { savePlayerProgress } from '../lib/storage';
+import type { GameLevel, GameProgress, PlayerIdentity } from '../lib/types';
 import type { ActiveQuiz, BankState, LevelSummary, SessionAnswer } from '../appTypes';
+import type { MainScreen } from '../components/app/appChrome';
 
 export interface UseSynonymGameProps {
   progress: GameProgress;
@@ -16,7 +17,7 @@ export interface UseSynonymGameProps {
   bankState: BankState;
   activePlayer: PlayerIdentity | null;
   setUiMessage: (msg: string | null) => void;
-  setMainScreen: (screen: 'daily' | 'learn' | 'synonyms' | 'grammar' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin') => void;
+  setMainScreen: (screen: MainScreen) => void;
 }
 
 export function useSynonymGame({

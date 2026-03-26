@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { BookOpenText, ChartColumnBig, CheckCircle2, Flame, House, Mountain, RefreshCw, ShieldUser, UserRound } from 'lucide-react';
 import type { ActiveQuiz, LevelSummary } from '../../appTypes';
 
-export type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'grammar-lesson' | 'vocabulary' | 'verbs' | 'stats' | 'profile' | 'admin';
+export type MainScreen = 'daily' | 'learn' | 'synonyms' | 'grammar' | 'grammar-lesson' | 'vocabulary' | 'topics' | 'verbs' | 'stats' | 'profile' | 'admin';
 
 type TopBarMetricVariant = 'default' | 'success' | 'streak';
 
@@ -85,6 +85,8 @@ export function resolveTopBarState({
                   ? 'Ikasgaia'
                 : mainScreen === 'vocabulary'
                   ? 'Hiztegia'
+                  : mainScreen === 'topics'
+                    ? 'Gaiak'
                   : mainScreen === 'verbs'
                     ? 'Aditzak'
           : null;
@@ -170,6 +172,7 @@ export function resolveDockItems({
             || mainScreen === 'grammar'
             || mainScreen === 'grammar-lesson'
             || mainScreen === 'vocabulary'
+            || mainScreen === 'topics'
             || mainScreen === 'verbs',
         },
         { id: 'admin', label: 'Kudeaketa', icon: ShieldUser, action: 'admin', active: mainScreen === 'admin' },
@@ -193,6 +196,7 @@ export function resolveDockItems({
           || mainScreen === 'grammar'
           || mainScreen === 'grammar-lesson'
           || mainScreen === 'vocabulary'
+          || mainScreen === 'topics'
           || mainScreen === 'verbs',
       },
       { id: 'stats', label: 'Estatistikak', icon: ChartColumnBig, action: 'stats', active: mainScreen === 'stats' },

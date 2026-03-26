@@ -1,4 +1,3 @@
-import { isSupabaseConfigured, playerProgressTable, supabase, synonymsTable } from '../supabaseClient';
 import type { SynonymEntry, TeacherPlayerOverview, TeacherOperationResult, TeacherPlayerAccessInput, TeacherWordInput } from './types';
 import { ADMIN_PLAYER_CODE, GAME_LEVELS, SUPERADMIN_PLAYER_CODE } from './constants';
 import {
@@ -22,6 +21,7 @@ import { normalizePlayerCode, parseLevelOrder } from './parsing';
 import { uniqueNonEmptyStrings } from '../wordUtils';
 import { getResolvedLevelRecord, getUnlockedLevels, isLevelUnlocked } from './progress';
 import { getTotalGamesPlayed, getConsecutivePlayDays } from './stats';
+import { loadSupabaseModule } from './loadSupabaseModule';
 
 const buildTeacherPlayerOverview = (
   row: Partial<RemoteProgressRow>,
@@ -75,6 +75,7 @@ const buildTeacherWordPayload = (input: TeacherWordInput): { word: string; synon
 };
 
 export const loadTeacherPlayers = async (entries: SynonymEntry[]): Promise<{ ok: boolean; players: TeacherPlayerOverview[]; message: string }> => {
+  const { isSupabaseConfigured, playerProgressTable, supabase } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,
@@ -131,6 +132,7 @@ export const loadTeacherPlayers = async (entries: SynonymEntry[]): Promise<{ ok:
 };
 
 export const createPlayerByTeacher = async (codeInput: string, passwordInput: string): Promise<TeacherOperationResult> => {
+  const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,
@@ -209,6 +211,7 @@ export const updateTeacherPlayerAccess = async (
   ownerId: string,
   input: TeacherPlayerAccessInput
 ): Promise<TeacherOperationResult> => {
+  const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,
@@ -275,6 +278,7 @@ export const updateTeacherPlayerAccess = async (
 };
 
 export const deletePlayerByTeacher = async (player: TeacherPlayerOverview): Promise<TeacherOperationResult> => {
+  const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,
@@ -313,6 +317,7 @@ export const deletePlayerByTeacher = async (player: TeacherPlayerOverview): Prom
 };
 
 export const resetPlayerProgressByTeacher = async (player: TeacherPlayerOverview): Promise<TeacherOperationResult> => {
+  const { isSupabaseConfigured, playerProgressTable, supabase } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,
@@ -378,6 +383,7 @@ export const resetPlayerProgressByTeacher = async (player: TeacherPlayerOverview
 };
 
 export const setPlayerForcedUnlockLevels = async (ownerId: string, levelIndexes: number[]): Promise<TeacherOperationResult> => {
+  const { isSupabaseConfigured, playerProgressTable, supabase } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,
@@ -455,6 +461,7 @@ export const setPlayerForcedUnlockLevels = async (ownerId: string, levelIndexes:
 };
 
 export const createTeacherWord = async (input: TeacherWordInput): Promise<TeacherOperationResult> => {
+  const { isSupabaseConfigured, supabase, synonymsTable } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,
@@ -485,6 +492,7 @@ export const createTeacherWord = async (input: TeacherWordInput): Promise<Teache
 };
 
 export const updateTeacherWord = async (wordId: string, input: TeacherWordInput): Promise<TeacherOperationResult> => {
+  const { isSupabaseConfigured, supabase, synonymsTable } = await loadSupabaseModule();
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,

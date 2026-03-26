@@ -43,12 +43,12 @@ function makeCard(overrides: Partial<StudyCard> = {}): StudyCard {
 }
 
 describe('buildStudyCardSeeds', () => {
-  it('genera todas las combinaciones dirigidas del grupo semantico', () => {
+  it('genera solo parejas unicas del grupo semantico', () => {
     const seeds = buildStudyCardSeeds([entry], 1);
 
-    expect(seeds).toHaveLength(6);
+    expect(seeds).toHaveLength(3);
     expect(seeds.some((seed) => seed.promptWord === 'eder' && seed.answerWord === 'polita')).toBe(true);
-    expect(seeds.some((seed) => seed.promptWord === 'polita' && seed.answerWord === 'eder')).toBe(true);
+    expect(seeds.some((seed) => seed.promptWord === 'polita' && seed.answerWord === 'eder')).toBe(false);
   });
 });
 

@@ -1,4 +1,3 @@
-import { isSupabaseConfigured, playerProgressTable, supabase } from '../supabaseClient';
 import type { PlayerIdentity, GameProgress, LevelRecord, PlayerProgressSyncResult, QuestionMemoryRecord } from './types';
 import { assignAvatarId } from './avatars';
 import {
@@ -26,6 +25,7 @@ import {
   type DbErrorLike,
   type RemoteProgressRow,
 } from './db';
+import { loadSupabaseModule } from './loadSupabaseModule';
 
 export const sanitizeForcedUnlockLevels = (value: unknown, legacyValue?: unknown): number[] => {
   const parsedLevels = Array.isArray(value)
@@ -297,6 +297,8 @@ export const clearLegacyGameProgress = (): void => {
 };
 
 export const loadRemoteProgress = async (player: PlayerIdentity): Promise<{ progress: GameProgress; message: string | null }> => {
+  const { isSupabaseConfigured, playerProgressTable, supabase } = await loadSupabaseModule();
+
   if (!supabase || !isSupabaseConfigured) {
     return {
       progress: createInitialProgress(),
@@ -374,6 +376,8 @@ export const savePlayerProgress = async (
   player: PlayerIdentity,
   progress: GameProgress
 ): Promise<PlayerProgressSyncResult> => {
+  const { isSupabaseConfigured, playerProgressTable, supabase } = await loadSupabaseModule();
+
   if (!supabase || !isSupabaseConfigured) {
     return {
       ok: false,

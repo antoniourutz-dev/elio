@@ -1,4 +1,5 @@
-import { supabase } from '../supabaseClient';
+import { isSupabaseConfigured } from './supabaseConfig';
+import { selectSupabaseRows } from './supabaseRest';
 
 export interface VocabularyItem {
   id: number | string;
@@ -45,9 +46,6 @@ export interface VocabularyLoadResult {
   message: string;
 }
 
-let vocabularyCache: VocabularyLoadResult | null = null;
-let vocabularyRequest: Promise<VocabularyLoadResult> | null = null;
-
 const TOPIC_ITEMS_VIEW = 'v_topic_items';
 const TOPIC_ITEMS_SELECT = [
   'topic_id',
@@ -83,16 +81,7 @@ const sortItems = (left: VocabularyItem, right: VocabularyItem): number =>
   left.sortIndex - right.sortIndex || left.text.localeCompare(right.text, 'eu');
 
 export async function loadVocabularyTopics(): Promise<VocabularyLoadResult> {
-  if (vocabularyCache) {
-    return vocabularyCache;
-  }
-
-  if (vocabularyRequest) {
-    return vocabularyRequest;
-  }
-
-  vocabularyRequest = (async (): Promise<VocabularyLoadResult> => {
-  if (!supabase) {
+  if (!isSupabaseConfigured) {
     return {
       ok: false,
       topics: [],
@@ -100,14 +89,16 @@ export async function loadVocabularyTopics(): Promise<VocabularyLoadResult> {
     };
   }
 
-  const { data, error } = await supabase
-    .from(TOPIC_ITEMS_VIEW)
-    .select(TOPIC_ITEMS_SELECT)
-    .order('topic_title', { ascending: true })
-    .order('category_order', { ascending: true })
-    .order('sort_index', { ascending: true })
-    .order('study_item_id', { ascending: true })
-    .limit(5000);
+  const { data, error } = await selectSupabaseRows<VocabularyRow>(TOPIC_ITEMS_VIEW, {
+    select: TOPIC_ITEMS_SELECT,
+    order: [
+      { column: 'topic_title', ascending: true },
+      { column: 'category_order', ascending: true },
+      { column: 'sort_index', ascending: true },
+      { column: 'study_item_id', ascending: true },
+    ],
+    limit: 5000,
+  });
 
   if (error || !data) {
     return {
@@ -192,23 +183,4 @@ export async function loadVocabularyTopics(): Promise<VocabularyLoadResult> {
     topics,
     message: topics.length > 0 ? `${topics.length} gai kargatuta.` : 'Ez dago hiztegi edukirik oraindik.',
   };
-  })();
-
-  const result = await vocabularyRequest;
-  vocabularyCache = result;
-  vocabularyRequest = null;
-  return result;
-}
-
-export function preloadVocabularyTopics(): void {
-  void loadVocabularyTopics();
-}
-
-export function getVocabularyTopicsSnapshot(): VocabularyLoadResult | null {
-  return vocabularyCache;
-}
-
-export function clearVocabularyTopicsCache(): void {
-  vocabularyCache = null;
-  vocabularyRequest = null;
 }

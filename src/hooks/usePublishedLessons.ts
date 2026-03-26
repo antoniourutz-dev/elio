@@ -1,71 +1,33 @@
-import { useEffect, useState } from 'react';
-import { clearLessonCache, loadPublishedLessons } from '../lib/lessons';
-import type { LessonSummary } from '../lib/lessons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { loadPublishedLessons } from '../lib/lessons';
+import { measureAsyncOperation } from '../lib/performanceMetrics';
 
-interface PublishedLessonsState {
-  isLoading: boolean;
-  isReady: boolean;
-  lessons: LessonSummary[];
-  message: string;
-}
-
-const initialState: PublishedLessonsState = {
-  isLoading: true,
-  isReady: false,
-  lessons: [],
-  message: 'Ikasgaiak kargatzen...',
+const lessonQueryKeys = {
+  list: (limit: number) => ['lessons', 'list', limit] as const,
 };
 
 export function usePublishedLessons(limit: number, isEnabled: boolean) {
-  const [state, setState] = useState<PublishedLessonsState>(initialState);
-
-  useEffect(() => {
-    if (!isEnabled) {
-      setState(initialState);
-      return;
-    }
-
-    let active = true;
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.lessons.length > 0 ? current.message : 'Ikasgaiak kargatzen...',
-    }));
-
-    void loadPublishedLessons(limit).then((result) => {
-      if (!active) return;
-      setState({
-        isLoading: false,
-        isReady: result.ok,
-        lessons: result.lessons,
-        message: result.message,
-      });
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [isEnabled, limit]);
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: lessonQueryKeys.list(limit),
+    queryFn: () =>
+      measureAsyncOperation('query', 'published-lessons', () => loadPublishedLessons(limit), {
+        details: { limit },
+      }),
+    enabled: isEnabled,
+    staleTime: 5 * 60_000,
+  });
 
   const refresh = async () => {
-    clearLessonCache();
-    setState((current) => ({
-      ...current,
-      isLoading: true,
-      message: current.lessons.length > 0 ? current.message : 'Ikasgaiak kargatzen...',
-    }));
-
-    const result = await loadPublishedLessons(limit);
-    setState({
-      isLoading: false,
-      isReady: result.ok,
-      lessons: result.lessons,
-      message: result.message,
-    });
+    await queryClient.invalidateQueries({ queryKey: lessonQueryKeys.list(limit) });
+    await query.refetch();
   };
 
   return {
-    ...state,
+    isLoading: query.isLoading || query.isFetching,
+    isReady: query.data?.ok ?? false,
+    lessons: query.data?.lessons ?? [],
+    message: query.data?.message ?? 'Ikasgaiak kargatzen...',
     refresh,
   };
 }

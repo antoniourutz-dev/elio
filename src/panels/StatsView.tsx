@@ -1,19 +1,10 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import clsx from 'clsx';
 import { Flame, Trophy, Zap } from 'lucide-react';
-import {
-  GAME_LEVELS,
-  getResolvedLevelRecord,
-  getUnlockedLevels,
-  isLevelUnlocked,
-  getLevelQuestionCount,
-  getLevelMetersForProgress,
-  getLevelUnlockTargetCount,
-  getConsecutivePlayDays,
-  getTodayGamesPlayed,
-  LEVELS_TOTAL,
-} from '../euskeraLearning';
-import type { GameProgress, SynonymEntry } from '../euskeraLearning';
+import { GAME_LEVELS, LEVELS_TOTAL } from '../lib/constants';
+import { getResolvedLevelRecord, getUnlockedLevels, isLevelUnlocked } from '../lib/progress';
+import { getLevelQuestionCount, getLevelMetersForProgress, getLevelUnlockTargetCount, getConsecutivePlayDays, getTodayGamesPlayed } from '../lib/stats';
+import type { GameProgress, SynonymEntry } from '../lib/types';
 import { formatMeterProgress, formatMeters } from '../formatters';
 
 interface StatsViewProps {
@@ -34,43 +25,55 @@ const PROFILE_START_X = 34;
 const PROFILE_STEP_X = 54;
 
 export const StatsView = memo(function StatsView({ progress, entries, currentTargetLevel, homeNotice, isDemoMode, uiMessage }: StatsViewProps) {
-  const unlockedLevels = getUnlockedLevels(progress, entries);
-  const resolvedLevelRecords = GAME_LEVELS.map((level) => ({
-    level,
-    record: getResolvedLevelRecord(progress, entries, level),
-  }));
-  const completedLevels = resolvedLevelRecords.filter((item) => item.record?.isCompleted).length;
-
-  const unlockedLevelStats = unlockedLevels.map((level) => ({
-    level,
-    record: getResolvedLevelRecord(progress, entries, level),
-    totalQuestions: getLevelQuestionCount(entries, level.index),
-    isTarget: level.index === currentTargetLevel,
-  }));
-
-  const gamesPlayedToday = getTodayGamesPlayed(progress);
-  const consecutivePlayDays = getConsecutivePlayDays(progress);
-
-  // Mastery ring
-  const masteryPct = LEVELS_TOTAL > 0 ? (completedLevels / LEVELS_TOTAL) * 100 : 0;
-  const ringDash = (masteryPct / 100) * RING_C;
-  const minElevation = Math.min(...GAME_LEVELS.map((level) => level.elevationMeters));
-  const maxElevation = Math.max(...GAME_LEVELS.map((level) => level.elevationMeters));
-
-  const profileLevels = GAME_LEVELS.map((level, index) => {
-    const record = getResolvedLevelRecord(progress, entries, level);
-    const unlocked = isLevelUnlocked(progress, level.index, entries);
-    const elevationProgress = (level.elevationMeters - minElevation) / Math.max(maxElevation - minElevation, 1);
-    return {
+  const {
+    completedLevels,
+    unlockedLevelStats,
+    gamesPlayedToday,
+    consecutivePlayDays,
+    ringDash,
+    profileLevels,
+    currentMountain,
+  } = useMemo(() => {
+    const resolvedRecords = GAME_LEVELS.map((level) => ({
       level,
-      unlocked,
-      completed: Boolean(record?.isCompleted),
-      isTarget: level.index === currentTargetLevel,
-      x: PROFILE_START_X + index * PROFILE_STEP_X,
-      peakY: 112 - elevationProgress * 46,
+      record: getResolvedLevelRecord(progress, entries, level),
+    }));
+    const recordByLevel = new Map(resolvedRecords.map((item) => [item.level.index, item.record]));
+    const unlockedLevels = getUnlockedLevels(progress, entries);
+    const completed = resolvedRecords.filter((item) => item.record?.isCompleted).length;
+    const masteryPct = LEVELS_TOTAL > 0 ? (completed / LEVELS_TOTAL) * 100 : 0;
+    const minElevation = Math.min(...GAME_LEVELS.map((level) => level.elevationMeters));
+    const maxElevation = Math.max(...GAME_LEVELS.map((level) => level.elevationMeters));
+
+    return {
+      resolvedLevelRecords: resolvedRecords,
+      completedLevels: completed,
+      unlockedLevelStats: unlockedLevels.map((level) => ({
+        level,
+        record: recordByLevel.get(level.index) ?? null,
+        totalQuestions: getLevelQuestionCount(entries, level.index),
+        isTarget: level.index === currentTargetLevel,
+      })),
+      gamesPlayedToday: getTodayGamesPlayed(progress),
+      consecutivePlayDays: getConsecutivePlayDays(progress),
+      ringDash: (masteryPct / 100) * RING_C,
+      profileLevels: GAME_LEVELS.map((level, index) => {
+        const record = recordByLevel.get(level.index) ?? null;
+        const unlocked = isLevelUnlocked(progress, level.index, entries);
+        const elevationProgress = (level.elevationMeters - minElevation) / Math.max(maxElevation - minElevation, 1);
+
+        return {
+          level,
+          unlocked,
+          completed: Boolean(record?.isCompleted),
+          isTarget: level.index === currentTargetLevel,
+          x: PROFILE_START_X + index * PROFILE_STEP_X,
+          peakY: 112 - elevationProgress * 46,
+        };
+      }),
+      currentMountain: GAME_LEVELS[Math.max(0, currentTargetLevel - 1)] ?? GAME_LEVELS[0],
     };
-  });
-  const currentMountain = GAME_LEVELS[Math.max(0, currentTargetLevel - 1)] ?? GAME_LEVELS[0];
+  }, [progress, entries, currentTargetLevel]);
 
   const masteryLabel =
     completedLevels === 0

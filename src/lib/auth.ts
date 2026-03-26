@@ -1,8 +1,8 @@
-import { isSupabaseConfigured, supabase } from '../supabaseClient';
 import type { PlayerSessionState, PlayerIdentity, PlayerAccessSuccess, PlayerAccessFailure } from './types';
 import { ADMIN_PLAYER_CODE, GAME_LEVELS, SUPERADMIN_PLAYER_CODE } from './constants';
 import { normalizePlayerCode, parsePlayerCodeFromEmail, buildPlayerEmail } from './parsing';
 import { createInitialProgress, createAuthPlayerIdentity, loadRemoteProgress } from './storage';
+import { loadSupabaseModule } from './loadSupabaseModule';
 
 export { buildPlayerEmail } from './parsing';
 export { savePlayerProgress } from './storage';
@@ -26,6 +26,8 @@ const applyPrivilegedProgress = (player: Pick<PlayerIdentity, 'code'> | null | u
     : progress;
 
 export const loadPlayerSessionState = async (): Promise<PlayerSessionState> => {
+  const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
+
   if (!supabase || !isSupabaseConfigured) {
     return {
       player: null,
@@ -74,12 +76,15 @@ export const loadPlayerSessionState = async (): Promise<PlayerSessionState> => {
 };
 
 export const signOutPlayer = async (): Promise<void> => {
+  const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
+
   if (!supabase || !isSupabaseConfigured) return;
 
   await supabase.auth.signOut();
 };
 
 export const accessPlayer = async (codeInput: string, passwordInput: string): Promise<PlayerAccessSuccess | PlayerAccessFailure> => {
+  const { isSupabaseConfigured, supabase } = await loadSupabaseModule();
   const playerCode = normalizePlayerCode(codeInput);
   const playerEmail = buildPlayerEmail(playerCode);
   const password = passwordInput.trim();

@@ -1,14 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { MotionConfig } from 'framer-motion';
+import { QueryClientProvider } from '@tanstack/react-query';
 import App from './App.tsx';
 import { ErrorBoundary } from './ErrorBoundary.tsx';
 import { validateEnv } from './env.ts';
+import { logError } from './lib/logger.ts';
+import { appQueryClient } from './lib/queryClient.ts';
 import './index.css';
 
 const env = validateEnv();
 if (!env.ok) {
-  console.error('[Elio] Missing required environment variables:', env.missing.join(', '));
+  logError('bootstrap', `Missing required environment variables: ${env.missing.join(', ')}`);
 }
 
 const rootElement = document.getElementById('root');
@@ -20,9 +22,9 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <MotionConfig reducedMotion={import.meta.env.DEV ? 'never' : 'user'}>
+      <QueryClientProvider client={appQueryClient}>
         <App />
-      </MotionConfig>
+      </QueryClientProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

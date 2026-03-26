@@ -23,16 +23,16 @@ const makeLevelRecord = (): LevelRecord => ({
   attempts: 3,
   bestScore: 60,
   lastScore: 60,
-  bestCorrectCount: 6,
-  lastCorrectCount: 6,
+  bestCorrectCount: 4,
+  lastCorrectCount: 4,
   totalQuestions: 15,
   lastPlayedAt: '2026-03-18T10:00:00.000Z',
   playedDates: ['2026-03-18'],
   dailyAttempts: { '2026-03-18': 3 },
-  masteredQuestionIds: ['entry-1::word1', 'entry-2::word2', 'entry-3::word3', 'entry-4::word4'],
-  incorrectQuestionIds: ['entry-1::syn1a', 'entry-2::syn2a', 'entry-3::syn3a', 'entry-4::syn4a'],
+  masteredQuestionIds: ['entry-1::word1<>syn1b', 'entry-2::word2<>syn2b'],
+  incorrectQuestionIds: ['entry-1::word1<>syn1a', 'entry-2::word2<>syn2a', 'entry-3::word3<>syn3a', 'entry-4::word4<>syn4a'],
   questionMemory: {
-    'entry-1::syn1a': {
+    'entry-1::word1<>syn1a': {
       attempts: 3,
       correctCount: 0,
       incorrectCount: 3,
@@ -42,7 +42,7 @@ const makeLevelRecord = (): LevelRecord => ({
       lastResult: 'incorrect',
       lastSeenAt: '2026-03-18T10:00:00.000Z',
     },
-    'entry-2::syn2a': {
+    'entry-2::word2<>syn2a': {
       attempts: 2,
       correctCount: 0,
       incorrectCount: 2,
@@ -52,7 +52,7 @@ const makeLevelRecord = (): LevelRecord => ({
       lastResult: 'incorrect',
       lastSeenAt: '2026-03-18T10:00:00.000Z',
     },
-    'entry-3::syn3a': {
+    'entry-3::word3<>syn3a': {
       attempts: 1,
       correctCount: 0,
       incorrectCount: 1,
@@ -62,7 +62,7 @@ const makeLevelRecord = (): LevelRecord => ({
       lastResult: 'incorrect',
       lastSeenAt: '2026-03-18T10:00:00.000Z',
     },
-    'entry-4::syn4a': {
+    'entry-4::word4<>syn4a': {
       attempts: 1,
       correctCount: 0,
       incorrectCount: 1,
@@ -72,7 +72,7 @@ const makeLevelRecord = (): LevelRecord => ({
       lastResult: 'incorrect',
       lastSeenAt: '2026-03-18T10:00:00.000Z',
     },
-    'entry-1::word1': {
+    'entry-1::word1<>syn1b': {
       attempts: 3,
       correctCount: 3,
       incorrectCount: 0,
@@ -82,7 +82,7 @@ const makeLevelRecord = (): LevelRecord => ({
       lastResult: 'correct',
       lastSeenAt: '2026-03-18T10:00:00.000Z',
     },
-    'entry-2::word2': {
+    'entry-2::word2<>syn2b': {
       attempts: 2,
       correctCount: 2,
       incorrectCount: 0,
@@ -109,10 +109,10 @@ describe('buildLevelChallenge', () => {
 
     const firstQuestionIds = result.questions.slice(0, 4).map((question) => question.id);
     expect(firstQuestionIds).toEqual([
-      'entry-1::syn1a',
-      'entry-2::syn2a',
-      'entry-3::syn3a',
-      'entry-4::syn4a',
+      'entry-1::word1<>syn1a',
+      'entry-2::word2<>syn2a',
+      'entry-3::word3<>syn3a',
+      'entry-4::word4<>syn4a',
     ]);
   });
 });

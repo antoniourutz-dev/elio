@@ -1,5 +1,4 @@
-import { memo, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { memo } from 'react';
 import clsx from 'clsx';
 import { CirclePlay } from 'lucide-react';
 import { SegmentBar } from '../components/SegmentBar';
@@ -17,35 +16,10 @@ interface QuizViewProps {
 }
 
 export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentAnswer, quizAdvanceLabel, onAnswer, onAdvance }: QuizViewProps) {
-  const firstOptionRef = useRef<HTMLButtonElement | null>(null);
-  const advanceRef = useRef<HTMLButtonElement | null>(null);
-
-  // Focus first option when question changes (new question)
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      firstOptionRef.current?.focus();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [quiz.currentIndex]);
-
-  // Focus advance button when answer is submitted
-  useEffect(() => {
-    if (!currentAnswer) return;
-    const frame = requestAnimationFrame(() => {
-      advanceRef.current?.focus();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [currentAnswer]);
-
   const isAnswered = Boolean(currentAnswer);
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.04 }}
-      className="grid w-full h-full gap-3 p-[18px] rounded-[36px] max-w-[600px] mx-auto content-start auto-rows-min"
-    >
+    <section className="grid w-full h-full max-w-[600px] mx-auto content-start auto-rows-min gap-3 rounded-[36px] p-[18px] animate-[fade-up_220ms_ease-out]">
       <div className="flex items-center justify-start">
         <SegmentBar total={quiz.questions.length} answers={quiz.answers} currentIndex={quiz.currentIndex} />
       </div>
@@ -66,8 +40,8 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
           return (
             <button
               key={option}
-              ref={index === 0 ? firstOptionRef : undefined}
               type="button"
+              autoFocus={index === 0 && !isAnswered}
               className={clsx(
                 'flex items-center gap-3 w-full min-h-[60px] px-4 rounded-[20px] border-[1.5px] border-[#e1e5ee] bg-white text-[var(--text)] text-left transition-all duration-150 cursor-pointer outline-none font-extrabold shadow-[0_4px_14px_rgba(107,148,165,0.04)]',
                 !isAnswered && 'hover:-translate-y-[1px] hover:border-[rgba(107,184,217,0.4)] hover:bg-[#f2f8fd] hover:shadow-[0_10px_20px_rgba(107,184,217,0.1)] active:translate-y-0',
@@ -100,12 +74,12 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
 
       <div className="grid pt-2 sm:pt-4">
         <button
-          ref={advanceRef}
           className={clsx(
             'inline-flex items-center justify-center gap-2.5 w-full min-h-[54px] px-[18px] rounded-full font-black text-white transition-all duration-150 cursor-pointer shadow-[0_14px_30px_rgba(100,200,174,0.26)]',
             !isAnswered ? 'opacity-50 cursor-not-allowed bg-[#a0bfc4] shadow-none' : 'bg-gradient-to-r from-[#52bec2] via-[#7ed4ae] to-[#cfe07e] hover:-translate-y-px hover:shadow-[0_16px_34px_rgba(100,200,174,0.32)] active:scale-[0.985]'
           )}
           type="button"
+          autoFocus={isAnswered}
           disabled={!isAnswered}
           onClick={onAdvance}
         >
@@ -113,6 +87,6 @@ export const QuizView = memo(function QuizView({ quiz, currentQuestion, currentA
           <span className="text-[1.1rem]">{quizAdvanceLabel}</span>
         </button>
       </div>
-    </motion.section>
+    </section>
   );
 });

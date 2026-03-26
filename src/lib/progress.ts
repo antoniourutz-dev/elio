@@ -180,5 +180,3 @@ export const recordLevelResult = (
     levelRecords: nextRecords,
   };
 };
-
-export { createInitialProgress } from './storage';
